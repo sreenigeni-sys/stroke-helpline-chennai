@@ -50,7 +50,7 @@ export function SignVisual({ sign }: { sign: Sign }) {
           src={sign.video}
           poster={sign.poster}
           muted
-          loop
+          loop={sign.loop !== false}
           playsInline
           autoPlay
           preload="auto"

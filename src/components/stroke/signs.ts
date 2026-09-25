@@ -14,6 +14,7 @@ export type Sign = {
   watchTa: string;
   video: string;
   poster: string;
+  loop?: boolean;
   icon: LucideIcon;
 };
 
@@ -58,6 +59,7 @@ export const SIGNS: Sign[] = [
     watchTa: "சிரிப்பின் ஒரு பக்கம் மட்டும் உயராது.",
     video: "/media/befast/face.mp4",
     poster: "/media/befast/face.jpg",
+    loop: false,
     icon: Smile,
   },
   {
