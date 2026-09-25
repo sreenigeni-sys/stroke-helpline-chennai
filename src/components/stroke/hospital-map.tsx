@@ -61,21 +61,25 @@ export function HospitalMap({
   user,
   center,
   onPick,
+  onPlace,
 }: {
   pins: MapPin[];
-  user: { lat: number; lng: number } | null;
+  user: { lat: number; lng: number; label?: string } | null;
   center: { lat: number; lng: number };
   onPick: (id: string) => void;
+  onPlace: (lat: number, lng: number) => void;
 }) {
   const elRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<LeafletMap | null>(null);
   const groupRef = useRef<LayerGroup | null>(null);
   const onPickRef = useRef(onPick);
+  const onPlaceRef = useRef(onPlace);
   onPickRef.current = onPick;
+  onPlaceRef.current = onPlace;
   const [ready, setReady] = useState(false);
   const [wide, setWide] = useState(false);
   const pinKey = pins.map((pin) => pin.id).join("|");
-  const userKey = user ? `${user.lat.toFixed(4)},${user.lng.toFixed(4)}` : "city";
+  const userKey = user ? `${user.lat.toFixed(4)},${user.lng.toFixed(4)},${user.label ?? ""}` : "city";
 
   useEffect(() => {
     const host = elRef.current;
@@ -98,6 +102,9 @@ export function HospitalMap({
       }).addTo(map);
       L.control.zoom({ position: "bottomright" }).addTo(map);
       groupRef.current = L.layerGroup().addTo(map);
+      map.on("click", (event) => {
+        onPlaceRef.current(event.latlng.lat, event.latlng.lng);
+      });
       mapRef.current = map;
       if (cancelled) {
         map.remove();
@@ -169,7 +176,10 @@ export function HospitalMap({
         marker.bindPopup(
           `<strong>${esc(hospital.name)}</strong><br/>${esc(hospital.ownership)} · ${level}<br/>${esc(hospital.address)}${phone}`,
         );
-        marker.on("click", () => onPickRef.current(hospital.id));
+        marker.on("click", (event) => {
+          if (event.originalEvent) L.DomEvent.stopPropagation(event.originalEvent);
+          onPickRef.current(hospital.id);
+        });
       }
 
       const here = user ?? center;
@@ -183,7 +193,7 @@ export function HospitalMap({
       });
       L.marker([here.lat, here.lng], { icon: hereIcon, zIndexOffset: 800 })
         .addTo(group)
-        .bindPopup(user ? "You are here" : "Chennai centre");
+        .bindPopup(user?.label ?? (user ? "You are here" : "Chennai centre"));
 
       const focus = wide ? shown : shown.slice(0, 10);
       const points = focus.map((pin) => L.latLng(pin.lat, pin.lng));

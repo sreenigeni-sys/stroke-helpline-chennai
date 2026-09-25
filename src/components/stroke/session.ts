@@ -9,7 +9,7 @@ export type Session = {
   answers: Record<SignId, Answer | null>;
   onsetIso: string | null;
   timeReturn: "signs" | "locator";
-  user: { lat: number; lng: number; at?: number; accuracy?: number } | null;
+  user: { lat: number; lng: number; at?: number; accuracy?: number; label?: string } | null;
 };
 
 const KEY = "stroke-assist-v1";
@@ -65,6 +65,7 @@ export function loadSession(): Session {
               lng: parsed.user.lng,
               at: typeof parsed.user.at === "number" ? parsed.user.at : undefined,
               accuracy: typeof parsed.user.accuracy === "number" ? parsed.user.accuracy : undefined,
+              label: typeof parsed.user.label === "string" ? parsed.user.label : undefined,
             }
           : null,
     };

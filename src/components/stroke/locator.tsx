@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { Navigation, Phone } from "lucide-react";
 import { CHENNAI_CENTER, HOSPITALS, type Hospital } from "@/data/hospitals";
+import { PLACES, type Place } from "@/data/places";
 import { cn } from "@/lib/cn";
 import { distanceKm, formatDistance } from "@/lib/geo";
 import { Countdown } from "@/components/stroke/countdown";
@@ -46,6 +47,15 @@ function readPosition(options: PositionOptions) {
   });
 }
 
+function matchPlaces(query: string) {
+  const q = query.toLowerCase().replace(/\./g, "").replace(/\s+/g, " ").trim();
+  if (!q) return PLACES.slice(0, 6);
+  return PLACES.filter((place) => {
+    if (place.name.toLowerCase().includes(q)) return true;
+    return (place.aliases ?? []).some((alias) => alias.includes(q));
+  }).slice(0, 8);
+}
+
 function locateMessage(error: unknown) {
   if (isGeoError(error) && error.code === 1) {
     return "Location is blocked. Allow it for this site in the browser, then tap again.";
@@ -75,7 +85,9 @@ export function Locator({
   const [locating, setLocating] = useState(false);
   const [locError, setLocError] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const asked = useRef(false);
+  const [query, setQuery] = useState(user?.label && user.label !== "Pinned spot" ? user.label : "");
+  const [placesOpen, setPlacesOpen] = useState(false);
+  const matches = useMemo(() => matchPlaces(query), [query]);
 
   const origin = user ?? CHENNAI_CENTER;
   const rows = useMemo(() => {
@@ -123,6 +135,7 @@ export function Locator({
         throw new Error("bad fix");
       }
       onUser({ lat: latitude, lng: longitude, at: Date.now(), accuracy });
+      setQuery("");
       if (accuracy > 300) {
         try {
           const better = await readPosition({
@@ -158,13 +171,12 @@ export function Locator({
     }
   }
 
-  useEffect(() => {
-    if (asked.current) return;
-    const fresh = user?.at && Date.now() - user.at < 2 * 60 * 1000;
-    if (fresh) return;
-    asked.current = true;
-    void locate();
-  }, []);
+  function choosePlace(place: Place) {
+    onUser({ lat: place.lat, lng: place.lng, at: Date.now(), label: place.name });
+    setQuery(place.name);
+    setPlacesOpen(false);
+    setLocError(null);
+  }
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-4">
@@ -207,7 +219,11 @@ export function Locator({
         {user ? (
           <button
             type="button"
-            onClick={() => onUser(null)}
+            onClick={() => {
+              onUser(null);
+              setQuery("");
+              setPlacesOpen(false);
+            }}
             className={cn(
               "h-14 rounded-full border border-line bg-surface px-5 text-sm font-semibold text-ink",
               TAP,
@@ -217,19 +233,62 @@ export function Locator({
           </button>
         ) : null}
       </div>
+      <div className="mt-3">
+        <label htmlFor="chennai-place" className="text-sm font-semibold text-ink">
+          Helping from abroad? Set their area
+        </label>
+        <p className="font-tamil mt-1 text-sm text-ink-soft">
+          வெளிநாட்டிலிருந்து உதவினால், சென்னையில் அவர்கள் இருக்கும் இடம்.
+        </p>
+        <input
+          id="chennai-place"
+          value={query}
+          placeholder="Anna Nagar, Velachery, Avadi…"
+          autoComplete="off"
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setPlacesOpen(true);
+          }}
+          onFocus={() => setPlacesOpen(true)}
+          className="mt-2 h-12 w-full rounded-full border border-line bg-surface px-4 text-base text-ink outline-none placeholder:text-ink-soft"
+        />
+        {placesOpen ? (
+          <ul className="mt-2 flex flex-wrap gap-2">
+            {matches.map((place) => (
+              <li key={place.name}>
+                <button
+                  type="button"
+                  onClick={() => choosePlace(place)}
+                  className={cn(
+                    "h-10 rounded-full bg-[#f4efe6] px-3 text-sm font-semibold text-[#071018]",
+                    TAP,
+                  )}
+                >
+                  {place.name}
+                </button>
+              </li>
+            ))}
+            {matches.length === 0 ? (
+              <li className="text-sm text-ink-soft">No area by that name. Tap the map instead.</li>
+            ) : null}
+          </ul>
+        ) : null}
+      </div>
       <p className="mt-2 text-sm text-ink-soft" role="status">
         {rows.length} hospital{rows.length === 1 ? "" : "s"} · sorted{" "}
-        {user
-          ? `from you${
-              user.accuracy && user.accuracy >= 50
-                ? `, about ${
-                    user.accuracy < 1000
-                      ? `${Math.round(user.accuracy / 10) * 10} m`
-                      : `${Math.max(1, Math.round(user.accuracy / 1000))} km`
-                  }`
-                : ""
-            }`
-          : "from Chennai centre"}
+        {user?.label
+          ? `from ${user.label}`
+          : user
+            ? `from you${
+                user.accuracy && user.accuracy >= 50
+                  ? `, about ${
+                      user.accuracy < 1000
+                        ? `${Math.round(user.accuracy / 10) * 10} m`
+                        : `${Math.max(1, Math.round(user.accuracy / 1000))} km`
+                    }`
+                  : ""
+              }`
+            : "from Chennai centre"}
       </p>
       {locError ? (
         <p className="mt-2 text-sm font-semibold text-signal" role="alert">
@@ -287,7 +346,14 @@ export function Locator({
                 block: "center",
               });
             }}
+            onPlace={(lat, lng) => {
+              onUser({ lat, lng, at: Date.now(), label: "Pinned spot" });
+              setQuery("");
+              setPlacesOpen(false);
+              setLocError(null);
+            }}
           />
+          <p className="mt-2 text-xs text-ink-soft">Tap the map to drop a pin on their street.</p>
         </div>
         <div className="flex flex-col gap-3">
           <div className="flex items-end justify-between gap-3">
