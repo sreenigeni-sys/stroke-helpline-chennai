@@ -9,7 +9,7 @@ export type Session = {
   answers: Record<SignId, Answer | null>;
   onsetIso: string | null;
   timeReturn: "signs" | "locator";
-  user: { lat: number; lng: number } | null;
+  user: { lat: number; lng: number; at?: number; accuracy?: number } | null;
 };
 
 const KEY = "stroke-assist-v1";
@@ -57,8 +57,15 @@ export function loadSession(): Session {
       user:
         parsed.user &&
         typeof parsed.user.lat === "number" &&
-        typeof parsed.user.lng === "number"
-          ? { lat: parsed.user.lat, lng: parsed.user.lng }
+        typeof parsed.user.lng === "number" &&
+        Number.isFinite(parsed.user.lat) &&
+        Number.isFinite(parsed.user.lng)
+          ? {
+              lat: parsed.user.lat,
+              lng: parsed.user.lng,
+              at: typeof parsed.user.at === "number" ? parsed.user.at : undefined,
+              accuracy: typeof parsed.user.accuracy === "number" ? parsed.user.accuracy : undefined,
+            }
           : null,
     };
   } catch {

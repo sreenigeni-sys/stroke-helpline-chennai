@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Navigation, Phone } from "lucide-react";
 import { CHENNAI_CENTER, HOSPITALS, type Hospital } from "@/data/hospitals";
 import { cn } from "@/lib/cn";
@@ -14,6 +14,43 @@ type OwnFilter = "all" | "Government" | "Private";
 
 function canCall(phone: string) {
   return /^\+?[0-9]{3,15}$/.test(phone);
+}
+
+function isGeoError(error: unknown): error is GeolocationPositionError {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    typeof (error as GeolocationPositionError).code === "number"
+  );
+}
+
+function readPosition(options: PositionOptions) {
+  return new Promise<GeolocationPosition>((resolve, reject) => {
+    let settled = false;
+    const finish = (run: () => void) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timer);
+      navigator.geolocation.clearWatch(watchId);
+      run();
+    };
+    const timer = window.setTimeout(() => {
+      finish(() => reject(Object.assign(new Error("timeout"), { code: 3 })));
+    }, (options.timeout ?? 20000) + 1000);
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => finish(() => resolve(position)),
+      (error) => finish(() => reject(error)),
+      options,
+    );
+  });
+}
+
+function locateMessage(error: unknown) {
+  if (isGeoError(error) && error.code === 1) {
+    return "Location is blocked. Allow it for this site in the browser, then tap again.";
+  }
+  return "Couldn't get a fix. Turn location on, step nearer a window, and tap again.";
 }
 
 export function Locator({
@@ -38,6 +75,7 @@ export function Locator({
   const [locating, setLocating] = useState(false);
   const [locError, setLocError] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const asked = useRef(false);
 
   const origin = user ?? CHENNAI_CENTER;
   const rows = useMemo(() => {
@@ -56,29 +94,77 @@ export function Locator({
   const yes = markedWords(answers, "yes");
   const unsure = markedWords(answers, "unsure");
 
-  function locate() {
-    if (!navigator.geolocation) {
-      setLocError("This browser has no location. Sorting from Chennai centre.");
+  async function locate() {
+    if (!window.isSecureContext || !navigator.geolocation) {
+      setLocError("This browser can't share location. Open the link in Chrome or Safari.");
       return;
     }
     setLocating(true);
     setLocError(null);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setLocating(false);
-        onUser({ lat: position.coords.latitude, lng: position.coords.longitude });
-      },
-      (error) => {
-        setLocating(false);
+    try {
+      let position: GeolocationPosition;
+      try {
+        position = await readPosition({
+          enableHighAccuracy: false,
+          timeout: 12000,
+          maximumAge: 120_000,
+        });
+      } catch (error) {
+        if (isGeoError(error) && error.code === 1) throw error;
+        position = await readPosition({
+          enableHighAccuracy: true,
+          timeout: 20000,
+          maximumAge: 0,
+        });
+      }
+      let accuracy = position.coords.accuracy;
+      const { latitude, longitude } = position.coords;
+      if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+        throw new Error("bad fix");
+      }
+      onUser({ lat: latitude, lng: longitude, at: Date.now(), accuracy });
+      if (accuracy > 300) {
+        try {
+          const better = await readPosition({
+            enableHighAccuracy: true,
+            timeout: 20000,
+            maximumAge: 0,
+          });
+          if (
+            Number.isFinite(better.coords.latitude) &&
+            better.coords.accuracy < accuracy
+          ) {
+            accuracy = better.coords.accuracy;
+            onUser({
+              lat: better.coords.latitude,
+              lng: better.coords.longitude,
+              at: Date.now(),
+              accuracy,
+            });
+          }
+        } catch {
+          // Keep the first fix. A rough point is still better than the city centre.
+        }
+      }
+      if (accuracy > 2000) {
         setLocError(
-          error.code === 1
-            ? "Location is blocked. Sorting stays on Chennai centre."
-            : "Location didn't come through. Sorting stays on Chennai centre.",
+          `Rough location, about ${Math.max(1, Math.round(accuracy / 1000))} km. Tap again if the nearest hospital looks wrong.`,
         );
-      },
-      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 },
-    );
+      }
+    } catch (error) {
+      setLocError(locateMessage(error));
+    } finally {
+      setLocating(false);
+    }
   }
+
+  useEffect(() => {
+    if (asked.current) return;
+    const fresh = user?.at && Date.now() - user.at < 2 * 60 * 1000;
+    if (fresh) return;
+    asked.current = true;
+    void locate();
+  }, []);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-4">
@@ -133,9 +219,23 @@ export function Locator({
       </div>
       <p className="mt-2 text-sm text-ink-soft" role="status">
         {rows.length} hospital{rows.length === 1 ? "" : "s"} · sorted{" "}
-        {user ? "from you" : "from Chennai centre"}
-        {locError ? ` · ${locError}` : ""}
+        {user
+          ? `from you${
+              user.accuracy && user.accuracy >= 50
+                ? `, about ${
+                    user.accuracy < 1000
+                      ? `${Math.round(user.accuracy / 10) * 10} m`
+                      : `${Math.max(1, Math.round(user.accuracy / 1000))} km`
+                  }`
+                : ""
+            }`
+          : "from Chennai centre"}
       </p>
+      {locError ? (
+        <p className="mt-2 text-sm font-semibold text-signal" role="alert">
+          {locError}
+        </p>
+      ) : null}
 
       <div className="mt-5 grid items-start gap-5 lg:grid-cols-2">
         <div>

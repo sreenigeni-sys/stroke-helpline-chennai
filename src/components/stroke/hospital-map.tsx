@@ -82,6 +82,7 @@ export function HospitalMap({
     if (!host) return;
     let cancelled = false;
     let map: LeafletMap | null = null;
+    let observer: ResizeObserver | null = null;
 
     void (async () => {
       const L = await loadLeaflet();
@@ -90,9 +91,10 @@ export function HospitalMap({
         [center.lat, center.lng],
         11,
       );
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "&copy; OpenStreetMap",
-        maxZoom: 18,
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png", {
+        attribution: "&copy; OpenStreetMap &copy; CARTO",
+        maxZoom: 19,
+        subdomains: "abcd",
       }).addTo(map);
       L.control.zoom({ position: "bottomright" }).addTo(map);
       groupRef.current = L.layerGroup().addTo(map);
@@ -105,10 +107,18 @@ export function HospitalMap({
       }
       setReady(true);
       requestAnimationFrame(() => map?.invalidateSize());
+      const resize = new ResizeObserver(() => map?.invalidateSize());
+      observer = resize;
+      if (cancelled || !elRef.current) {
+        resize.disconnect();
+        return;
+      }
+      resize.observe(elRef.current);
     })();
 
     return () => {
       cancelled = true;
+      observer?.disconnect();
       map?.remove();
       mapRef.current = null;
       groupRef.current = null;
