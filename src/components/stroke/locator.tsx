@@ -6,6 +6,8 @@ import { cn } from "@/lib/cn";
 import { distanceKm, formatDistance } from "@/lib/geo";
 import { Countdown } from "@/components/stroke/countdown";
 import { HospitalMap } from "@/components/stroke/hospital-map";
+import { readClock } from "@/lib/clock";
+import { recordStrokeCall } from "@/components/stroke/activity.functions";
 import { markedWords, type Session } from "@/components/stroke/session";
 
 const TAP = "transition-transform duration-150 ease-out active:not-disabled:scale-[0.96]";
@@ -373,6 +375,7 @@ export function Locator({
                 active={activeId === hospital.id}
                 fromYou={Boolean(user)}
                 index={index}
+                onsetIso={onsetIso}
               />
             ))
           )}
@@ -439,11 +442,13 @@ function HospitalCard({
   active,
   fromYou,
   index,
+  onsetIso,
 }: {
   hospital: Hospital & { dist: number };
   active: boolean;
   fromYou: boolean;
   index: number;
+  onsetIso: string | null;
 }) {
   const callable = canCall(hospital.phone);
   const comprehensive = hospital.level === "comprehensive";
@@ -501,6 +506,16 @@ function HospitalCard({
         {callable ? (
           <a
             href={`tel:${hospital.phone}`}
+            onClick={() => {
+              const payload = {
+                window: readClock(onsetIso, Date.now()).phase,
+                target: hospital.phone === "108" ? "108" : hospital.name,
+              };
+              const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+              if (!navigator.sendBeacon("/api/stroke-call", blob)) {
+                void recordStrokeCall({ data: payload }).catch(() => undefined);
+              }
+            }}
             className={cn(
               "flex h-11 items-center justify-center gap-2 rounded-full bg-ok text-sm font-semibold text-[#062016]",
               TAP,

@@ -1,10 +1,12 @@
 import { useEffect, useId, useRef, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { SIGNS, type SignId } from "@/components/stroke/signs";
 import { SignVisual } from "@/components/stroke/sign-visual";
 import { Countdown } from "@/components/stroke/countdown";
 import { HospitalUpdateForm } from "@/components/stroke/hospital-update-form";
+import { ReviewForm } from "@/components/stroke/review-form";
 import type { Answer, Lang, Phase, Session } from "@/components/stroke/session";
 
 const TAP = "transition-transform duration-150 ease-out active:not-disabled:scale-[0.96]";
@@ -196,6 +198,12 @@ function Intro({ onStart, onSkip }: { onStart: (lang: Lang) => void; onSkip: () 
       </button>
       </div>
       <HospitalUpdateForm />
+      <ReviewForm />
+      <p className="mt-6 text-center">
+        <Link to="/activity" className="text-xs font-semibold text-ink-soft">
+          Stroke call activity
+        </Link>
+      </p>
     </div>
   );
 }
