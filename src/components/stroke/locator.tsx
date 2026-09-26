@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Navigation, Phone } from "lucide-react";
 import { CHENNAI_CENTER, HOSPITALS, type Hospital } from "@/data/hospitals";
 import { PLACES, type Place } from "@/data/places";
@@ -11,6 +11,7 @@ import { recordStrokeCall } from "@/components/stroke/activity.functions";
 import { markedWords, type Lang, type Session } from "@/components/stroke/session";
 import { hospitalFacts, pathwayLine, serviceWord } from "@/data/hospital-facts";
 import { locatorCopy } from "@/components/stroke/locator-copy";
+import { beginGps, cancelGps, followGps, type GpsFix } from "@/components/stroke/gps";
 
 const TAP = "transition-transform duration-150 ease-out active:not-disabled:scale-[0.96]";
 
@@ -28,47 +29,6 @@ function isGeoError(error: unknown): error is GeolocationPositionError {
     "code" in error &&
     typeof (error as GeolocationPositionError).code === "number"
   );
-}
-
-function watchGps(onUpdate: (position: GeolocationPosition) => void) {
-  return new Promise<GeolocationPosition>((resolve, reject) => {
-    let best: GeolocationPosition | null = null;
-    let settled = false;
-    const started = Date.now();
-    const stop = (run: () => void) => {
-      if (settled) return;
-      settled = true;
-      window.clearTimeout(timer);
-      navigator.geolocation.clearWatch(watchId);
-      run();
-    };
-    const timer = window.setTimeout(() => {
-      const fix = best;
-      stop(() => (fix ? resolve(fix) : reject(Object.assign(new Error("timeout"), { code: 3 }))));
-    }, 16000);
-    const watchId = navigator.geolocation.watchPosition(
-      (position) => {
-        const { latitude, longitude, accuracy } = position.coords;
-        if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
-        const acc = Number.isFinite(accuracy) ? accuracy : Number.POSITIVE_INFINITY;
-        if (!best || acc < best.coords.accuracy) {
-          best = position;
-          onUpdate(position);
-        }
-        // Under 50 m is a GPS lock. A cell or Wi-Fi guess is often kilometres off
-        // even when the browser calls it "accurate", so do not stop on the first point.
-        if (acc <= 50) stop(() => resolve(position));
-        else if (Date.now() - started > 12000) {
-          const fix = best;
-          if (fix) stop(() => resolve(fix));
-        }
-      },
-      (error) => {
-        if (error.code === 1 || !best) stop(() => reject(error));
-      },
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 },
-    );
-  });
 }
 
 function matchPlaces(query: string) {
@@ -120,6 +80,44 @@ export function Locator({
   );
   const [placesOpen, setPlacesOpen] = useState(false);
   const matches = useMemo(() => matchPlaces(query), [query]);
+  const copy = locatorCopy(lang);
+  const onUserRef = useRef(onUser);
+  onUserRef.current = onUser;
+  const copyRef = useRef(copy);
+  copyRef.current = copy;
+  const pinned = useRef(Boolean(user?.label));
+  const [gpsEpoch, setGpsEpoch] = useState(0);
+
+  useEffect(() => {
+    if (pinned.current && gpsEpoch === 0) return;
+    setLocError(null);
+    return followGps({
+      onStatus: setLocating,
+      onFix: applyFix,
+      onError: (error) => {
+        const text = copyRef.current;
+        if (isGeoError(error) && error.code === 0) setLocError(text.noGeo);
+        else setLocError(locateMessage(error, text.ta));
+      },
+    });
+
+    function applyFix(fix: GpsFix, final: boolean) {
+      onUserRef.current({
+        lat: fix.lat,
+        lng: fix.lng,
+        at: Date.now(),
+        accuracy: fix.accuracy,
+      });
+      setQuery("");
+      setPlacesOpen(false);
+      if (!final || !(fix.accuracy > 150)) return;
+      const rounded =
+        fix.accuracy < 1000
+          ? `${Math.round(fix.accuracy / 10) * 10} m`
+          : `${Math.max(1, Math.round(fix.accuracy / 1000))} km`;
+      setLocError(copyRef.current.loose(rounded));
+    }
+  }, [gpsEpoch]);
 
   const origin = user ?? CHENNAI_CENTER;
   const rows = useMemo(() => {
@@ -137,47 +135,16 @@ export function Locator({
 
   const yes = markedWords(answers, "yes", lang);
   const unsure = markedWords(answers, "unsure", lang);
-  const copy = locatorCopy(lang);
 
-  async function locate() {
-    if (!window.isSecureContext || !navigator.geolocation) {
-      setLocError(copy.noGeo);
-      return;
-    }
-    setLocating("search");
-    setLocError(null);
-    try {
-      const position = await watchGps((fix) => {
-        const acc = fix.coords.accuracy;
-        onUser({
-          lat: fix.coords.latitude,
-          lng: fix.coords.longitude,
-          at: Date.now(),
-          accuracy: acc,
-        });
-        setQuery("");
-        setPlacesOpen(false);
-        if (acc > 80) setLocating("tighten");
-      });
-      const { latitude, longitude, accuracy } = position.coords;
-      onUser({ lat: latitude, lng: longitude, at: Date.now(), accuracy });
-      setQuery("");
-      setPlacesOpen(false);
-      if (accuracy > 150) {
-        const rounded =
-          accuracy < 1000
-            ? `${Math.round(accuracy / 10) * 10} m`
-            : `${Math.max(1, Math.round(accuracy / 1000))} km`;
-        setLocError(copy.loose(rounded));
-      }
-    } catch (error) {
-      setLocError(locateMessage(error, copy.ta));
-    } finally {
-      setLocating(null);
-    }
+  function locate() {
+    pinned.current = false;
+    beginGps(true);
+    setGpsEpoch((epoch) => epoch + 1);
   }
 
   function choosePlace(place: Place) {
+    pinned.current = true;
+    cancelGps();
     onUser({ lat: place.lat, lng: place.lng, at: Date.now(), label: place.name });
     setQuery(place.name);
     setPlacesOpen(false);
@@ -223,6 +190,8 @@ export function Locator({
           <button
             type="button"
             onClick={() => {
+              pinned.current = true;
+              cancelGps();
               onUser(null);
               setQuery("");
               setPlacesOpen(false);
@@ -369,6 +338,8 @@ export function Locator({
               });
             }}
             onPlace={(lat, lng) => {
+              pinned.current = true;
+              cancelGps();
               onUser({ lat, lng, at: Date.now(), label: copy.pinned });
               setQuery("");
               setPlacesOpen(false);

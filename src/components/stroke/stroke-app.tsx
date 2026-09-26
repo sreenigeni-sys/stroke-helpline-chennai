@@ -11,6 +11,7 @@ import {
 } from "@/components/stroke/session";
 import { Flow } from "@/components/stroke/flow";
 import { Locator } from "@/components/stroke/locator";
+import { beginGps } from "@/components/stroke/gps";
 import { cn } from "@/lib/cn";
 
 export function StrokeApp() {
@@ -31,6 +32,15 @@ export function StrokeApp() {
 
   function patch(update: (current: Session) => Session) {
     setSession((current) => update(current));
+  }
+
+  function openHospitals(update: (current: Session) => Session) {
+    try {
+      if (!session.user?.label) beginGps();
+    } catch {
+      // Still open the list. The location button can ask again.
+    }
+    patch(update);
   }
 
   const concern = concernOf(session.answers);
@@ -115,7 +125,7 @@ export function StrokeApp() {
           onStart={(lang: Lang) =>
             patch((current) => ({ ...current, phase: "signs", signIndex: 0, lang }))
           }
-          onSkip={() => patch((current) => ({ ...current, phase: "locator" }))}
+          onSkip={() => openHospitals((current) => ({ ...current, phase: "locator" }))}
           onAnswer={(id: SignId, answer: Answer) =>
             patch((current) => {
               const answers = { ...current.answers, [id]: answer };
@@ -126,7 +136,14 @@ export function StrokeApp() {
               return { ...current, answers, signIndex: index + 1, phase: "signs" };
             })
           }
-          onBack={() =>
+          onBack={() => {
+            if (session.phase === "time" && session.timeReturn === "locator" && !session.user?.label) {
+              try {
+                beginGps();
+              } catch {
+                // The hospital page asks again if this fails.
+              }
+            }
             patch((current) => {
               if (current.phase === "signs") {
                 if (current.signIndex <= 0) return { ...current, phase: "intro" };
@@ -137,10 +154,10 @@ export function StrokeApp() {
                 return { ...current, phase: "signs", signIndex: SIGNS.length - 1 };
               }
               return current;
-            })
-          }
+            });
+          }}
           onSetOnset={(onsetIso) => patch((current) => ({ ...current, onsetIso }))}
-          onContinue={() => patch((current) => ({ ...current, phase: "locator" }))}
+          onContinue={() => openHospitals((current) => ({ ...current, phase: "locator" }))}
         />
       )}
     </main>
