@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import type { LayerGroup, Map as LeafletMap } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Level, Ownership } from "@/data/hospitals";
-import { hospitalFacts, serviceWord } from "@/data/hospital-facts";
+import { hospitalFacts, pathwayLine, serviceWord } from "@/data/hospital-facts";
+import type { Lang } from "@/components/stroke/session";
 
 export type MapPin = {
   id: string;
@@ -63,12 +64,14 @@ export function HospitalMap({
   center,
   onPick,
   onPlace,
+  lang = null,
 }: {
   pins: MapPin[];
   user: { lat: number; lng: number; label?: string } | null;
   center: { lat: number; lng: number };
   onPick: (id: string) => void;
   onPlace: (lat: number, lng: number) => void;
+  lang?: Lang | null;
 }) {
   const elRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<LeafletMap | null>(null);
@@ -169,15 +172,20 @@ export function HospitalMap({
           iconAnchor: [size / 2, size / 2],
         });
         const facts = hospitalFacts(hospital.id);
-        const services = `24/7 CT: ${serviceWord(facts.ct)}<br/>24/7 MRI: ${serviceWord(facts.mri)}<br/>24/7 thrombectomy: ${serviceWord(facts.thrombectomy)}`;
-        const pathway = facts.pathway ? `<br/>${esc(facts.pathway)}` : "";
-        const phone = hospital.phone ? `<br/>Call ${esc(hospital.phone)}` : "";
+        const tamil = lang === "ta";
+        const owner = tamil ? (gov ? "அரசு" : "தனியார்") : hospital.ownership;
+        const services = tamil
+          ? `24/7 சிடி: ${serviceWord(facts.ct, lang)}<br/>24/7 எம்ஆர்ஐ: ${serviceWord(facts.mri, lang)}<br/>24/7 த்ராம்பெக்டமி: ${serviceWord(facts.thrombectomy, lang)}`
+          : `24/7 CT: ${serviceWord(facts.ct)}<br/>24/7 MRI: ${serviceWord(facts.mri)}<br/>24/7 thrombectomy: ${serviceWord(facts.thrombectomy)}`;
+        const note = pathwayLine(hospital.id, lang);
+        const pathway = note ? `<br/>${esc(note)}` : "";
+        const phone = hospital.phone ? `<br/>${tamil ? "அழை" : "Call"} ${esc(hospital.phone)}` : "";
         const marker = L.marker([hospital.lat, hospital.lng], {
           icon,
           zIndexOffset: comprehensive ? 400 : 0,
         }).addTo(group);
         marker.bindPopup(
-          `<strong>${esc(hospital.name)}</strong><br/>${esc(hospital.ownership)}<br/>${services}${pathway}${phone}`,
+          `<strong>${esc(hospital.name)}</strong><br/>${esc(owner)}<br/>${services}${pathway}${phone}`,
         );
         marker.on("click", (event) => {
           if (event.originalEvent) L.DomEvent.stopPropagation(event.originalEvent);
@@ -196,7 +204,7 @@ export function HospitalMap({
       });
       L.marker([here.lat, here.lng], { icon: hereIcon, zIndexOffset: 800 })
         .addTo(group)
-        .bindPopup(user?.label ?? (user ? "You are here" : "Chennai centre"));
+        .bindPopup(user?.label ?? (user ? (lang === "ta" ? "நீங்கள் இங்கே" : "You are here") : lang === "ta" ? "சென்னை மையம்" : "Chennai centre"));
 
       const focus = wide ? shown : shown.slice(0, 10);
       const points = focus.map((pin) => L.latLng(pin.lat, pin.lng));
@@ -210,7 +218,7 @@ export function HospitalMap({
     return () => {
       cancelled = true;
     };
-  }, [ready, pinKey, userKey, wide, pins, user, center]);
+  }, [ready, pinKey, userKey, wide, pins, user, center, lang]);
 
   return (
     <div className="relative overflow-hidden rounded-card border border-line">

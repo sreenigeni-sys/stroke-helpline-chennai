@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { formatHMS, fractionLeft, readClock, WINDOW_45_MS, WINDOW_9_MS } from "@/lib/clock";
 import { useReduceMotion } from "@/lib/reduce-motion";
 import { cn } from "@/lib/cn";
+import type { Lang } from "@/components/stroke/session";
 
 const TAP = "transition-transform duration-150 ease-out active:not-disabled:scale-[0.96]";
 
@@ -9,10 +10,12 @@ export function Countdown({
   onsetIso,
   onEdit,
   compact = false,
+  lang = null,
 }: {
   onsetIso: string | null;
   onEdit?: () => void;
   compact?: boolean;
+  lang?: Lang | null;
 }) {
   const reduce = useReduceMotion();
   const [now, setNow] = useState(() => Date.now());
@@ -39,25 +42,44 @@ export function Countdown({
           ? formatHMS(clock.elapsed)
           : "--:--:--";
 
+  const tamil = lang === "ta";
   const heroLabel =
     clock.phase === "green"
-      ? "Left in the 4.5-hour window"
+      ? tamil
+        ? "4.5 மணி நேரத்தில் மீதம்"
+        : "Left in the 4.5-hour window"
       : clock.phase === "orange"
-        ? "Left in the 9-hour window"
+        ? tamil
+          ? "9 மணி நேரத்தில் மீதம்"
+          : "Left in the 9-hour window"
         : clock.phase === "past"
-          ? "Time since last seen well"
-          : "Clock not started";
+          ? tamil
+            ? "கடைசியாக நன்றாக இருந்ததிலிருந்து"
+            : "Time since last seen well"
+          : tamil
+            ? "கடிகாரம் தொடங்கவில்லை"
+            : "Clock not started";
 
   const phaseSentence =
     clock.phase === "green"
-      ? "Inside the 4.5-hour window often cited for clot-busting medicine."
+      ? tamil
+        ? "4.5 மணி நேரத்திற்குள். இரத்தக் கட்டியைக் கரைக்கும் மருந்துக்கு இது பெரும்பாலும் சொல்லப்படும் நேரம்."
+        : "Inside the 4.5-hour window often cited for clot-busting medicine."
       : clock.phase === "orange"
-        ? "Past 4.5 hours. Inside the 9-hour window some hospitals still assess."
+        ? tamil
+          ? "4.5 மணி கடந்தது. 9 மணி நேரத்திற்குள் சில மருத்துவமனைகள் இன்னும் பார்க்கும்."
+          : "Past 4.5 hours. Inside the 9-hour window some hospitals still assess."
         : clock.phase === "past"
-          ? "Past 9 hours on this clock. Emergency care can still help."
+          ? tamil
+            ? "இந்தக் கடிகாரத்தில் 9 மணி கடந்தது. அவசர சிகிச்சை இன்னும் உதவும்."
+            : "Past 9 hours on this clock. Emergency care can still help."
           : clock.phase === "future"
-            ? "That time is in the future. Use when symptoms began, or when the person was last seen well."
-            : "Set the time symptoms began, or when the person was last seen well.";
+            ? tamil
+              ? "அந்த நேரம் இன்னும் வரவில்லை. அறிகுறி தொடங்கிய நேரத்தை, அல்லது கடைசியாக நன்றாக இருந்த நேரத்தைப் போடுங்கள்."
+              : "That time is in the future. Use when symptoms began, or when the person was last seen well."
+            : tamil
+              ? "அறிகுறி தொடங்கிய நேரத்தை, அல்லது கடைசியாக நன்றாக இருந்த நேரத்தை அமையுங்கள்."
+              : "Set the time symptoms began, or when the person was last seen well.";
 
   return (
     <section
@@ -121,23 +143,39 @@ export function Countdown({
           </div>
         </div>
         <div className="text-center sm:text-left">
-          <p className="font-display text-2xl leading-tight">{heroLabel}</p>
-          <p className={cn("mt-2 text-sm text-ink-soft", compact && "line-clamp-3")}>{phaseSentence}</p>
+          <p className={cn("font-display text-2xl leading-tight", tamil && "font-tamil font-semibold")}>{heroLabel}</p>
+          <p className={cn("mt-2 text-sm text-ink-soft", tamil && "font-tamil", compact && "line-clamp-3")}>{phaseSentence}</p>
           {showRings && !compact ? (
             <ul className="mt-3 space-y-1 text-sm">
               <li className="flex items-center justify-center gap-2 sm:justify-start">
                 <span className="size-2.5 rounded-full bg-ok" aria-hidden="true" />
-                <span className="text-ok">
-                  4.5h window {clock.left45 > 0 ? `${formatHMS(clock.left45)} left` : "passed"}
+                <span className={cn("text-ok", tamil && "font-tamil")}>
+                  {tamil ? "4.5 மணி" : "4.5h window"}{" "}
+                  {clock.left45 > 0
+                    ? tamil
+                      ? `${formatHMS(clock.left45)} மீதம்`
+                      : `${formatHMS(clock.left45)} left`
+                    : tamil
+                      ? "கடந்தது"
+                      : "passed"}
                 </span>
               </li>
               <li className="flex items-center justify-center gap-2 sm:justify-start">
                 <span className="size-2.5 rounded-full bg-late" aria-hidden="true" />
-                <span className="text-late-ink">
-                  9h window {clock.left9 > 0 ? `${formatHMS(clock.left9)} left` : "passed"}
+                <span className={cn("text-late-ink", tamil && "font-tamil")}>
+                  {tamil ? "9 மணி" : "9h window"}{" "}
+                  {clock.left9 > 0
+                    ? tamil
+                      ? `${formatHMS(clock.left9)} மீதம்`
+                      : `${formatHMS(clock.left9)} left`
+                    : tamil
+                      ? "கடந்தது"
+                      : "passed"}
                 </span>
               </li>
-              <li className="text-ink-soft tabular-nums">Elapsed {formatHMS(clock.elapsed)}</li>
+              <li className={cn("text-ink-soft tabular-nums", tamil && "font-tamil")}>
+                {tamil ? `கடந்த நேரம் ${formatHMS(clock.elapsed)}` : `Elapsed ${formatHMS(clock.elapsed)}`}
+              </li>
             </ul>
           ) : null}
           {onEdit ? (
@@ -146,10 +184,11 @@ export function Countdown({
               onClick={onEdit}
               className={cn(
                 "mt-4 inline-flex h-11 items-center rounded-full bg-[#1b4fad] px-4 text-sm font-semibold text-white",
+                tamil && "font-tamil",
                 TAP,
               )}
             >
-              {onsetIso ? "Change the time" : "Set the time"}
+              {tamil ? (onsetIso ? "நேரத்தை மாற்று" : "நேரத்தை அமை") : onsetIso ? "Change the time" : "Set the time"}
             </button>
           ) : null}
         </div>

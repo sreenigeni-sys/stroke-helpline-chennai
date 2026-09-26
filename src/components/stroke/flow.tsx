@@ -435,7 +435,7 @@ function TimeStep({
       ) : null}
       {onsetIso ? (
         <div className="mt-4">
-          <Countdown onsetIso={onsetIso} compact />
+          <Countdown onsetIso={onsetIso} compact lang={lang} />
         </div>
       ) : null}
       <div className="mt-4 grid grid-cols-3 gap-2">

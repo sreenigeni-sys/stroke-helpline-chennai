@@ -8,6 +8,8 @@ export type HospitalFacts = {
   mri: ServiceAnswer;
   thrombectomy: ServiceAnswer;
   pathway: string | null;
+  /** Tamil pathway line. Only set when patients are sent to a named hospital. */
+  pathwayTa?: string;
 };
 
 /**
@@ -39,6 +41,7 @@ const FACTS: Record<string, HospitalFacts> = {
     mri: "check",
     thrombectomy: "no",
     pathway: "May be shifted to Apollo Greams Road for further care.",
+    pathwayTa: "மேல் சிகிச்சைக்கு அப்பல்லோ கிரீம்ஸ் சாலைக்கு மாற்றப்படலாம்.",
   },
   "TN-PVT-014": { ct: "yes", mri: "check", thrombectomy: "yes", pathway: null },
   "TN-PVT-015": { ct: "yes", mri: "check", thrombectomy: "yes", pathway: null },
@@ -68,6 +71,7 @@ const FACTS: Record<string, HospitalFacts> = {
     mri: "check",
     thrombectomy: "no",
     pathway: "Shifted to Apollo OMR for further care.",
+    pathwayTa: "மேல் சிகிச்சைக்கு அப்பல்லோ ஓஎம்ஆருக்கு மாற்றப்படும்.",
   },
 };
 
@@ -80,8 +84,16 @@ export function hospitalFacts(id: string): HospitalFacts {
   return FACTS[id] ?? { ct: "check", mri: "check", thrombectomy: "check", pathway: null };
 }
 
-export function serviceWord(answer: ServiceAnswer) {
-  if (answer === "yes") return "Yes";
-  if (answer === "no") return "No";
-  return "Call to confirm";
+export function pathwayLine(id: string, lang?: "en" | "ta" | null) {
+  const facts = hospitalFacts(id);
+  if (!facts.pathway) return null;
+  if (lang === "ta") return facts.pathwayTa ?? facts.pathway;
+  return facts.pathway;
+}
+
+export function serviceWord(answer: ServiceAnswer, lang?: "en" | "ta" | null) {
+  const tamil = lang === "ta";
+  if (answer === "yes") return tamil ? "ஆம்" : "Yes";
+  if (answer === "no") return tamil ? "இல்லை" : "No";
+  return tamil ? "அழைத்துக் கேளுங்கள்" : "Call to confirm";
 }

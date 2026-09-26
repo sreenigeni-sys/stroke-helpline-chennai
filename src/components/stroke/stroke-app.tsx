@@ -11,6 +11,7 @@ import {
 } from "@/components/stroke/session";
 import { Flow } from "@/components/stroke/flow";
 import { Locator } from "@/components/stroke/locator";
+import { cn } from "@/lib/cn";
 
 export function StrokeApp() {
   const [session, setSession] = useState<Session>(freshSession);
@@ -34,6 +35,7 @@ export function StrokeApp() {
 
   const concern = concernOf(session.answers);
   const home = session.phase !== "intro";
+  const tamil = session.lang === "ta";
 
   function goHome() {
     patch((current) => ({
@@ -53,11 +55,15 @@ export function StrokeApp() {
             className="h-8 w-auto max-w-[7.5rem] shrink-0 object-contain sm:h-11 sm:max-w-[12rem]"
           />
           <div className="min-w-0">
-            <p className="truncate font-display text-lg leading-tight sm:text-xl">Stroke Helpline Chennai</p>
-            <p className="mt-0.5 text-xs font-semibold tracking-wide text-[#1b4fad] uppercase">Act now</p>
+            <p className={cn("truncate text-lg leading-tight sm:text-xl", tamil ? "font-tamil font-semibold" : "font-display")}>
+              {tamil ? "சென்னை பக்கவாத உதவி" : "Stroke Helpline Chennai"}
+            </p>
+            <p className={cn("mt-0.5 text-xs font-semibold tracking-wide text-[#1b4fad] uppercase", tamil && "font-tamil normal-case")}>
+              {tamil ? "உடனே செய்யுங்கள்" : "Act now"}
+            </p>
             {session.phase === "intro" || session.phase === "locator" ? (
-              <p className="mt-1 text-[11px] leading-snug text-ink-soft">
-                An initiative of Arunai Neuro Foundation
+              <p className={cn("mt-1 text-[11px] leading-snug text-ink-soft", tamil && "font-tamil")}>
+                {tamil ? "அருணை நியூரோ அறக்கட்டளையின் முயற்சி" : "An initiative of Arunai Neuro Foundation"}
               </p>
             ) : null}
           </div>
@@ -66,10 +72,18 @@ export function StrokeApp() {
           <button
             type="button"
             onClick={goHome}
-            className="shrink-0 pt-1 text-right text-sm font-semibold text-[#1b4fad]"
+            className={cn("shrink-0 pt-1 text-right text-sm font-semibold text-[#1b4fad]", tamil && "font-tamil")}
           >
-            Back
-            <span className="font-tamil block text-xs font-medium text-ink-soft">முகப்பு</span>
+            {tamil ? (
+              "முகப்பு"
+            ) : session.lang === "en" ? (
+              "Back"
+            ) : (
+              <>
+                Back
+                <span className="font-tamil block text-xs font-medium text-ink-soft">முகப்பு</span>
+              </>
+            )}
           </button>
         ) : null}
       </header>
@@ -79,6 +93,7 @@ export function StrokeApp() {
           onsetIso={session.onsetIso}
           user={session.user}
           concern={concern}
+          lang={session.lang}
           onEditTime={() => patch((current) => ({ ...current, phase: "time", timeReturn: "locator" }))}
           onRecheck={() =>
             patch((current) => ({

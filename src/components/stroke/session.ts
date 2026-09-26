@@ -90,6 +90,12 @@ export function concernOf(answers: Session["answers"]): "yes" | "unsure" | "clea
   return "skipped";
 }
 
-export function markedWords(answers: Session["answers"], kind: "yes" | "unsure") {
-  return SIGNS.filter((sign) => answers[sign.id] === kind).map((sign) => sign.word);
+export function markedWords(
+  answers: Session["answers"],
+  kind: "yes" | "unsure",
+  lang?: Lang | null,
+) {
+  return SIGNS.filter((sign) => answers[sign.id] === kind).map((sign) =>
+    lang === "ta" ? sign.wordTa : sign.word,
+  );
 }

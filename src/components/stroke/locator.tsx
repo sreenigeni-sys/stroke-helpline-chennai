@@ -8,8 +8,9 @@ import { Countdown } from "@/components/stroke/countdown";
 import { HospitalMap } from "@/components/stroke/hospital-map";
 import { readClock } from "@/lib/clock";
 import { recordStrokeCall } from "@/components/stroke/activity.functions";
-import { markedWords, type Session } from "@/components/stroke/session";
-import { hospitalFacts, serviceWord } from "@/data/hospital-facts";
+import { markedWords, type Lang, type Session } from "@/components/stroke/session";
+import { hospitalFacts, pathwayLine, serviceWord } from "@/data/hospital-facts";
+import { locatorCopy } from "@/components/stroke/locator-copy";
 
 const TAP = "transition-transform duration-150 ease-out active:not-disabled:scale-[0.96]";
 
@@ -79,11 +80,15 @@ function matchPlaces(query: string) {
   }).slice(0, 8);
 }
 
-function locateMessage(error: unknown) {
+function locateMessage(error: unknown, tamil: boolean) {
   if (isGeoError(error) && error.code === 1) {
-    return "Location is blocked. Allow it for this site in the browser, then tap again.";
+    return tamil
+      ? "இடம் தடுக்கப்பட்டுள்ளது. உலாவியில் இந்தத் தளத்துக்கு அனுமதி கொடுத்து, மீண்டும் தொடுங்கள்."
+      : "Location is blocked. Allow it for this site in the browser, then tap again.";
   }
-  return "Couldn't get a fix. Turn location on, step nearer a window, and tap again.";
+  return tamil
+    ? "இடம் கிடைக்கவில்லை. இருப்பிடத்தை இயக்கி, ஜன்னல் அருகே நின்று, மீண்டும் தொடுங்கள்."
+    : "Couldn't get a fix. Turn location on, step nearer a window, and tap again.";
 }
 
 export function Locator({
@@ -91,6 +96,7 @@ export function Locator({
   onsetIso,
   user,
   concern,
+  lang,
   onEditTime,
   onRecheck,
   onUser,
@@ -99,6 +105,7 @@ export function Locator({
   onsetIso: string | null;
   user: Session["user"];
   concern: "yes" | "unsure" | "clear" | "skipped";
+  lang: Lang | null;
   onEditTime: () => void;
   onRecheck: () => void;
   onUser: (user: Session["user"]) => void;
@@ -108,7 +115,9 @@ export function Locator({
   const [locating, setLocating] = useState<"search" | "tighten" | null>(null);
   const [locError, setLocError] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [query, setQuery] = useState(user?.label && user.label !== "Pinned spot" ? user.label : "");
+  const [query, setQuery] = useState(
+    user?.label && user.label !== "Pinned spot" && user.label !== "குறித்த இடம்" ? user.label : "",
+  );
   const [placesOpen, setPlacesOpen] = useState(false);
   const matches = useMemo(() => matchPlaces(query), [query]);
 
@@ -126,12 +135,13 @@ export function Locator({
       .sort((a, b) => a.dist - b.dist);
   }, [origin.lat, origin.lng, ownership, tier]);
 
-  const yes = markedWords(answers, "yes");
-  const unsure = markedWords(answers, "unsure");
+  const yes = markedWords(answers, "yes", lang);
+  const unsure = markedWords(answers, "unsure", lang);
+  const copy = locatorCopy(lang);
 
   async function locate() {
     if (!window.isSecureContext || !navigator.geolocation) {
-      setLocError("This browser can't share location. Open the link in Chrome or Safari.");
+      setLocError(copy.noGeo);
       return;
     }
     setLocating("search");
@@ -158,12 +168,10 @@ export function Locator({
           accuracy < 1000
             ? `${Math.round(accuracy / 10) * 10} m`
             : `${Math.max(1, Math.round(accuracy / 1000))} km`;
-        setLocError(
-          `Only accurate to about ${rounded}. If the pin is not on your street, tap the map or set the area.`,
-        );
+        setLocError(copy.loose(rounded));
       }
     } catch (error) {
-      setLocError(locateMessage(error));
+      setLocError(locateMessage(error, copy.ta));
     } finally {
       setLocating(null);
     }
@@ -179,28 +187,24 @@ export function Locator({
   return (
     <div className="mx-auto max-w-5xl px-4 py-4">
       {concern === "yes" ? (
-        <div className="mb-4 rounded-card bg-signal px-4 py-3 text-white">
-          <p className="font-semibold">Possible stroke signs: {yes.join(", ")}.</p>
-          <p className="mt-1 text-sm">
-            If you travel, call the hospital before you arrive — teams and scanners change by the
-            hour.
-          </p>
+        <div className={cn("mb-4 rounded-card bg-signal px-4 py-3 text-white", copy.ta && "font-tamil")}>
+          <p className="font-semibold">{copy.possible(yes.join(", "))}</p>
+          <p className="mt-1 text-sm">{copy.travel}</p>
         </div>
       ) : null}
       {concern === "unsure" ? (
-        <div className="mb-4 rounded-card bg-late-soft px-4 py-3 text-late-ink">
-          <p className="font-semibold">Not sure about: {unsure.join(", ")}.</p>
-          <p className="mt-1 text-sm">Treat that as urgent.</p>
+        <div className={cn("mb-4 rounded-card bg-late-soft px-4 py-3 text-late-ink", copy.ta && "font-tamil")}>
+          <p className="font-semibold">{copy.unsure(unsure.join(", "))}</p>
+          <p className="mt-1 text-sm">{copy.treatUrgent}</p>
         </div>
       ) : null}
       {concern === "clear" ? (
-        <div className="mb-4 rounded-card border border-line bg-surface px-4 py-3 text-sm text-ink-soft">
-          You did not mark a BEFAST sign. That does not rule out a stroke. If something still feels
-          wrong, call the hospital before you go.
+        <div className={cn("mb-4 rounded-card border border-line bg-surface px-4 py-3 text-sm text-ink-soft", copy.ta && "font-tamil")}>
+          {copy.clear}
         </div>
       ) : null}
 
-      <Countdown onsetIso={onsetIso} onEdit={onEditTime} />
+      <Countdown onsetIso={onsetIso} onEdit={onEditTime} lang={lang} />
 
       <div className="mt-4 flex flex-col gap-2 sm:flex-row">
         <button
@@ -209,10 +213,11 @@ export function Locator({
           disabled={locating !== null}
           className={cn(
             "h-14 flex-1 rounded-full bg-signal text-base font-semibold text-white disabled:opacity-60",
+            copy.ta && "font-tamil",
             TAP,
           )}
         >
-          {locating === "tighten" ? "Tightening GPS…" : locating ? "Finding you…" : user ? "Update my location" : "Find nearest to me"}
+          {locating === "tighten" ? copy.tightening : locating ? copy.finding : user ? copy.updateLocation : copy.findNearest}
         </button>
         {user ? (
           <button
@@ -224,24 +229,25 @@ export function Locator({
             }}
             className={cn(
               "h-14 rounded-full border border-line bg-surface px-5 text-sm font-semibold text-ink",
+              copy.ta && "font-tamil",
               TAP,
             )}
           >
-            Use city centre
+            {copy.cityCentre}
           </button>
         ) : null}
       </div>
       <div className="mt-3">
-        <label htmlFor="chennai-place" className="text-sm font-semibold text-ink">
-          Helping from abroad? Set their area
+        <label htmlFor="chennai-place" className={cn("text-sm font-semibold text-ink", copy.ta && "font-tamil")}>
+          {copy.abroad}
         </label>
-        <p className="font-tamil mt-1 text-sm text-ink-soft">
-          வெளிநாட்டிலிருந்து உதவினால், சென்னையில் அவர்கள் இருக்கும் இடம்.
-        </p>
+        {copy.abroadHint ? (
+          <p className="font-tamil mt-1 text-sm text-ink-soft">{copy.abroadHint}</p>
+        ) : null}
         <input
           id="chennai-place"
           value={query}
-          placeholder="Anna Nagar, Velachery, Avadi…"
+          placeholder={copy.placePlaceholder}
           autoComplete="off"
           onChange={(event) => {
             setQuery(event.target.value);
@@ -267,26 +273,41 @@ export function Locator({
               </li>
             ))}
             {matches.length === 0 ? (
-              <li className="text-sm text-ink-soft">No area by that name. Tap the map instead.</li>
+              <li className={cn("text-sm text-ink-soft", copy.ta && "font-tamil")}>{copy.noArea}</li>
             ) : null}
           </ul>
         ) : null}
       </div>
-      <p className="mt-2 text-sm text-ink-soft" role="status">
-        {rows.length} hospital{rows.length === 1 ? "" : "s"} · sorted{" "}
-        {user?.label
-          ? `from ${user.label}`
-          : user
-            ? `from you${
-                user.accuracy
-                  ? `, about ${
-                      user.accuracy < 1000
-                        ? `${Math.round(user.accuracy / 10) * 10} m`
-                        : `${Math.max(1, Math.round(user.accuracy / 1000))} km`
-                    }`
-                  : ""
-              }`
-            : "from Chennai centre"}
+      <p className={cn("mt-2 text-sm text-ink-soft", copy.ta && "font-tamil")} role="status">
+        {copy.ta
+          ? `${copy.hospitals(rows.length)} · ${
+              user?.label
+                ? copy.sortedFrom(user.label, null)
+                : user
+                  ? copy.sortedFrom(
+                      null,
+                      user.accuracy
+                        ? user.accuracy < 1000
+                          ? `${Math.round(user.accuracy / 10) * 10} m`
+                          : `${Math.max(1, Math.round(user.accuracy / 1000))} km`
+                        : null,
+                    )
+                  : copy.fromCentre
+            }`
+          : `${copy.hospitals(rows.length)} · ${copy.sorted} ${
+              user?.label
+                ? copy.sortedFrom(user.label, null)
+                : user
+                  ? copy.sortedFrom(
+                      null,
+                      user.accuracy
+                        ? user.accuracy < 1000
+                          ? `${Math.round(user.accuracy / 10) * 10} m`
+                          : `${Math.max(1, Math.round(user.accuracy / 1000))} km`
+                        : null,
+                    )
+                  : copy.fromCentre
+            }`}
       </p>
       {locError ? (
         <p className="mt-2 text-sm font-semibold text-signal" role="alert">
@@ -297,46 +318,49 @@ export function Locator({
       <div className="mt-5 grid items-start gap-5 lg:grid-cols-2">
         <div>
           <FilterRow
+            tamil={copy.ta}
             label="Capability"
             value={tier}
             options={[
-              { id: "all", label: "All tiers", active: "border-transparent bg-[#1b4fad] text-white" },
-              { id: "comprehensive", label: "Comprehensive", active: "border-transparent bg-[#3dff9a] text-[#062016]" },
+              { id: "all", label: copy.allTiers, active: "border-transparent bg-[#1b4fad] text-white" },
+              { id: "comprehensive", label: copy.comprehensive, active: "border-transparent bg-[#3dff9a] text-[#062016]" },
             ]}
             onChange={setTier}
           />
           <FilterRow
+            tamil={copy.ta}
             label="Hospital type"
             value={ownership}
             options={[
-              { id: "all", label: "Gov + private", active: "border-transparent bg-[#1b4fad] text-white" },
-              { id: "Government", label: "Government", active: "border-transparent bg-[#4cc3ff] text-[#041820]" },
-              { id: "Private", label: "Private", active: "border-transparent bg-[#ffb020] text-[#2a1400]" },
+              { id: "all", label: copy.bothTypes, active: "border-transparent bg-[#1b4fad] text-white" },
+              { id: "Government", label: copy.government, active: "border-transparent bg-[#4cc3ff] text-[#041820]" },
+              { id: "Private", label: copy.private, active: "border-transparent bg-[#ffb020] text-[#2a1400]" },
             ]}
             onChange={setOwnership}
           />
-          <ul className="mt-3 mb-3 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-ink">
+          <ul className={cn("mt-3 mb-3 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-ink", copy.ta && "font-tamil")}>
             <li className="flex items-center gap-1.5">
               <span className="size-3 rounded-sm bg-[#3dff9a]" aria-hidden="true" />
-              Gov comprehensive
+              {copy.legendGovComp}
             </li>
             <li className="flex items-center gap-1.5">
               <span className="size-3 rounded-full bg-[#d6ff4a]" aria-hidden="true" />
-              Private comprehensive
+              {copy.legendPvtComp}
             </li>
             <li className="flex items-center gap-1.5">
               <span className="size-3 rounded-sm bg-[#4cc3ff]" aria-hidden="true" />
-              Gov stroke-ready
+              {copy.legendGovReady}
             </li>
             <li className="flex items-center gap-1.5">
               <span className="size-3 rounded-full bg-[#ffb020]" aria-hidden="true" />
-              Private stroke-ready
+              {copy.legendPvtReady}
             </li>
           </ul>
           <HospitalMap
             pins={rows}
             user={user}
             center={CHENNAI_CENTER}
+            lang={lang}
             onPick={(id) => {
               setActiveId(id);
               document.getElementById(`hospital-${id}`)?.scrollIntoView({
@@ -345,32 +369,31 @@ export function Locator({
               });
             }}
             onPlace={(lat, lng) => {
-              onUser({ lat, lng, at: Date.now(), label: "Pinned spot" });
+              onUser({ lat, lng, at: Date.now(), label: copy.pinned });
               setQuery("");
               setPlacesOpen(false);
               setLocError(null);
             }}
           />
-          <p className="mt-2 text-xs text-ink-soft">Tap the map to drop a pin on their street.</p>
+          <p className={cn("mt-2 text-xs text-ink-soft", copy.ta && "font-tamil")}>{copy.tapMap}</p>
         </div>
         <div className="flex flex-col gap-3">
           <div className="flex items-end justify-between gap-3">
-            <h1 className="font-display text-3xl leading-tight">Nearest hospitals</h1>
+            <h1 className={cn("text-3xl leading-tight", copy.ta ? "font-tamil font-semibold" : "font-display")}>
+              {copy.nearest}
+            </h1>
             <button
               type="button"
               onClick={onRecheck}
-              className="mb-1 shrink-0 text-sm font-semibold text-ink-soft"
+              className={cn("mb-1 shrink-0 text-sm font-semibold text-ink-soft", copy.ta && "font-tamil")}
             >
-              Check signs again
+              {copy.recheck}
             </button>
           </div>
-          <p className="mb-3 text-sm text-ink-soft">
-            Thrombectomy means pulling the clot out. “Call to confirm” means that service is not
-            clearly listed.
-          </p>
+          <p className={cn("mb-3 text-sm text-ink-soft", copy.ta && "font-tamil")}>{copy.explain}</p>
           {rows.length === 0 ? (
-            <p className="rounded-card border border-line bg-surface px-4 py-8 text-center font-semibold text-signal">
-              No hospitals match this filter.
+            <p className={cn("rounded-card border border-line bg-surface px-4 py-8 text-center font-semibold text-signal", copy.ta && "font-tamil")}>
+              {copy.noMatch}
             </p>
           ) : (
             rows.map((hospital, index) => (
@@ -381,23 +404,16 @@ export function Locator({
                 fromYou={Boolean(user)}
                 index={index}
                 onsetIso={onsetIso}
+                lang={lang}
               />
             ))
           )}
-          <footer className="mt-4 border-t border-line pt-4 text-xs leading-relaxed text-ink-soft">
+          <footer className={cn("mt-4 border-t border-line pt-4 text-xs leading-relaxed text-ink-soft", copy.ta && "font-tamil")}>
             <p>
-              <strong className="text-ink">This app does not diagnose stroke</strong> and does not
-              dispatch an ambulance.
+              <strong className="text-ink">{copy.disclaimer}</strong> {copy.noAmbulance}
             </p>
-            <p className="mt-2">
-              The green clock is 4.5 hours from the time you entered — a window often cited for
-              clot-busting medicine. The orange clock is 9 hours — a later window some centres
-              still assess. Only the hospital team can decide, after an exam and scans.
-            </p>
-            <p className="mt-2">
-              24/7 CT, MRI, and thrombectomy come from public pages or a clinician review. They are
-              not a government certificate. Call ahead — who is on duty can change.
-            </p>
+            <p className="mt-2">{copy.clocks}</p>
+            <p className="mt-2">{copy.sources}</p>
           </footer>
         </div>
       </div>
@@ -410,11 +426,13 @@ function FilterRow<T extends string>({
   value,
   options,
   onChange,
+  tamil,
 }: {
   label: string;
   value: T;
   options: { id: T; label: string; active?: string }[];
   onChange: (value: T) => void;
+  tamil?: boolean;
 }) {
   return (
     <fieldset className="mb-2">
@@ -427,7 +445,8 @@ function FilterRow<T extends string>({
             aria-pressed={value === option.id}
             onClick={() => onChange(option.id)}
             className={cn(
-              "h-11 flex-1 rounded-full border text-xs font-semibold",
+              "h-11 flex-1 rounded-full border px-2 text-xs font-semibold",
+              tamil && "font-tamil",
               TAP,
               value === option.id
                 ? (option.active ?? "border-transparent bg-[#1b4fad] text-white")
@@ -448,21 +467,25 @@ function HospitalCard({
   fromYou,
   index,
   onsetIso,
+  lang,
 }: {
   hospital: Hospital & { dist: number };
   active: boolean;
   fromYou: boolean;
   index: number;
   onsetIso: string | null;
+  lang: Lang | null;
 }) {
+  const copy = locatorCopy(lang);
   const callable = canCall(hospital.phone);
   const comprehensive = hospital.level === "comprehensive";
   const gov = hospital.ownership === "Government";
   const facts = hospitalFacts(hospital.id);
+  const pathway = pathwayLine(hospital.id, lang);
   const services = [
-    ["24/7 CT", facts.ct],
-    ["24/7 MRI", facts.mri],
-    ["24/7 thrombectomy", facts.thrombectomy],
+    [copy.ct, facts.ct],
+    [copy.mri, facts.mri],
+    [copy.thrombectomy, facts.thrombectomy],
   ] as const;
   const tab = comprehensive
     ? gov
@@ -481,10 +504,10 @@ function HospitalCard({
       )}
     >
       <div className={cn("flex items-center justify-between gap-3 px-4 py-2.5", tab)}>
-        <p className="text-sm font-semibold">{gov ? "Government" : "Private"}</p>
+        <p className={cn("text-sm font-semibold", copy.ta && "font-tamil")}>{gov ? copy.government : copy.private}</p>
         <span className="shrink-0 rounded-full bg-[#071018]/15 px-3 py-1 text-sm font-semibold tabular-nums">
           {formatDistance(hospital.dist)}
-          <span className="sr-only"> {fromYou ? "from you" : "from Chennai centre"}</span>
+          <span className="sr-only"> {fromYou ? copy.fromYou : copy.fromCentre}</span>
         </span>
       </div>
       <div className="p-4">
@@ -496,23 +519,26 @@ function HospitalCard({
       <ul className="mt-3 divide-y divide-line overflow-hidden rounded-xl border border-line">
         {services.map(([label, answer]) => (
           <li key={label} className="flex items-center justify-between gap-3 bg-paper-deep px-3 py-2">
-            <span className="text-sm text-ink">{label}</span>
+            <span className={cn("text-sm text-ink", copy.ta && "font-tamil")}>{label}</span>
             <span
               className={cn(
-                "shrink-0 text-sm font-semibold",
+                "shrink-0 text-right text-sm font-semibold",
+                copy.ta && "font-tamil",
                 answer === "yes" && "text-ok",
                 answer === "no" && "text-ink",
                 answer === "check" && "text-ink-soft",
               )}
             >
-              {serviceWord(answer)}
+              {serviceWord(answer, lang)}
             </span>
           </li>
         ))}
       </ul>
-      {facts.pathway ? <p className="mt-3 text-sm font-semibold text-ink">{facts.pathway}</p> : null}
-      <p className={cn("text-xs font-semibold text-ink-soft", facts.pathway ? "mt-1" : "mt-3")}>
-        {hospital.source === "clinician_verified" ? "Clinician-reviewed" : "Public information"}
+      {pathway ? (
+        <p className={cn("mt-3 text-sm font-semibold text-ink", copy.ta && "font-tamil")}>{pathway}</p>
+      ) : null}
+      <p className={cn("text-xs font-semibold text-ink-soft", copy.ta && "font-tamil", pathway ? "mt-1" : "mt-3")}>
+        {hospital.source === "clinician_verified" ? copy.reviewed : copy.publicInfo}
       </p>
       <div className="mt-3 grid grid-cols-2 gap-2">
         {callable ? (
@@ -530,15 +556,16 @@ function HospitalCard({
             }}
             className={cn(
               "flex h-11 items-center justify-center gap-2 rounded-full bg-ok text-sm font-semibold text-[#062016]",
+              copy.ta && "font-tamil",
               TAP,
             )}
           >
             <Phone className="size-4" aria-hidden="true" />
-            {hospital.phone.length <= 6 ? `Call ${hospital.phone}` : "Call"}
+            {hospital.phone.length <= 6 ? copy.call(hospital.phone) : copy.ta ? "அழை" : "Call"}
           </a>
         ) : (
-          <span className="flex h-11 items-center justify-center rounded-full bg-paper-deep text-sm font-semibold text-ink-soft">
-            No public number
+          <span className={cn("flex h-11 items-center justify-center rounded-full bg-paper-deep text-sm font-semibold text-ink-soft", copy.ta && "font-tamil")}>
+            {copy.noNumber}
           </span>
         )}
         <a
@@ -547,11 +574,12 @@ function HospitalCard({
           rel="noreferrer"
           className={cn(
             "flex h-11 items-center justify-center gap-2 rounded-full bg-[#1b4fad] text-sm font-semibold text-white",
+            copy.ta && "font-tamil",
             TAP,
           )}
         >
           <Navigation className="size-4" aria-hidden="true" />
-          Navigate
+          {copy.navigate}
         </a>
       </div>
       </div>
