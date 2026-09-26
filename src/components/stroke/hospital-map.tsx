@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { LayerGroup, Map as LeafletMap } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Level, Ownership } from "@/data/hospitals";
+import { hospitalFacts, serviceWord } from "@/data/hospital-facts";
 
 export type MapPin = {
   id: string;
@@ -167,14 +168,16 @@ export function HospitalMap({
           iconSize: [size, size],
           iconAnchor: [size / 2, size / 2],
         });
-        const level = comprehensive ? "Comprehensive — stronger option" : "Stroke-ready";
+        const facts = hospitalFacts(hospital.id);
+        const services = `24/7 CT: ${serviceWord(facts.ct)}<br/>24/7 MRI: ${serviceWord(facts.mri)}<br/>24/7 thrombectomy: ${serviceWord(facts.thrombectomy)}`;
+        const pathway = facts.pathway ? `<br/>${esc(facts.pathway)}` : "";
         const phone = hospital.phone ? `<br/>Call ${esc(hospital.phone)}` : "";
         const marker = L.marker([hospital.lat, hospital.lng], {
           icon,
           zIndexOffset: comprehensive ? 400 : 0,
         }).addTo(group);
         marker.bindPopup(
-          `<strong>${esc(hospital.name)}</strong><br/>${esc(hospital.ownership)} · ${level}<br/>${esc(hospital.address)}${phone}`,
+          `<strong>${esc(hospital.name)}</strong><br/>${esc(hospital.ownership)}<br/>${services}${pathway}${phone}`,
         );
         marker.on("click", (event) => {
           if (event.originalEvent) L.DomEvent.stopPropagation(event.originalEvent);

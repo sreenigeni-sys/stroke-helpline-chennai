@@ -291,8 +291,8 @@ export const HOSPITALS: Hospital[] = [
     "lng": 80.24592,
     "address": "154 Poonamallee High Rd, New Bupathy Nagar, Kilpauk, Chennai 600010",
     "phone": "1066",
-    "notes": "Apollo primary node only — transfer to Greams / Vanagaram / OMR for thrombectomy",
-    "verify": "Not comprehensive",
+    "notes": "May be shifted to Apollo Greams Road for further care.",
+    "verify": "Not a thrombectomy hospital",
     "source": "reported",
     "lastVerified": "2026-09-25"
   },
@@ -663,5 +663,21 @@ export const HOSPITALS: Hospital[] = [
     "verify": "Confirm 24h tPA before treating as stroke-ready",
     "source": "reported",
     "lastVerified": "2026-09-25"
+  },
+  {
+    "id": "TN-PVT-037",
+    "name": "Apollo Proton Cancer Centre",
+    "ownership": "Private",
+    "level": "primary",
+    "tierRaw": "Shifts for further stroke care",
+    "area": "Tharamani",
+    "lat": 12.9800822,
+    "lng": 80.2500918,
+    "address": "4/661, Dr Vikram Sarabhai Instronic Estate, 7th St, Tharamani, Chennai 600041",
+    "phone": "1066",
+    "notes": "Shifted to Apollo OMR for further care.",
+    "verify": "Not a thrombectomy hospital",
+    "source": "clinician_verified",
+    "lastVerified": "2026-09-26"
   }
 ];

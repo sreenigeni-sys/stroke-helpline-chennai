@@ -9,6 +9,7 @@ import { HospitalMap } from "@/components/stroke/hospital-map";
 import { readClock } from "@/lib/clock";
 import { recordStrokeCall } from "@/components/stroke/activity.functions";
 import { markedWords, type Session } from "@/components/stroke/session";
+import { hospitalFacts, serviceWord } from "@/data/hospital-facts";
 
 const TAP = "transition-transform duration-150 ease-out active:not-disabled:scale-[0.96]";
 
@@ -363,6 +364,10 @@ export function Locator({
               Check signs again
             </button>
           </div>
+          <p className="mb-3 text-sm text-ink-soft">
+            Thrombectomy means pulling the clot out. “Call to confirm” means that service is not
+            clearly listed.
+          </p>
           {rows.length === 0 ? (
             <p className="rounded-card border border-line bg-surface px-4 py-8 text-center font-semibold text-signal">
               No hospitals match this filter.
@@ -390,8 +395,8 @@ export function Locator({
               still assess. Only the hospital team can decide, after an exam and scans.
             </p>
             <p className="mt-2">
-              Labels come from public pages and clinician review, dated on each card. They are not
-              a government certificate. Call ahead to confirm who is on duty.
+              24/7 CT, MRI, and thrombectomy come from public pages or a clinician review. They are
+              not a government certificate. Call ahead — who is on duty can change.
             </p>
           </footer>
         </div>
@@ -453,6 +458,12 @@ function HospitalCard({
   const callable = canCall(hospital.phone);
   const comprehensive = hospital.level === "comprehensive";
   const gov = hospital.ownership === "Government";
+  const facts = hospitalFacts(hospital.id);
+  const services = [
+    ["24/7 CT", facts.ct],
+    ["24/7 MRI", facts.mri],
+    ["24/7 thrombectomy", facts.thrombectomy],
+  ] as const;
   const tab = comprehensive
     ? gov
       ? "bg-[#3dff9a] text-[#062016]"
@@ -470,11 +481,7 @@ function HospitalCard({
       )}
     >
       <div className={cn("flex items-center justify-between gap-3 px-4 py-2.5", tab)}>
-        <p className="text-xs font-extrabold tracking-[0.16em] uppercase">
-          {gov ? "Government" : "Private"}
-          <span className="px-1.5 opacity-60">·</span>
-          {comprehensive ? "Comprehensive" : "Stroke-ready"}
-        </p>
+        <p className="text-sm font-semibold">{gov ? "Government" : "Private"}</p>
         <span className="shrink-0 rounded-full bg-[#071018]/15 px-3 py-1 text-sm font-semibold tabular-nums">
           {formatDistance(hospital.dist)}
           <span className="sr-only"> {fromYou ? "from you" : "from Chennai centre"}</span>
@@ -486,22 +493,27 @@ function HospitalCard({
         {hospital.address}
         {hospital.area ? ` · ${hospital.area}` : ""}
       </p>
-      <ul className="mt-3 flex flex-wrap gap-1.5">
-        <li
-          className={cn(
-            "rounded-full px-2.5 py-1 text-xs font-semibold",
-            hospital.source === "clinician_verified" ? "bg-ok-soft text-ok" : "bg-paper-deep text-ink-soft",
-          )}
-        >
-          {hospital.source === "clinician_verified" ? "Clinician-reviewed" : "Public sources"}
-        </li>
+      <ul className="mt-3 divide-y divide-line overflow-hidden rounded-xl border border-line">
+        {services.map(([label, answer]) => (
+          <li key={label} className="flex items-center justify-between gap-3 bg-paper-deep px-3 py-2">
+            <span className="text-sm text-ink">{label}</span>
+            <span
+              className={cn(
+                "shrink-0 text-sm font-semibold",
+                answer === "yes" && "text-ok",
+                answer === "no" && "text-ink",
+                answer === "check" && "text-ink-soft",
+              )}
+            >
+              {serviceWord(answer)}
+            </span>
+          </li>
+        ))}
       </ul>
-      <p className="mt-3 rounded-xl bg-paper-deep px-3 py-2 text-sm leading-snug text-ink">
-        <span className="font-semibold">Notes. </span>
-        {hospital.notes}
+      {facts.pathway ? <p className="mt-3 text-sm font-semibold text-ink">{facts.pathway}</p> : null}
+      <p className={cn("text-xs font-semibold text-ink-soft", facts.pathway ? "mt-1" : "mt-3")}>
+        {hospital.source === "clinician_verified" ? "Clinician-reviewed" : "Public information"}
       </p>
-      <p className="mt-2 text-sm font-medium text-late-ink">{hospital.verify}</p>
-      <p className="mt-1 text-xs text-ink-soft">Last reviewed {hospital.lastVerified}. Call ahead.</p>
       <div className="mt-3 grid grid-cols-2 gap-2">
         {callable ? (
           <a
