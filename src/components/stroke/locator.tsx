@@ -233,7 +233,6 @@ export function Locator({
         onClick={resetPage}
         className={cn(
           "mt-2 flex min-h-12 w-full items-center justify-center rounded-full border border-line bg-surface px-4 text-center text-sm font-semibold text-ink",
-          copy.ta && "font-tamil",
           TAP,
         )}
       >
