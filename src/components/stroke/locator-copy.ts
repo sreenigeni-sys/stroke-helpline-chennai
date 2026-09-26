@@ -22,6 +22,7 @@ export function locatorCopy(lang: Lang | null) {
     updateLocation: ta ? "இடத்தைப் புதுப்பி" : "Update my location",
     findNearest: ta ? "எனக்கு அருகில் உள்ளதைக் காட்டு" : "Find nearest to me",
     cityCentre: ta ? "நகர மையம்" : "Use city centre",
+    reset: ta ? "கடிகாரத்தையும் இடத்தையும் மீட்டமை" : "Reset clock and location",
     abroad: ta
       ? "வெளிநாட்டிலிருந்து உதவினால், அவர்கள் இருக்கும் பகுதியைத் தேர்ந்தெடுங்கள்"
       : "Helping from abroad? Set their area",

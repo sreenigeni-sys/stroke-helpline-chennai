@@ -112,6 +112,13 @@ export function StrokeApp() {
               user: current.user,
             }))
           }
+          onReset={() =>
+            patch((current) => ({
+              ...current,
+              onsetIso: null,
+              user: null,
+            }))
+          }
           onUser={(user) => patch((current) => ({ ...current, user }))}
         />
       ) : (

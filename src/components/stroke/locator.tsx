@@ -59,6 +59,7 @@ export function Locator({
   lang,
   onEditTime,
   onRecheck,
+  onReset,
   onUser,
 }: {
   answers: Session["answers"];
@@ -68,6 +69,7 @@ export function Locator({
   lang: Lang | null;
   onEditTime: () => void;
   onRecheck: () => void;
+  onReset: () => void;
   onUser: (user: Session["user"]) => void;
 }) {
   const [tier, setTier] = useState<TierFilter>("all");
@@ -119,6 +121,16 @@ export function Locator({
     }
   }, [gpsEpoch]);
 
+  useEffect(() => {
+    if (!locating) return;
+    const id = window.setTimeout(() => {
+      cancelGps();
+      setLocating(null);
+      setLocError(copyRef.current.noFix);
+    }, 18000);
+    return () => window.clearTimeout(id);
+  }, [locating]);
+
   const origin = user ?? CHENNAI_CENTER;
   const rows = useMemo(() => {
     return HOSPITALS.filter((hospital) => {
@@ -140,6 +152,16 @@ export function Locator({
     pinned.current = false;
     beginGps(true);
     setGpsEpoch((epoch) => epoch + 1);
+  }
+
+  function resetPage() {
+    pinned.current = true;
+    cancelGps();
+    setLocating(null);
+    setLocError(null);
+    setQuery("");
+    setPlacesOpen(false);
+    onReset();
   }
 
   function choosePlace(place: Place) {
@@ -206,6 +228,17 @@ export function Locator({
           </button>
         ) : null}
       </div>
+      <button
+        type="button"
+        onClick={resetPage}
+        className={cn(
+          "mt-2 flex min-h-12 w-full items-center justify-center rounded-full border border-line bg-surface px-4 text-center text-sm font-semibold text-ink",
+          copy.ta && "font-tamil",
+          TAP,
+        )}
+      >
+        {copy.reset}
+      </button>
       <div className="mt-3">
         <label htmlFor="chennai-place" className={cn("text-sm font-semibold text-ink", copy.ta && "font-tamil")}>
           {copy.abroad}
