@@ -27,6 +27,7 @@ export function HospitalUpdateForm() {
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState<"github" | "email" | null>(null);
+  const [open, setOpen] = useState(false);
 
   function set<K extends keyof typeof EMPTY>(key: K, value: (typeof EMPTY)[K]) {
     setFields((current) => ({ ...current, [key]: value }));
@@ -76,13 +77,25 @@ export function HospitalUpdateForm() {
   }
 
   return (
-    <section className="mt-10 border-t border-line pt-4">
-      <h2 className="text-sm font-semibold text-ink">Contact us to update your hospital</h2>
-      <p className="mt-1 text-xs leading-relaxed text-ink-soft">
+    <section className="mt-6">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+        className={cn(
+          "flex min-h-12 w-full flex-col items-center justify-center rounded-full border border-line bg-surface px-3 text-ink",
+          TAP,
+        )}
+      >
+        <span className="text-sm font-semibold">Contact us to update your hospital</span>
+        <span className="font-tamil text-xs font-medium text-ink-soft">மருத்துவமனை விவரத்தை அனுப்ப</span>
+      </button>
+      {open ? (
+        <div className="mt-3">
+      <p className="text-xs leading-relaxed text-ink-soft">
         Name, location, government or private, CT, MRI, and a 24-hour stroke cath lab. The list
         changes only after we review it.
       </p>
-      <p className="font-tamil mt-1 text-xs text-ink-soft">மருத்துவமனை விவரத்தை அனுப்ப.</p>
       <form className="mt-3 grid gap-3" onSubmit={onSubmit}>
         <label className="grid gap-1 text-xs font-semibold text-ink">
           Hospital name
@@ -170,6 +183,8 @@ export function HospitalUpdateForm() {
           {sending ? "Sending…" : "Send hospital update"}
         </button>
       </form>
+        </div>
+      ) : null}
     </section>
   );
 }

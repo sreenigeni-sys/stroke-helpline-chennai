@@ -11,6 +11,7 @@ export function ReviewForm() {
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [open, setOpen] = useState(false);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -38,12 +39,24 @@ export function ReviewForm() {
   }
 
   return (
-    <section className="mt-8 border-t border-line pt-4">
-      <h2 className="text-sm font-semibold text-ink">Leave a review</h2>
-      <p className="mt-1 text-xs leading-relaxed text-ink-soft">
+    <section className="mt-2">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+        className={cn(
+          "flex min-h-12 w-full flex-col items-center justify-center rounded-full border border-line bg-surface px-3 text-ink",
+          TAP,
+        )}
+      >
+        <span className="text-sm font-semibold">Leave a review</span>
+        <span className="font-tamil text-xs font-medium text-ink-soft">பாராட்டு அல்லது குறை சொல்ல</span>
+      </button>
+      {open ? (
+        <div className="mt-3">
+      <p className="text-xs leading-relaxed text-ink-soft">
         Appreciate the page, or report something wrong. Do not include a patient’s name.
       </p>
-      <p className="font-tamil mt-1 text-xs text-ink-soft">பாராட்டு அல்லது குறை சொல்ல.</p>
       <form className="mt-3 grid gap-3" onSubmit={onSubmit}>
         <div className="flex gap-2">
           {(
@@ -97,6 +110,8 @@ export function ReviewForm() {
           {sending ? "Sending…" : "Send review"}
         </button>
       </form>
+        </div>
+      ) : null}
     </section>
   );
 }
