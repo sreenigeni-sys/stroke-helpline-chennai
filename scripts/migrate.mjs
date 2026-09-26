@@ -43,7 +43,14 @@ async function main() {
   }
 
   const pool = new pg.Pool({ connectionString: databaseUrl, max: 1 });
-  const client = await pool.connect();
+  let client;
+  try {
+    client = await pool.connect();
+  } catch (err) {
+    console.error("[migrate] could not connect — skipping", err instanceof Error ? err.message : err);
+    await pool.end();
+    return;
+  }
   try {
     await client.query(
       "CREATE TABLE IF NOT EXISTS _migrations (name TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT now())",
