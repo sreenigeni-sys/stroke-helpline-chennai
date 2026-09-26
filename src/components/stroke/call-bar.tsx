@@ -7,7 +7,7 @@ export function CallBar() {
     <div className="safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-line bg-paper/95 px-4 pt-3 backdrop-blur-md">
       <a
         href="tel:108"
-        className={`call-pulse mx-auto flex h-14 max-w-5xl items-center justify-center gap-3 rounded-full bg-signal text-ink ${TAP}`}
+        className={`call-pulse mx-auto flex h-14 max-w-5xl items-center justify-center gap-3 rounded-full bg-signal text-white ${TAP}`}
       >
         <Phone className="size-5" aria-hidden="true" />
         <span className="text-left leading-tight">

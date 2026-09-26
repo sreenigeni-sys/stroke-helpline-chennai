@@ -47,8 +47,8 @@ function Rail({
             key={id}
             className={cn(
               "flex h-10 items-center justify-center rounded-full text-sm font-semibold",
-              active && "bg-[#f4efe6] text-[#071018]",
-              !active && answer === "yes" && "bg-signal text-ink",
+              active && "bg-[#1b4fad] text-white",
+              !active && answer === "yes" && "bg-signal text-white",
               !active && answer === "unsure" && "bg-late-soft text-late-ink",
               !active && answer === "no" && "bg-ok-soft text-ok",
               !active && !answer && "bg-paper-deep text-ink-soft",
@@ -153,7 +153,7 @@ function Intro({ onStart, onSkip }: { onStart: (lang: Lang) => void; onSkip: () 
             <span
               className={cn(
                 "rise flex h-12 items-center justify-center rounded-full font-display text-lg",
-                step.letter === "T" ? "bg-signal text-ink" : "bg-[#f4efe6] text-[#071018]",
+                step.letter === "T" ? "bg-signal text-white" : "bg-[#1b4fad] text-white",
               )}
               style={{ animationDelay: `${"BEFAST".indexOf(step.letter) * 60}ms` }}
             >
@@ -168,7 +168,7 @@ function Intro({ onStart, onSkip }: { onStart: (lang: Lang) => void; onSkip: () 
           type="button"
           onClick={() => onStart("en")}
           className={cn(
-            "flex min-h-16 flex-col items-center justify-center rounded-full bg-[#f4efe6] px-2 py-2 text-[#071018]",
+            "flex min-h-16 flex-col items-center justify-center rounded-full bg-[#1b4fad] px-2 py-2 text-white",
             TAP,
           )}
         >
@@ -179,7 +179,7 @@ function Intro({ onStart, onSkip }: { onStart: (lang: Lang) => void; onSkip: () 
           type="button"
           onClick={() => onStart("ta")}
           className={cn(
-            "flex min-h-16 flex-col items-center justify-center rounded-full bg-signal px-2 py-2 text-ink",
+            "flex min-h-16 flex-col items-center justify-center rounded-full bg-signal px-2 py-2 text-white",
             TAP,
           )}
         >
@@ -283,7 +283,7 @@ function SignStep({
           type="button"
           onClick={() => onAnswer(sign.id, "yes")}
           className={cn(
-            "flex min-h-14 flex-col items-center justify-center rounded-full bg-signal py-2 text-ink",
+            "flex min-h-14 flex-col items-center justify-center rounded-full bg-signal py-2 text-white",
             TAP,
           )}
         >
@@ -441,7 +441,7 @@ function TimeStep({
             className={cn(
               "flex min-h-14 flex-col items-center justify-center rounded-full px-1 py-1 text-sm leading-tight font-semibold",
               TAP,
-              preset === item.minutes ? "bg-[#f4efe6] text-[#071018]" : "bg-paper-deep text-ink",
+              preset === item.minutes ? "bg-[#1b4fad] text-white" : "bg-paper-deep text-ink",
             )}
           >
             <span className={tamil ? "font-tamil" : undefined}>{tamil ? item.labelTa : item.label}</span>
@@ -488,7 +488,7 @@ function TimeStep({
         type="button"
         onClick={onContinue}
         className={cn(
-          "mt-5 flex min-h-14 w-full flex-col items-center justify-center rounded-full bg-[#f4efe6] py-2 text-[#071018]",
+          "mt-5 flex min-h-14 w-full flex-col items-center justify-center rounded-full bg-[#1b4fad] py-2 text-white",
           TAP,
         )}
       >

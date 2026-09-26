@@ -145,7 +145,7 @@ export function Countdown({
               type="button"
               onClick={onEdit}
               className={cn(
-                "mt-4 inline-flex h-11 items-center rounded-full bg-[#f4efe6] px-4 text-sm font-semibold text-[#071018]",
+                "mt-4 inline-flex h-11 items-center rounded-full bg-[#1b4fad] px-4 text-sm font-semibold text-white",
                 TAP,
               )}
             >

@@ -95,7 +95,7 @@ export function HospitalMap({
         [center.lat, center.lng],
         11,
       );
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png", {
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
         attribution: "&copy; OpenStreetMap &copy; CARTO",
         maxZoom: 19,
         subdomains: "abcd",
@@ -186,8 +186,8 @@ export function HospitalMap({
       const hereIcon = L.divIcon({
         className: "stroke-pin",
         html: user
-          ? `<div style="width:16px;height:16px;border-radius:999px;background:var(--color-signal);border:3px solid #f4efe6;box-shadow:0 0 0 6px color-mix(in srgb, var(--color-signal) 35%, transparent)"></div>`
-          : `<div style="width:14px;height:14px;border-radius:999px;background:transparent;border:2px solid #f4efe6"></div>`,
+          ? `<div style="width:16px;height:16px;border-radius:999px;background:var(--color-signal);border:3px solid #ffffff;box-shadow:0 0 0 6px color-mix(in srgb, var(--color-signal) 28%, transparent)"></div>`
+          : `<div style="width:14px;height:14px;border-radius:999px;background:#ffffff;border:2px solid #14325f"></div>`,
         iconSize: [16, 16],
         iconAnchor: [8, 8],
       });

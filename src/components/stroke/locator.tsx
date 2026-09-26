@@ -181,7 +181,7 @@ export function Locator({
   return (
     <div className="mx-auto max-w-5xl px-4 py-4">
       {concern === "yes" ? (
-        <div className="mb-4 rounded-card bg-signal px-4 py-3 text-ink">
+        <div className="mb-4 rounded-card bg-signal px-4 py-3 text-white">
           <p className="font-semibold">Possible stroke signs: {yes.join(", ")}.</p>
           <p className="mt-1 text-sm">
             If you travel, call the hospital before you arrive — teams and scanners change by the
@@ -210,7 +210,7 @@ export function Locator({
           onClick={locate}
           disabled={locating}
           className={cn(
-            "h-14 flex-1 rounded-full bg-signal text-base font-semibold text-ink disabled:opacity-60",
+            "h-14 flex-1 rounded-full bg-signal text-base font-semibold text-white disabled:opacity-60",
             TAP,
           )}
         >
@@ -260,7 +260,7 @@ export function Locator({
                   type="button"
                   onClick={() => choosePlace(place)}
                   className={cn(
-                    "h-10 rounded-full bg-[#f4efe6] px-3 text-sm font-semibold text-[#071018]",
+                    "h-10 rounded-full bg-[#1b4fad] px-3 text-sm font-semibold text-white",
                     TAP,
                   )}
                 >
@@ -302,7 +302,7 @@ export function Locator({
             label="Capability"
             value={tier}
             options={[
-              { id: "all", label: "All tiers", active: "border-transparent bg-[#f4efe6] text-[#071018]" },
+              { id: "all", label: "All tiers", active: "border-transparent bg-[#1b4fad] text-white" },
               { id: "comprehensive", label: "Comprehensive", active: "border-transparent bg-[#3dff9a] text-[#062016]" },
             ]}
             onChange={setTier}
@@ -311,7 +311,7 @@ export function Locator({
             label="Hospital type"
             value={ownership}
             options={[
-              { id: "all", label: "Gov + private", active: "border-transparent bg-[#f4efe6] text-[#071018]" },
+              { id: "all", label: "Gov + private", active: "border-transparent bg-[#1b4fad] text-white" },
               { id: "Government", label: "Government", active: "border-transparent bg-[#4cc3ff] text-[#041820]" },
               { id: "Private", label: "Private", active: "border-transparent bg-[#ffb020] text-[#2a1400]" },
             ]}
@@ -427,7 +427,7 @@ function FilterRow<T extends string>({
               "h-11 flex-1 rounded-full border text-xs font-semibold",
               TAP,
               value === option.id
-                ? (option.active ?? "border-transparent bg-[#f4efe6] text-[#071018]")
+                ? (option.active ?? "border-transparent bg-[#1b4fad] text-white")
                 : "border-line bg-transparent text-ink",
             )}
           >
@@ -466,7 +466,7 @@ function HospitalCard({
       style={{ animationDelay: `${Math.min(index, 8) * 45}ms` }}
       className={cn(
         "rise overflow-hidden rounded-card border border-line bg-surface shadow-card",
-        active && "ring-2 ring-[#f4efe6]",
+        active && "ring-2 ring-[#1b4fad]",
       )}
     >
       <div className={cn("flex items-center justify-between gap-3 px-4 py-2.5", tab)}>
@@ -524,7 +524,7 @@ function HospitalCard({
           target="_blank"
           rel="noreferrer"
           className={cn(
-            "flex h-11 items-center justify-center gap-2 rounded-full bg-[#f4efe6] text-sm font-semibold text-[#071018]",
+            "flex h-11 items-center justify-center gap-2 rounded-full bg-[#1b4fad] text-sm font-semibold text-white",
             TAP,
           )}
         >

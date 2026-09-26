@@ -33,19 +33,45 @@ export function StrokeApp() {
   }
 
   const concern = concernOf(session.answers);
+  const home = session.phase !== "intro";
+
+  function goHome() {
+    patch((current) => ({
+      ...freshSession(),
+      onsetIso: current.onsetIso,
+      user: current.user,
+    }));
+  }
 
   return (
     <main className="min-h-screen">
-      <header className="mx-auto flex max-w-5xl items-center justify-between px-4 pt-4">
-        <div className="flex items-center gap-3">
-          <span className="call-dot shrink-0" aria-hidden="true" />
-          <div>
-            <p className="font-display text-xl leading-tight">Stroke Helpline Chennai</p>
-            <p className="mt-1 text-xs font-semibold tracking-wide text-signal uppercase">
-              Act now
-            </p>
+      <header className="mx-auto flex max-w-5xl items-start justify-between gap-3 px-4 pt-4">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <img
+            src="/brand/arunai.png"
+            alt="Arunai Neuro Foundation"
+            className="h-8 w-auto max-w-[7.5rem] shrink-0 object-contain sm:h-11 sm:max-w-[12rem]"
+          />
+          <div className="min-w-0">
+            <p className="truncate font-display text-lg leading-tight sm:text-xl">Stroke Helpline Chennai</p>
+            <p className="mt-0.5 text-xs font-semibold tracking-wide text-[#1b4fad] uppercase">Act now</p>
+            {session.phase === "intro" || session.phase === "locator" ? (
+              <p className="mt-1 text-[11px] leading-snug text-ink-soft">
+                An initiative of Arunai Neuro Foundation
+              </p>
+            ) : null}
           </div>
         </div>
+        {home ? (
+          <button
+            type="button"
+            onClick={goHome}
+            className="shrink-0 pt-1 text-right text-sm font-semibold text-[#1b4fad]"
+          >
+            Back
+            <span className="font-tamil block text-xs font-medium text-ink-soft">முகப்பு</span>
+          </button>
+        ) : null}
       </header>
       {session.phase === "locator" ? (
         <Locator
