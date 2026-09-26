@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, readdirSync } from "node:fs";
+import { readdirSync } from "node:fs";
 import { join } from "node:path";
 import type { Plugin } from "vite";
 import { defineConfig } from "vite";
@@ -175,20 +175,6 @@ export default defineConfig(({ command, isPreview }) => ({
             // manifest + head-tag middleware). Nitro v3 defaults serverDir to
             // false, so removing this silently unwires /?install=1 on deploys.
             serverDir: "./server",
-            hooks: {
-              compiled() {
-                const dist = join(process.cwd(), "node_modules/@electric-sql/pglite/dist");
-                const destDir = join(
-                  process.cwd(),
-                  ".vercel/output/functions/__server.func/_libs",
-                );
-                if (!existsSync(destDir)) return;
-                for (const name of ["pglite.data", "pglite.wasm", "initdb.wasm"]) {
-                  const src = join(dist, name);
-                  if (existsSync(src)) copyFileSync(src, join(destDir, name));
-                }
-              },
-            },
           }),
         ]
       : []),
