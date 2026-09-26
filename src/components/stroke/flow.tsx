@@ -4,6 +4,7 @@ import { cn } from "@/lib/cn";
 import { SIGNS, type SignId } from "@/components/stroke/signs";
 import { SignVisual } from "@/components/stroke/sign-visual";
 import { Countdown } from "@/components/stroke/countdown";
+import { HospitalUpdateForm } from "@/components/stroke/hospital-update-form";
 import type { Answer, Lang, Phase, Session } from "@/components/stroke/session";
 
 const TAP = "transition-transform duration-150 ease-out active:not-disabled:scale-[0.96]";
@@ -135,7 +136,8 @@ export function Flow({
 
 function Intro({ onStart, onSkip }: { onStart: (lang: Lang) => void; onSkip: () => void }) {
   return (
-    <div className="rise mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-4 py-6">
+    <div className="rise mx-auto flex min-h-[70vh] max-w-md flex-col px-4 py-6">
+      <div className="flex flex-1 flex-col justify-center">
       <h1 className="font-display text-5xl leading-none text-ink">Is this a stroke?</h1>
       <p className="font-tamil mt-2 text-2xl text-signal">இது பக்கவாதமா?</p>
       <p className="mt-3 text-base font-semibold text-ink">
@@ -192,6 +194,8 @@ function Intro({ onStart, onSkip }: { onStart: (lang: Lang) => void; onSkip: () 
         <span className="text-sm font-semibold">Skip to hospitals</span>
         <span className="font-tamil text-xs font-medium">மருத்துவமனைக்குச் செல்</span>
       </button>
+      </div>
+      <HospitalUpdateForm />
     </div>
   );
 }
