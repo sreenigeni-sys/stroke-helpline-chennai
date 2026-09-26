@@ -26,10 +26,12 @@ function isGeoError(error: unknown): error is GeolocationPositionError {
   );
 }
 
-function readPosition(options: PositionOptions) {
+function watchGps(onUpdate: (position: GeolocationPosition) => void) {
   return new Promise<GeolocationPosition>((resolve, reject) => {
+    let best: GeolocationPosition | null = null;
     let settled = false;
-    const finish = (run: () => void) => {
+    const started = Date.now();
+    const stop = (run: () => void) => {
       if (settled) return;
       settled = true;
       window.clearTimeout(timer);
@@ -37,12 +39,30 @@ function readPosition(options: PositionOptions) {
       run();
     };
     const timer = window.setTimeout(() => {
-      finish(() => reject(Object.assign(new Error("timeout"), { code: 3 })));
-    }, (options.timeout ?? 20000) + 1000);
+      const fix = best;
+      stop(() => (fix ? resolve(fix) : reject(Object.assign(new Error("timeout"), { code: 3 }))));
+    }, 16000);
     const watchId = navigator.geolocation.watchPosition(
-      (position) => finish(() => resolve(position)),
-      (error) => finish(() => reject(error)),
-      options,
+      (position) => {
+        const { latitude, longitude, accuracy } = position.coords;
+        if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
+        const acc = Number.isFinite(accuracy) ? accuracy : Number.POSITIVE_INFINITY;
+        if (!best || acc < best.coords.accuracy) {
+          best = position;
+          onUpdate(position);
+        }
+        // Under 50 m is a GPS lock. A cell or Wi-Fi guess is often kilometres off
+        // even when the browser calls it "accurate", so do not stop on the first point.
+        if (acc <= 50) stop(() => resolve(position));
+        else if (Date.now() - started > 12000) {
+          const fix = best;
+          if (fix) stop(() => resolve(fix));
+        }
+      },
+      (error) => {
+        if (error.code === 1 || !best) stop(() => reject(error));
+      },
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 },
     );
   });
 }
@@ -82,7 +102,7 @@ export function Locator({
 }) {
   const [tier, setTier] = useState<TierFilter>("all");
   const [ownership, setOwnership] = useState<OwnFilter>("all");
-  const [locating, setLocating] = useState(false);
+  const [locating, setLocating] = useState<"search" | "tighten" | null>(null);
   const [locError, setLocError] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [query, setQuery] = useState(user?.label && user.label !== "Pinned spot" ? user.label : "");
@@ -111,63 +131,38 @@ export function Locator({
       setLocError("This browser can't share location. Open the link in Chrome or Safari.");
       return;
     }
-    setLocating(true);
+    setLocating("search");
     setLocError(null);
     try {
-      let position: GeolocationPosition;
-      try {
-        position = await readPosition({
-          enableHighAccuracy: false,
-          timeout: 12000,
-          maximumAge: 120_000,
+      const position = await watchGps((fix) => {
+        const acc = fix.coords.accuracy;
+        onUser({
+          lat: fix.coords.latitude,
+          lng: fix.coords.longitude,
+          at: Date.now(),
+          accuracy: acc,
         });
-      } catch (error) {
-        if (isGeoError(error) && error.code === 1) throw error;
-        position = await readPosition({
-          enableHighAccuracy: true,
-          timeout: 20000,
-          maximumAge: 0,
-        });
-      }
-      let accuracy = position.coords.accuracy;
-      const { latitude, longitude } = position.coords;
-      if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
-        throw new Error("bad fix");
-      }
+        setQuery("");
+        setPlacesOpen(false);
+        if (acc > 80) setLocating("tighten");
+      });
+      const { latitude, longitude, accuracy } = position.coords;
       onUser({ lat: latitude, lng: longitude, at: Date.now(), accuracy });
       setQuery("");
-      if (accuracy > 300) {
-        try {
-          const better = await readPosition({
-            enableHighAccuracy: true,
-            timeout: 20000,
-            maximumAge: 0,
-          });
-          if (
-            Number.isFinite(better.coords.latitude) &&
-            better.coords.accuracy < accuracy
-          ) {
-            accuracy = better.coords.accuracy;
-            onUser({
-              lat: better.coords.latitude,
-              lng: better.coords.longitude,
-              at: Date.now(),
-              accuracy,
-            });
-          }
-        } catch {
-          // Keep the first fix. A rough point is still better than the city centre.
-        }
-      }
-      if (accuracy > 2000) {
+      setPlacesOpen(false);
+      if (accuracy > 150) {
+        const rounded =
+          accuracy < 1000
+            ? `${Math.round(accuracy / 10) * 10} m`
+            : `${Math.max(1, Math.round(accuracy / 1000))} km`;
         setLocError(
-          `Rough location, about ${Math.max(1, Math.round(accuracy / 1000))} km. Tap again if the nearest hospital looks wrong.`,
+          `Only accurate to about ${rounded}. If the pin is not on your street, tap the map or set the area.`,
         );
       }
     } catch (error) {
       setLocError(locateMessage(error));
     } finally {
-      setLocating(false);
+      setLocating(null);
     }
   }
 
@@ -208,13 +203,13 @@ export function Locator({
         <button
           type="button"
           onClick={locate}
-          disabled={locating}
+          disabled={locating !== null}
           className={cn(
             "h-14 flex-1 rounded-full bg-signal text-base font-semibold text-white disabled:opacity-60",
             TAP,
           )}
         >
-          {locating ? "Finding you…" : user ? "Update my location" : "Find nearest to me"}
+          {locating === "tighten" ? "Tightening GPS…" : locating ? "Finding you…" : user ? "Update my location" : "Find nearest to me"}
         </button>
         {user ? (
           <button
@@ -280,7 +275,7 @@ export function Locator({
           ? `from ${user.label}`
           : user
             ? `from you${
-                user.accuracy && user.accuracy >= 50
+                user.accuracy
                   ? `, about ${
                       user.accuracy < 1000
                         ? `${Math.round(user.accuracy / 10) * 10} m`
