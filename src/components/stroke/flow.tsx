@@ -141,25 +141,25 @@ function Intro({ onStart, onSkip }: { onStart: (lang: Lang) => void; onSkip: () 
       <p className="mt-3 text-base font-semibold text-ink">
         Time is brain. <span className="font-tamil font-medium">நேரமே மூளை.</span>
       </p>
-      <ol className="mt-6 grid grid-cols-6 gap-1.5" aria-label="BEFAST">
+      <ul className="mt-6 flex flex-col gap-1.5" aria-label="BEFAST">
         {[
-          ...SIGNS.map((sign) => ({ letter: sign.id, ta: sign.wordTa })),
-          { letter: "T", ta: "நேரம்" },
+          ...SIGNS.map((sign) => ({ letter: sign.id, en: sign.word, ta: sign.wordTa })),
+          { letter: "T", en: "Time", ta: "நேரம்" },
         ].map((step) => (
-          <li key={step.letter} className="text-center">
+          <li key={step.letter} className="flex items-center gap-3">
             <span
               className={cn(
-                "rise flex h-12 items-center justify-center rounded-full font-display text-lg",
-                step.letter === "T" ? "bg-signal text-white" : "bg-[#1b4fad] text-white",
+                "flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white",
+                step.letter === "T" ? "bg-signal" : "bg-[#1b4fad]",
               )}
-              style={{ animationDelay: `${"BEFAST".indexOf(step.letter) * 60}ms` }}
             >
               {step.letter}
             </span>
-            <span className="font-tamil mt-1 block text-xs leading-tight font-semibold text-ink">{step.ta}</span>
+            <span className="w-20 shrink-0 text-sm font-semibold text-ink">{step.en}</span>
+            <span className="font-tamil text-sm text-ink-soft">{step.ta}</span>
           </li>
         ))}
-      </ol>
+      </ul>
       <div className="mt-8 grid grid-cols-2 gap-2">
         <button
           type="button"
