@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ChevronLeft } from "lucide-react";
+import { Brain, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { SIGNS, type SignId } from "@/components/stroke/signs";
 import { SignVisual } from "@/components/stroke/sign-visual";
@@ -145,26 +145,14 @@ function Intro({ onStart, onSkip }: { onStart: (lang: Lang) => void; onSkip: () 
       <p className="mt-3 text-base font-semibold text-ink">
         Time is brain. <span className="font-tamil font-medium">நேரமே மூளை.</span>
       </p>
-      <ul className="mt-6 flex flex-col gap-1.5" aria-label="BEFAST">
-        {[
-          ...SIGNS.map((sign) => ({ letter: sign.id, en: sign.word, ta: sign.wordTa })),
-          { letter: "T", en: "Time", ta: "நேரம்" },
-        ].map((step) => (
-          <li key={step.letter} className="flex items-center gap-3">
-            <span
-              className={cn(
-                "flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white",
-                step.letter === "T" ? "bg-signal" : "bg-[#1b4fad]",
-              )}
-            >
-              {step.letter}
-            </span>
-            <span className="w-20 shrink-0 text-sm font-semibold text-ink">{step.en}</span>
-            <span className="font-tamil text-sm text-ink-soft">{step.ta}</span>
-          </li>
-        ))}
-      </ul>
-      <div className="mt-8 grid grid-cols-2 gap-2">
+      <div className="my-8 flex justify-center" aria-hidden="true">
+        <span className="flex size-28 items-center justify-center rounded-full bg-[#1b4fad]/10 text-[#1b4fad]">
+          <Brain className="size-16" strokeWidth={1.5} />
+        </span>
+      </div>
+      <p className="text-center text-sm font-semibold text-ink">Do a self check</p>
+      <p className="font-tamil mt-0.5 text-center text-sm text-signal">சுய சோதனை செய்யுங்கள்</p>
+      <div className="mt-4 grid grid-cols-2 gap-2">
         <button
           type="button"
           onClick={() => onStart("en")}
