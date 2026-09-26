@@ -15,9 +15,6 @@ const PRESETS = [
   { label: "1 hour", labelTa: "1 மணி", minutes: 60 },
   { label: "2 hours", labelTa: "2 மணி", minutes: 120 },
   { label: "3 hours", labelTa: "3 மணி", minutes: 180 },
-  { label: "4 hours", labelTa: "4 மணி", minutes: 240 },
-  { label: "6 hours", labelTa: "6 மணி", minutes: 360 },
-  { label: "8 hours", labelTa: "8 மணி", minutes: 480 },
 ];
 
 function toLocalInput(date: Date) {
@@ -424,9 +421,11 @@ function TimeStep({
           இது எப்போது தொடங்கியது? அல்லது கடைசியாக எப்போது நன்றாக இருந்தார்கள்?
         </p>
       ) : null}
-      <div className="mt-4">
-        <Countdown onsetIso={onsetIso} compact />
-      </div>
+      {onsetIso ? (
+        <div className="mt-4">
+          <Countdown onsetIso={onsetIso} compact />
+        </div>
+      ) : null}
       <div className="mt-4 grid grid-cols-3 gap-2">
         {PRESETS.map((item) => (
           <button
