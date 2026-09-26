@@ -2,6 +2,7 @@ import { SIGNS, type SignId } from "@/components/stroke/signs";
 
 export type Answer = "yes" | "no" | "unsure";
 export type Phase = "intro" | "signs" | "time" | "locator";
+export type Lang = "en" | "ta";
 
 export type Session = {
   phase: Phase;
@@ -9,6 +10,7 @@ export type Session = {
   answers: Record<SignId, Answer | null>;
   onsetIso: string | null;
   timeReturn: "signs" | "locator";
+  lang: Lang | null;
   user: { lat: number; lng: number; at?: number; accuracy?: number; label?: string } | null;
 };
 
@@ -21,6 +23,7 @@ export function freshSession(): Session {
     answers: { B: null, E: null, F: null, A: null, S: null },
     onsetIso: null,
     timeReturn: "signs",
+    lang: null,
     user: null,
   };
 }
@@ -54,6 +57,7 @@ export function loadSession(): Session {
       },
       onsetIso: typeof parsed.onsetIso === "string" ? parsed.onsetIso : null,
       timeReturn: parsed.timeReturn === "locator" ? "locator" : "signs",
+      lang: parsed.lang === "en" || parsed.lang === "ta" ? parsed.lang : null,
       user:
         parsed.user &&
         typeof parsed.user.lat === "number" &&

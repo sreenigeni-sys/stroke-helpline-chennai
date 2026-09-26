@@ -4,7 +4,7 @@ import { cn } from "@/lib/cn";
 import { SIGNS, type SignId } from "@/components/stroke/signs";
 import { SignVisual } from "@/components/stroke/sign-visual";
 import { Countdown } from "@/components/stroke/countdown";
-import type { Answer, Phase, Session } from "@/components/stroke/session";
+import type { Answer, Lang, Phase, Session } from "@/components/stroke/session";
 
 const TAP = "transition-transform duration-150 ease-out active:not-disabled:scale-[0.96]";
 
@@ -29,10 +29,12 @@ function Rail({
   answers,
   current,
   onTime,
+  lang,
 }: {
   answers: Session["answers"];
   current: number;
   onTime: boolean;
+  lang: Lang | null;
 }) {
   const steps = [...SIGNS.map((sign) => sign.id), "T" as const];
   return (
@@ -54,7 +56,17 @@ function Rail({
             aria-current={active ? "step" : undefined}
           >
             <span className="sr-only">
-              {id === "T" ? "Time, நேரம்" : `${SIGNS.find((sign) => sign.id === id)?.word}, ${SIGNS.find((sign) => sign.id === id)?.wordTa}`}
+              {id === "T"
+                ? lang === "ta"
+                  ? "நேரம்"
+                  : lang === "en"
+                    ? "Time"
+                    : "Time, நேரம்"
+                : lang === "ta"
+                  ? SIGNS.find((sign) => sign.id === id)?.wordTa
+                  : lang === "en"
+                    ? SIGNS.find((sign) => sign.id === id)?.word
+                    : `${SIGNS.find((sign) => sign.id === id)?.word}, ${SIGNS.find((sign) => sign.id === id)?.wordTa}`}
               {answer ? `, ${answer}` : ""}
             </span>
             <span aria-hidden="true">{id}</span>
@@ -71,6 +83,7 @@ export function Flow({
   answers,
   onsetIso,
   timeReturn,
+  lang,
   onStart,
   onSkip,
   onAnswer,
@@ -83,7 +96,8 @@ export function Flow({
   answers: Session["answers"];
   onsetIso: string | null;
   timeReturn: Session["timeReturn"];
-  onStart: () => void;
+  lang: Lang | null;
+  onStart: (lang: Lang) => void;
   onSkip: () => void;
   onAnswer: (id: SignId, answer: Answer) => void;
   onBack: () => void;
@@ -101,6 +115,7 @@ export function Flow({
         onsetIso={onsetIso}
         timeReturn={timeReturn}
         answers={answers}
+        lang={lang}
         onBack={onBack}
         onSetOnset={onSetOnset}
         onContinue={onContinue}
@@ -113,6 +128,7 @@ export function Flow({
       sign={sign}
       index={signIndex}
       answers={answers}
+      lang={lang}
       onAnswer={onAnswer}
       onBack={onBack}
       onSkip={onSkip}
@@ -120,7 +136,7 @@ export function Flow({
   );
 }
 
-function Intro({ onStart, onSkip }: { onStart: () => void; onSkip: () => void }) {
+function Intro({ onStart, onSkip }: { onStart: (lang: Lang) => void; onSkip: () => void }) {
   return (
     <div className="rise mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-4 py-6">
       <h1 className="font-display text-5xl leading-none text-ink">Is this a stroke?</h1>
@@ -147,17 +163,30 @@ function Intro({ onStart, onSkip }: { onStart: () => void; onSkip: () => void })
           </li>
         ))}
       </ol>
-      <button
-        type="button"
-        onClick={onStart}
-        className={cn(
-          "mt-8 flex min-h-14 flex-col items-center justify-center rounded-full bg-signal px-4 py-2 text-ink",
-          TAP,
-        )}
-      >
-        <span className="text-base font-semibold">Start the check</span>
-        <span className="font-tamil text-sm font-medium">சோதனையைத் தொடங்கு</span>
-      </button>
+      <div className="mt-8 grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => onStart("en")}
+          className={cn(
+            "flex min-h-16 flex-col items-center justify-center rounded-full bg-[#f4efe6] px-2 py-2 text-[#071018]",
+            TAP,
+          )}
+        >
+          <span className="text-base font-semibold">English</span>
+          <span className="text-xs font-medium">Start the check</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => onStart("ta")}
+          className={cn(
+            "flex min-h-16 flex-col items-center justify-center rounded-full bg-signal px-2 py-2 text-ink",
+            TAP,
+          )}
+        >
+          <span className="font-tamil text-base font-semibold">தமிழ்</span>
+          <span className="font-tamil text-xs font-medium">சோதனையைத் தொடங்கு</span>
+        </button>
+      </div>
       <button
         type="button"
         onClick={onSkip}
@@ -174,6 +203,7 @@ function SignStep({
   sign,
   index,
   answers,
+  lang,
   onAnswer,
   onBack,
   onSkip,
@@ -181,6 +211,7 @@ function SignStep({
   sign: (typeof SIGNS)[number];
   index: number;
   answers: Session["answers"];
+  lang: Lang | null;
   onAnswer: (id: SignId, answer: Answer) => void;
   onBack: () => void;
   onSkip: () => void;
@@ -189,6 +220,7 @@ function SignStep({
   useEffect(() => {
     headingRef.current?.focus();
   }, [sign.id]);
+  const tamil = lang === "ta";
 
   return (
     <div key={sign.id} className="rise mx-auto max-w-md px-4 py-4">
@@ -199,30 +231,53 @@ function SignStep({
           className={cn("inline-flex h-11 items-center gap-1 text-sm font-semibold text-ink", TAP)}
         >
           <ChevronLeft className="size-4" aria-hidden="true" />
-          <span>
-            Back
-            <span className="font-tamil block text-xs font-medium">பின்</span>
-          </span>
+          {tamil ? (
+            <span className="font-tamil">பின்</span>
+          ) : (
+            <span>
+              Back
+              {lang == null ? <span className="font-tamil block text-xs font-medium">பின்</span> : null}
+            </span>
+          )}
         </button>
-        <p className="text-right text-sm font-semibold text-ink-soft">
-          {index + 1} of 6 · {sign.word}
-          <span className="font-tamil block text-ink">{sign.wordTa}</span>
+        <p className={cn("text-right text-sm font-semibold text-ink-soft", tamil && "font-tamil text-ink")}>
+          {tamil ? (
+            <>
+              {index + 1} / 6 · {sign.wordTa}
+            </>
+          ) : (
+            <>
+              {index + 1} of 6 · {sign.word}
+              {lang == null ? <span className="font-tamil block text-ink">{sign.wordTa}</span> : null}
+            </>
+          )}
         </p>
       </div>
-      <Rail answers={answers} current={index} onTime={false} />
+      <Rail answers={answers} current={index} onTime={false} lang={lang} />
       <div className="mt-4">
-        <SignVisual sign={sign} />
+        <SignVisual sign={sign} lang={lang} />
       </div>
       <h1
         ref={headingRef}
         tabIndex={-1}
-        className="mt-5 font-display text-3xl leading-tight outline-none"
+        className={cn(
+          "mt-5 text-3xl leading-tight outline-none",
+          tamil ? "font-tamil font-semibold" : "font-display",
+        )}
       >
-        {sign.ask}
+        {tamil ? sign.askTa : sign.ask}
       </h1>
-      <p className="font-tamil mt-2 text-xl leading-snug text-ink">{sign.askTa}</p>
-      <p className="mt-2 text-sm text-ink-soft">{sign.help}</p>
-      <p className="font-tamil mt-1 text-base leading-snug text-ink">{sign.helpTa}</p>
+      {lang == null ? <p className="font-tamil mt-2 text-xl leading-snug text-ink">{sign.askTa}</p> : null}
+      {tamil ? (
+        <p className="font-tamil mt-2 text-base leading-snug text-ink-soft">{sign.helpTa}</p>
+      ) : (
+        <>
+          <p className="mt-2 text-sm text-ink-soft">{sign.help}</p>
+          {lang == null ? (
+            <p className="font-tamil mt-1 text-base leading-snug text-ink">{sign.helpTa}</p>
+          ) : null}
+        </>
+      )}
       <div className="mt-5 grid gap-2">
         <button
           type="button"
@@ -232,8 +287,14 @@ function SignStep({
             TAP,
           )}
         >
-          <span className="text-base font-semibold">Yes, I see this</span>
-          <span className="font-tamil text-sm font-medium">ஆம், இது தெரிகிறது</span>
+          {tamil ? (
+            <span className="font-tamil text-base font-semibold">ஆம், இது தெரிகிறது</span>
+          ) : (
+            <>
+              <span className="text-base font-semibold">Yes, I see this</span>
+              {lang == null ? <span className="font-tamil text-sm font-medium">ஆம், இது தெரிகிறது</span> : null}
+            </>
+          )}
         </button>
         <button
           type="button"
@@ -243,16 +304,28 @@ function SignStep({
             TAP,
           )}
         >
-          <span className="text-base font-semibold">No</span>
-          <span className="font-tamil text-sm font-medium">இல்லை</span>
+          {tamil ? (
+            <span className="font-tamil text-base font-semibold">இல்லை</span>
+          ) : (
+            <>
+              <span className="text-base font-semibold">No</span>
+              {lang == null ? <span className="font-tamil text-sm font-medium">இல்லை</span> : null}
+            </>
+          )}
         </button>
         <button
           type="button"
           onClick={() => onAnswer(sign.id, "unsure")}
           className={cn("flex min-h-12 flex-col items-center justify-center text-ink-soft", TAP)}
         >
-          <span className="text-sm font-semibold">Not sure</span>
-          <span className="font-tamil text-xs font-medium">தெரியவில்லை</span>
+          {tamil ? (
+            <span className="font-tamil text-sm font-semibold">தெரியவில்லை</span>
+          ) : (
+            <>
+              <span className="text-sm font-semibold">Not sure</span>
+              {lang == null ? <span className="font-tamil text-xs font-medium">தெரியவில்லை</span> : null}
+            </>
+          )}
         </button>
       </div>
       <button
@@ -260,8 +333,14 @@ function SignStep({
         onClick={onSkip}
         className="mt-2 flex min-h-11 w-full flex-col items-center justify-center text-ink-soft"
       >
-        <span className="text-sm font-semibold">Skip to hospitals</span>
-        <span className="font-tamil text-xs font-medium">மருத்துவமனைக்குச் செல்</span>
+        {tamil ? (
+          <span className="font-tamil text-sm font-semibold">மருத்துவமனைக்குச் செல்</span>
+        ) : (
+          <>
+            <span className="text-sm font-semibold">Skip to hospitals</span>
+            {lang == null ? <span className="font-tamil text-xs font-medium">மருத்துவமனைக்குச் செல்</span> : null}
+          </>
+        )}
       </button>
     </div>
   );
@@ -271,6 +350,7 @@ function TimeStep({
   onsetIso,
   timeReturn,
   answers,
+  lang,
   onBack,
   onSetOnset,
   onContinue,
@@ -278,6 +358,7 @@ function TimeStep({
   onsetIso: string | null;
   timeReturn: Session["timeReturn"];
   answers: Session["answers"];
+  lang: Lang | null;
   onBack: () => void;
   onSetOnset: (iso: string | null) => void;
   onContinue: () => void;
@@ -286,6 +367,7 @@ function TimeStep({
   const fieldId = useId();
   const [preset, setPreset] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const tamil = lang === "ta";
 
   useEffect(() => {
     headingRef.current?.focus();
@@ -300,29 +382,48 @@ function TimeStep({
           className={cn("inline-flex h-11 items-center gap-1 text-sm font-semibold text-ink", TAP)}
         >
           <ChevronLeft className="size-4" aria-hidden="true" />
-          <span>
-            {timeReturn === "locator" ? "Hospitals" : "Back"}
-            <span className="font-tamil block text-xs font-medium">
-              {timeReturn === "locator" ? "மருத்துவமனை" : "பின்"}
+          {tamil ? (
+            <span className="font-tamil">{timeReturn === "locator" ? "மருத்துவமனை" : "பின்"}</span>
+          ) : (
+            <span>
+              {timeReturn === "locator" ? "Hospitals" : "Back"}
+              {lang == null ? (
+                <span className="font-tamil block text-xs font-medium">
+                  {timeReturn === "locator" ? "மருத்துவமனை" : "பின்"}
+                </span>
+              ) : null}
             </span>
-          </span>
+          )}
         </button>
-        <p className="text-right text-sm font-semibold text-ink-soft">
-          6 of 6 · Time
-          <span className="font-tamil block text-ink">நேரம்</span>
+        <p className={cn("text-right text-sm font-semibold text-ink-soft", tamil && "font-tamil text-ink")}>
+          {tamil ? (
+            "6 / 6 · நேரம்"
+          ) : (
+            <>
+              6 of 6 · Time
+              {lang == null ? <span className="font-tamil block text-ink">நேரம்</span> : null}
+            </>
+          )}
         </p>
       </div>
-      <Rail answers={answers} current={5} onTime />
+      <Rail answers={answers} current={5} onTime lang={lang} />
       <h1
         ref={headingRef}
         tabIndex={-1}
-        className="mt-5 font-display text-3xl leading-tight outline-none"
+        className={cn(
+          "mt-5 text-3xl leading-tight outline-none",
+          tamil ? "font-tamil font-semibold" : "font-display",
+        )}
       >
-        When did this start — or when were they last seen well?
+        {tamil
+          ? "இது எப்போது தொடங்கியது? அல்லது கடைசியாக எப்போது நன்றாக இருந்தார்கள்?"
+          : "When did this start — or when were they last seen well?"}
       </h1>
-      <p className="font-tamil mt-2 text-xl leading-snug text-ink">
-        இது எப்போது தொடங்கியது? அல்லது கடைசியாக எப்போது நன்றாக இருந்தார்கள்?
-      </p>
+      {lang == null ? (
+        <p className="font-tamil mt-2 text-xl leading-snug text-ink">
+          இது எப்போது தொடங்கியது? அல்லது கடைசியாக எப்போது நன்றாக இருந்தார்கள்?
+        </p>
+      ) : null}
       <div className="mt-4">
         <Countdown onsetIso={onsetIso} compact />
       </div>
@@ -343,14 +444,16 @@ function TimeStep({
               preset === item.minutes ? "bg-[#f4efe6] text-[#071018]" : "bg-paper-deep text-ink",
             )}
           >
-            <span>{item.label}</span>
-            <span className="font-tamil text-xs font-medium">{item.labelTa}</span>
+            <span className={tamil ? "font-tamil" : undefined}>{tamil ? item.labelTa : item.label}</span>
+            {lang == null ? <span className="font-tamil text-xs font-medium">{item.labelTa}</span> : null}
           </button>
         ))}
       </div>
-      <label htmlFor={fieldId} className="mt-4 block text-sm font-semibold text-ink">
-        Or set the exact time
-        <span className="font-tamil mt-0.5 block text-base font-medium">அல்லது சரியான நேரம்</span>
+      <label htmlFor={fieldId} className={cn("mt-4 block text-sm font-semibold text-ink", tamil && "font-tamil text-base")}>
+        {tamil ? "அல்லது சரியான நேரம்" : "Or set the exact time"}
+        {lang == null ? (
+          <span className="font-tamil mt-0.5 block text-base font-medium">அல்லது சரியான நேரம்</span>
+        ) : null}
       </label>
       <input
         id={fieldId}
@@ -363,7 +466,13 @@ function TimeStep({
           const date = new Date(value);
           if (Number.isNaN(date.getTime())) return;
           if (date.getTime() > Date.now() + 60_000) {
-            setError("That time is in the future. அந்த நேரம் இன்னும் வரவில்லை.");
+            setError(
+              tamil
+                ? "அந்த நேரம் இன்னும் வரவில்லை."
+                : lang == null
+                  ? "That time is in the future. அந்த நேரம் இன்னும் வரவில்லை."
+                  : "That time is in the future.",
+            );
             return;
           }
           setError(null);
@@ -372,7 +481,9 @@ function TimeStep({
         }}
         className="mt-2 h-12 w-full rounded-card border border-line bg-surface px-3 text-base text-ink"
       />
-      {error ? <p className="mt-2 text-sm font-semibold text-signal">{error}</p> : null}
+      {error ? (
+        <p className={cn("mt-2 text-sm font-semibold text-signal", tamil && "font-tamil")}>{error}</p>
+      ) : null}
       <button
         type="button"
         onClick={onContinue}
@@ -381,12 +492,20 @@ function TimeStep({
           TAP,
         )}
       >
-        <span className="text-base font-semibold">
-          {onsetIso ? "Show hospitals" : "Continue without a time"}
+        <span className={cn("text-base font-semibold", tamil && "font-tamil")}>
+          {tamil
+            ? onsetIso
+              ? "மருத்துவமனைகளைக் காட்டு"
+              : "நேரம் இல்லாமல் தொடரவும்"
+            : onsetIso
+              ? "Show hospitals"
+              : "Continue without a time"}
         </span>
-        <span className="font-tamil text-sm font-medium">
-          {onsetIso ? "மருத்துவமனைகளைக் காட்டு" : "நேரம் இல்லாமல் தொடரவும்"}
-        </span>
+        {lang == null ? (
+          <span className="font-tamil text-sm font-medium">
+            {onsetIso ? "மருத்துவமனைகளைக் காட்டு" : "நேரம் இல்லாமல் தொடரவும்"}
+          </span>
+        ) : null}
       </button>
       <button
         type="button"
@@ -398,8 +517,14 @@ function TimeStep({
         }}
         className="mt-2 flex min-h-11 w-full flex-col items-center justify-center text-ink-soft"
       >
-        <span className="text-sm font-semibold">I don’t know the time</span>
-        <span className="font-tamil text-xs font-medium">நேரம் தெரியவில்லை</span>
+        {tamil ? (
+          <span className="font-tamil text-sm font-semibold">நேரம் தெரியவில்லை</span>
+        ) : (
+          <>
+            <span className="text-sm font-semibold">I don’t know the time</span>
+            {lang == null ? <span className="font-tamil text-xs font-medium">நேரம் தெரியவில்லை</span> : null}
+          </>
+        )}
       </button>
     </div>
   );

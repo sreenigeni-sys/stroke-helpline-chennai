@@ -6,6 +6,7 @@ import {
   loadSession,
   saveSession,
   type Answer,
+  type Lang,
   type Session,
 } from "@/components/stroke/session";
 import { Flow } from "@/components/stroke/flow";
@@ -69,7 +70,10 @@ export function StrokeApp() {
           answers={session.answers}
           onsetIso={session.onsetIso}
           timeReturn={session.timeReturn}
-          onStart={() => patch((current) => ({ ...current, phase: "signs", signIndex: 0 }))}
+          lang={session.lang}
+          onStart={(lang: Lang) =>
+            patch((current) => ({ ...current, phase: "signs", signIndex: 0, lang }))
+          }
           onSkip={() => patch((current) => ({ ...current, phase: "locator" }))}
           onAnswer={(id: SignId, answer: Answer) =>
             patch((current) => {

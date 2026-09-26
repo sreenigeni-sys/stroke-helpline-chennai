@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { useReduceMotion } from "@/lib/reduce-motion";
 import { cn } from "@/lib/cn";
 import type { Sign } from "@/components/stroke/signs";
+import type { Lang } from "@/components/stroke/session";
 
-export function SignVisual({ sign }: { sign: Sign }) {
+export function SignVisual({ sign, lang = null }: { sign: Sign; lang?: Lang | null }) {
   const reduce = useReduceMotion();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [posterOk, setPosterOk] = useState(true);
@@ -34,7 +35,7 @@ export function SignVisual({ sign }: { sign: Sign }) {
       {posterOk ? (
         <img
           src={sign.poster}
-          alt={`${sign.word} demonstration`}
+          alt={lang === "ta" ? `${sign.wordTa} விளக்கம்` : `${sign.word} demonstration`}
           className="absolute inset-0 h-full w-full object-cover"
           onError={() => setPosterOk(false)}
         />
@@ -54,7 +55,7 @@ export function SignVisual({ sign }: { sign: Sign }) {
           playsInline
           autoPlay
           preload="auto"
-          aria-label={`${sign.word} demonstration`}
+          aria-label={lang === "ta" ? `${sign.wordTa} விளக்கம்` : `${sign.word} demonstration`}
           onPlaying={() => setVideoOn(true)}
           onCanPlay={() => setVideoOn(true)}
           onError={() => setVideoOn(false)}
@@ -71,8 +72,16 @@ export function SignVisual({ sign }: { sign: Sign }) {
         {sign.id}
       </span>
       <p className="absolute inset-x-0 bottom-0 z-10 bg-[#071018]/85 px-4 py-3 text-sm text-[#f4efe6]">
-        {sign.watch}
-        <span className="font-tamil mt-1 block text-base leading-snug">{sign.watchTa}</span>
+        {lang === "ta" ? (
+          <span className="font-tamil text-base leading-snug">{sign.watchTa}</span>
+        ) : (
+          <>
+            {sign.watch}
+            {lang == null ? (
+              <span className="font-tamil mt-1 block text-base leading-snug">{sign.watchTa}</span>
+            ) : null}
+          </>
+        )}
       </p>
       {needsTap && showVideo && !videoOn ? (
         <button
@@ -85,8 +94,7 @@ export function SignVisual({ sign }: { sign: Sign }) {
             });
           }}
         >
-          Play
-          <span className="font-tamil block text-xs">இயக்கு</span>
+          {lang === "ta" ? <span className="font-tamil">இயக்கு</span> : "Play"}
         </button>
       ) : null}
     </div>
