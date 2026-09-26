@@ -164,7 +164,7 @@ function Intro({ onStart, onSkip }: { onStart: (lang: Lang) => void; onSkip: () 
           </li>
         ))}
       </ul>
-      <div className="mt-5 grid grid-cols-2 gap-2">
+      <div className="mt-8 grid grid-cols-2 gap-2">
         <button
           type="button"
           onClick={() => onStart("en")}
@@ -193,24 +193,9 @@ function Intro({ onStart, onSkip }: { onStart: (lang: Lang) => void; onSkip: () 
         onClick={onSkip}
         className={cn("mt-3 flex min-h-12 flex-col items-center justify-center text-ink-soft", TAP)}
       >
-        <span className="text-sm font-semibold">Skip to hospitals</span>
-        <span className="font-tamil text-xs font-medium">மருத்துவமனைக்குச் செல்</span>
+        <span className="text-sm font-semibold">Find hospital immediately</span>
+        <span className="font-tamil text-xs font-medium">உடனே மருத்துவமனையைக் கண்டுபிடி</span>
       </button>
-      <div className="mt-3 rounded-card border border-line bg-surface px-3.5 py-2.5 text-sm leading-snug">
-        <p className="font-semibold text-ink">How to use this app</p>
-        <p className="mt-1 text-ink">
-          Get screened quickly for a stroke, then find the nearest stroke-ready hospital for you.
-        </p>
-        <p className="font-tamil mt-0.5 text-xs text-ink-soft">
-          பக்கவாதத்துக்கு விரைவாகச் சோதிக்கவும். பிறகு உங்களுக்கு அருகிலுள்ள பக்கவாதத் தயார் மருத்துவமனையைக் கண்டுபிடிக்கவும்.
-        </p>
-        <p className="mt-2 text-ink">
-          Stroke-ready hospitals will treat most strokes. Comprehensive centres can manage all complicated and severe strokes.
-        </p>
-        <p className="font-tamil mt-0.5 text-xs text-ink-soft">
-          பக்கவாதத் தயார் மருத்துவமனை பெரும்பாலான பக்கவாதங்களைக் கையாளும். காம்ப்ரீஹென்சிவ் மையம் சிக்கலான, கடுமையான அனைத்துப் பக்கவாதங்களையும் கையாளும்.
-        </p>
-      </div>
       </div>
       <HospitalUpdateForm />
       <ReviewForm />
@@ -358,11 +343,11 @@ function SignStep({
         className="mt-2 flex min-h-11 w-full flex-col items-center justify-center text-ink-soft"
       >
         {tamil ? (
-          <span className="font-tamil text-sm font-semibold">மருத்துவமனைக்குச் செல்</span>
+          <span className="font-tamil text-sm font-semibold">உடனே மருத்துவமனையைக் கண்டுபிடி</span>
         ) : (
           <>
-            <span className="text-sm font-semibold">Skip to hospitals</span>
-            {lang == null ? <span className="font-tamil text-xs font-medium">மருத்துவமனைக்குச் செல்</span> : null}
+            <span className="text-sm font-semibold">Find hospital immediately</span>
+            {lang == null ? <span className="font-tamil text-xs font-medium">உடனே மருத்துவமனையைக் கண்டுபிடி</span> : null}
           </>
         )}
       </button>
