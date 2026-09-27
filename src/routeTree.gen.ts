@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ActivityRouteImport } from './routes/activity'
+import { Route as ReviewRouteImport } from './routes/review'
+import { Route as UpdateHospitalRouteImport } from './routes/update-hospital'
 import { Route as ApiStrokeCallRouteImport } from './routes/api/stroke-call'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +25,16 @@ const ActivityRoute = ActivityRouteImport.update({
   path: '/activity',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReviewRoute = ReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UpdateHospitalRoute = UpdateHospitalRouteImport.update({
+  id: '/update-hospital',
+  path: '/update-hospital',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiStrokeCallRoute = ApiStrokeCallRouteImport.update({
   id: '/api/stroke-call',
   path: '/api/stroke-call',
@@ -32,30 +44,45 @@ const ApiStrokeCallRoute = ApiStrokeCallRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
+  '/review': typeof ReviewRoute
+  '/update-hospital': typeof UpdateHospitalRoute
   '/api/stroke-call': typeof ApiStrokeCallRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
+  '/review': typeof ReviewRoute
+  '/update-hospital': typeof UpdateHospitalRoute
   '/api/stroke-call': typeof ApiStrokeCallRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
+  '/review': typeof ReviewRoute
+  '/update-hospital': typeof UpdateHospitalRoute
   '/api/stroke-call': typeof ApiStrokeCallRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/activity' | '/api/stroke-call'
+  fullPaths:
+    '/' | '/activity' | '/review' | '/update-hospital' | '/api/stroke-call'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/activity' | '/api/stroke-call'
-  id: '__root__' | '/' | '/activity' | '/api/stroke-call'
+  to: '/' | '/activity' | '/review' | '/update-hospital' | '/api/stroke-call'
+  id:
+    | '__root__'
+    | '/'
+    | '/activity'
+    | '/review'
+    | '/update-hospital'
+    | '/api/stroke-call'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ActivityRoute: typeof ActivityRoute
+  ReviewRoute: typeof ReviewRoute
+  UpdateHospitalRoute: typeof UpdateHospitalRoute
   ApiStrokeCallRoute: typeof ApiStrokeCallRoute
 }
 
@@ -75,6 +102,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ActivityRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/review': {
+      id: '/review'
+      path: '/review'
+      fullPath: '/review'
+      preLoaderRoute: typeof ReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/update-hospital': {
+      id: '/update-hospital'
+      path: '/update-hospital'
+      fullPath: '/update-hospital'
+      preLoaderRoute: typeof UpdateHospitalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/stroke-call': {
       id: '/api/stroke-call'
       path: '/api/stroke-call'
@@ -88,6 +129,8 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ActivityRoute: ActivityRoute,
+  ReviewRoute: ReviewRoute,
+  UpdateHospitalRoute: UpdateHospitalRoute,
   ApiStrokeCallRoute: ApiStrokeCallRoute,
 }
 export const routeTree = rootRouteImport
