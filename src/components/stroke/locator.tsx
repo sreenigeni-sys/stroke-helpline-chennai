@@ -188,7 +188,7 @@ export function Locator({
         </div>
       ) : null}
       {concern === "clear" ? (
-        <div className={cn("mb-4 rounded-card border border-line bg-surface px-4 py-3 text-sm text-ink-soft", copy.ta && "font-tamil")}>
+        <div className={cn("mb-4 rounded-card border border-[#b7e0c4] bg-[#e8f7ee] px-4 py-3 text-sm font-bold text-[#0d6b3a]", copy.ta && "font-tamil")}>
           {copy.clear}
         </div>
       ) : null}

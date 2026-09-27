@@ -31,9 +31,9 @@ export function locatorCopy(lang: Lang | null) {
     cityCentre: ta ? "நகர மையம்" : "Use city centre",
     reset: "Reset clock and location",
     abroad: ta
-      ? "வெளிநாட்டிலிருந்து உதவினால், அவர்கள் இருக்கும் பகுதியைத் தேர்ந்தெடுங்கள்"
-      : "Helping from abroad? Set their area",
-    abroadHint: ta ? "" : "வெளிநாட்டிலிருந்து உதவினால், சென்னையில் அவர்கள் இருக்கும் இடம்.",
+      ? "வேறு ஒருவருக்காக என்றால், நோயாளியின் இடத்தைத் தேர்ந்தெடுங்கள்."
+      : "If for someone else, please choose the patient's location.",
+    abroadHint: ta ? "" : "வேறு ஒருவருக்காக என்றால், நோயாளியின் இடத்தைத் தேர்ந்தெடுங்கள்.",
     placePlaceholder: ta ? "அண்ணா நகர், வேளச்சேரி, ஆவடி…" : "Anna Nagar, Velachery, Avadi…",
     noArea: ta ? "அந்தப் பெயரில் பகுதி இல்லை. வரைபடத்தில் தொடுங்கள்." : "No area by that name. Tap the map instead.",
     hospitals(count: number) {
