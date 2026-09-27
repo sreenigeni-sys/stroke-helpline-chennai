@@ -16,7 +16,7 @@ export type HospitalFacts = {
  * Plain answers drawn from the existing notes, then these clinician rules:
  * every hospital here has 24/7 CT;
  * every comprehensive centre has thrombectomy;
- * every private comprehensive centre also has 24/7 MRI.
+ * every private comprehensive centre also has 24/7 MRI, except Medway Kodambakkam.
  * A pathway sentence is included only when patients are sent to a named hospital.
  */
 const FACTS: Record<string, HospitalFacts> = {
@@ -53,7 +53,7 @@ const FACTS: Record<string, HospitalFacts> = {
   "TN-PVT-020": { ct: "yes", mri: "check", thrombectomy: "no", pathway: null },
   "TN-PVT-021": { ct: "yes", mri: "check", thrombectomy: "check", pathway: null },
   "TN-PVT-023": { ct: "check", mri: "check", thrombectomy: "check", pathway: null },
-  "TN-PVT-024": { ct: "check", mri: "check", thrombectomy: "no", pathway: null },
+  "TN-PVT-024": { ct: "yes", mri: "no", thrombectomy: "yes", pathway: null },
   "TN-PVT-025": { ct: "check", mri: "check", thrombectomy: "no", pathway: null },
   "TN-PVT-026": { ct: "check", mri: "check", thrombectomy: "no", pathway: null },
   "TN-PVT-027": { ct: "yes", mri: "check", thrombectomy: "yes", pathway: null },
@@ -85,11 +85,12 @@ export function hospitalFacts(id: string): HospitalFacts {
   const hospital = HOSPITALS.find((item) => item.id === id);
   const comprehensive = hospital?.level === "comprehensive";
   const privateCentre = hospital?.ownership === "Private";
+  const noMri = id === "TN-PVT-024";
   return {
     ...listed,
     ct: "yes",
     thrombectomy: comprehensive ? "yes" : listed.thrombectomy,
-    mri: comprehensive && privateCentre ? "yes" : listed.mri,
+    mri: noMri ? "no" : comprehensive && privateCentre ? "yes" : listed.mri,
   };
 }
 

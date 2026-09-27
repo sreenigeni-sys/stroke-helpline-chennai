@@ -460,17 +460,17 @@ export const HOSPITALS: Hospital[] = [
     "id": "TN-PVT-024",
     "name": "Medway Hospital",
     "ownership": "Private",
-    "level": "primary",
-    "tierRaw": "Stroke-ready",
+    "level": "comprehensive",
+    "tierRaw": "Comprehensive",
     "area": "Kodambakkam",
     "lat": 13.0536322,
     "lng": 80.22752,
     "address": "2/26 1st Main Rd, United India Colony, Kodambakkam, Chennai 600024",
     "phone": "+919455794557",
-    "notes": "User-classified stroke-ready. Multi-speciality with CT. Not comprehensive.",
-    "verify": "Not a thrombectomy hub",
+    "notes": "Comprehensive. 24/7 CT and thrombectomy. No 24/7 MRI.",
+    "verify": "No 24/7 MRI",
     "source": "clinician_verified",
-    "lastVerified": "2026-09-25"
+    "lastVerified": "2026-09-27"
   },
   {
     "id": "TN-PVT-025",
