@@ -13,10 +13,10 @@ export type HospitalFacts = {
 };
 
 /**
- * Plain answers drawn from the existing notes.
- * 24/7 CT is Yes when the hospital is a thrombectomy centre or the note names 24-hour CT.
- * 24/7 MRI is Yes only when the note names MRI with that round-the-clock stroke service.
- * Thrombectomy is No only when the note says it is not done there.
+ * Plain answers drawn from the existing notes, then these clinician rules:
+ * every hospital here has 24/7 CT;
+ * every comprehensive centre has thrombectomy;
+ * every private comprehensive centre also has 24/7 MRI.
  * A pathway sentence is included only when patients are sent to a named hospital.
  */
 const FACTS: Record<string, HospitalFacts> = {
@@ -81,7 +81,16 @@ if (missing.length > 0) {
 }
 
 export function hospitalFacts(id: string): HospitalFacts {
-  return FACTS[id] ?? { ct: "check", mri: "check", thrombectomy: "check", pathway: null };
+  const listed = FACTS[id] ?? { ct: "check", mri: "check", thrombectomy: "check", pathway: null };
+  const hospital = HOSPITALS.find((item) => item.id === id);
+  const comprehensive = hospital?.level === "comprehensive";
+  const privateCentre = hospital?.ownership === "Private";
+  return {
+    ...listed,
+    ct: "yes",
+    thrombectomy: comprehensive ? "yes" : listed.thrombectomy,
+    mri: comprehensive && privateCentre ? "yes" : listed.mri,
+  };
 }
 
 export function pathwayLine(id: string, lang?: "en" | "ta" | null) {

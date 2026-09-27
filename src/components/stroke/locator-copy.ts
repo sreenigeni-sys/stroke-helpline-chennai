@@ -17,6 +17,13 @@ export function locatorCopy(lang: Lang | null) {
     clear: ta
       ? "நீங்கள் BEFAST அறிகுறியைக் குறிக்கவில்லை. அதனால் பக்கவாதம் இல்லை என்று ஆகாது. ஏதாவது தவறாகத் தோன்றினால், போகும் முன் அழையுங்கள்."
       : "You did not mark a BEFAST sign. That does not rule out a stroke. If something still feels wrong, call the hospital before you go.",
+    noFood: ta
+      ? "தண்ணீர், உணவு, மருந்து எதுவும் கொடுக்க வேண்டாம்."
+      : "Do not give any water, food, or medicine.",
+    lieDown: ta
+      ? "தரையில் படுக்க வையுங்கள், ஒரு பக்கமாக."
+      : "Make them lie down flat, on their side.",
+    sugar: ta ? "இரத்த சர்க்கரையைப் பாருங்கள்." : "Check blood sugar.",
     finding: ta ? "உங்களைத் தேடுகிறது…" : "Finding you…",
     tightening: ta ? "இடத்தைத் துல்லியமாக்குகிறது…" : "Tightening GPS…",
     updateLocation: ta ? "இடத்தைப் புதுப்பி" : "Update my location",
@@ -54,12 +61,13 @@ export function locatorCopy(lang: Lang | null) {
         : `Only accurate to about ${rounded}. If the pin is not on your street, tap the map or set the area.`;
     },
     allTiers: ta ? "அனைத்தும்" : "All tiers",
-    comprehensive: ta ? "த்ராம்பெக்டமி" : "Comprehensive",
+    comprehensive: ta ? "காம்ப்ரீஹென்சிவ்" : "Comprehensive",
+    strokeReady: ta ? "பக்கவாத தயார்" : "Stroke-ready",
     bothTypes: ta ? "அரசு + தனியார்" : "Gov + private",
     government: ta ? "அரசு" : "Government",
     private: ta ? "தனியார்" : "Private",
-    legendGovComp: ta ? "அரசு · த்ராம்பெக்டமி" : "Gov comprehensive",
-    legendPvtComp: ta ? "தனியார் · த்ராம்பெக்டமி" : "Private comprehensive",
+    legendGovComp: ta ? "அரசு · காம்ப்ரீஹென்சிவ்" : "Gov comprehensive",
+    legendPvtComp: ta ? "தனியார் · காம்ப்ரீஹென்சிவ்" : "Private comprehensive",
     legendGovReady: ta ? "அரசு · பக்கவாத தயார்" : "Gov stroke-ready",
     legendPvtReady: ta ? "தனியார் · பக்கவாத தயார்" : "Private stroke-ready",
     tapMap: ta ? "அவர்கள் தெருவில் முள் வைக்க வரைபடத்தைத் தொடுங்கள்." : "Tap the map to drop a pin on their street.",

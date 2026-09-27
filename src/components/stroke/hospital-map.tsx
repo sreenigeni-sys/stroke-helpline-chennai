@@ -174,6 +174,13 @@ export function HospitalMap({
         const facts = hospitalFacts(hospital.id);
         const tamil = lang === "ta";
         const owner = tamil ? (gov ? "அரசு" : "தனியார்") : hospital.ownership;
+        const tier = comprehensive
+          ? tamil
+            ? "காம்ப்ரீஹென்சிவ்"
+            : "Comprehensive"
+          : tamil
+            ? "பக்கவாத தயார்"
+            : "Stroke-ready";
         const services = tamil
           ? `24/7 சிடி: ${serviceWord(facts.ct, lang)}<br/>24/7 எம்ஆர்ஐ: ${serviceWord(facts.mri, lang)}<br/>24/7 த்ராம்பெக்டமி: ${serviceWord(facts.thrombectomy, lang)}`
           : `24/7 CT: ${serviceWord(facts.ct)}<br/>24/7 MRI: ${serviceWord(facts.mri)}<br/>24/7 thrombectomy: ${serviceWord(facts.thrombectomy)}`;
@@ -185,7 +192,7 @@ export function HospitalMap({
           zIndexOffset: comprehensive ? 400 : 0,
         }).addTo(group);
         marker.bindPopup(
-          `<strong>${esc(hospital.name)}</strong><br/>${esc(owner)}<br/>${services}${pathway}${phone}`,
+          `<strong>${esc(hospital.name)}</strong><br/>${esc(owner)} · ${esc(tier)}<br/>${services}${pathway}${phone}`,
         );
         marker.on("click", (event) => {
           if (event.originalEvent) L.DomEvent.stopPropagation(event.originalEvent);

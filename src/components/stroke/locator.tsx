@@ -193,6 +193,12 @@ export function Locator({
         </div>
       ) : null}
 
+      <div className={cn("mb-4 rounded-card border border-line bg-surface px-4 py-3 text-sm font-semibold text-ink", copy.ta && "font-tamil")}>
+        <p>{copy.noFood}</p>
+        <p className="mt-1">{copy.lieDown}</p>
+        <p className="mt-1">{copy.sugar}</p>
+      </div>
+
       <Countdown onsetIso={onsetIso} onEdit={onEditTime} lang={lang} />
 
       <div className="mt-4 flex flex-col gap-2 sm:flex-row">
@@ -507,7 +513,11 @@ function HospitalCard({
       )}
     >
       <div className={cn("flex items-center justify-between gap-3 px-4 py-2.5", tab)}>
-        <p className={cn("text-sm font-semibold", copy.ta && "font-tamil")}>{gov ? copy.government : copy.private}</p>
+        <p className={cn("text-sm font-semibold", copy.ta && "font-tamil")}>
+          {gov ? copy.government : copy.private}
+          {" · "}
+          {comprehensive ? copy.comprehensive : copy.strokeReady}
+        </p>
         <span className="shrink-0 rounded-full bg-[#071018]/15 px-3 py-1 text-sm font-semibold tabular-nums">
           {formatDistance(hospital.dist)}
           <span className="sr-only"> {fromYou ? copy.fromYou : copy.fromCentre}</span>
