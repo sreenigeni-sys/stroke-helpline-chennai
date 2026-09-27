@@ -386,7 +386,7 @@ export function Locator({
           />
           <p className={cn("mt-2 text-xs text-ink-soft", copy.ta && "font-tamil")}>{copy.tapMap}</p>
         </div>
-        <div className="flex flex-col gap-3">
+        <div>
           <div className="flex items-end justify-between gap-3">
             <h1 className={cn("text-3xl leading-tight", copy.ta ? "font-tamil font-semibold" : "font-display")}>
               {copy.nearest}
@@ -399,33 +399,35 @@ export function Locator({
               {copy.recheck}
             </button>
           </div>
-          <p className={cn("mb-3 text-sm text-ink-soft", copy.ta && "font-tamil")}>{copy.explain}</p>
-          {rows.length === 0 ? (
-            <p className={cn("rounded-card border border-line bg-surface px-4 py-8 text-center font-semibold text-signal", copy.ta && "font-tamil")}>
-              {copy.noMatch}
-            </p>
-          ) : (
-            rows.map((hospital, index) => (
-              <HospitalCard
-                key={hospital.id}
-                hospital={hospital}
-                active={activeId === hospital.id}
-                fromYou={Boolean(user)}
-                index={index}
-                onsetIso={onsetIso}
-                lang={lang}
-              />
-            ))
-          )}
-          <footer className={cn("mt-4 border-t border-line pt-4 text-xs leading-relaxed text-ink-soft", copy.ta && "font-tamil")}>
-            <p>
-              <strong className="text-ink">{copy.disclaimer}</strong> {copy.noAmbulance}
-            </p>
-            <p className="mt-2">{copy.clocks}</p>
-            <p className="mt-2">{copy.sources}</p>
-          </footer>
+          <p className={cn("mt-3 text-sm text-ink-soft", copy.ta && "font-tamil")}>{copy.explain}</p>
         </div>
       </div>
+      {rows.length === 0 ? (
+        <p className={cn("mt-4 rounded-card border border-line bg-surface px-4 py-8 text-center font-semibold text-signal", copy.ta && "font-tamil")}>
+          {copy.noMatch}
+        </p>
+      ) : (
+        <div className="mt-4 grid items-start gap-3 md:grid-cols-2">
+          {rows.map((hospital, index) => (
+            <HospitalCard
+              key={hospital.id}
+              hospital={hospital}
+              active={activeId === hospital.id}
+              fromYou={Boolean(user)}
+              index={index}
+              onsetIso={onsetIso}
+              lang={lang}
+            />
+          ))}
+        </div>
+      )}
+      <footer className={cn("mt-4 border-t border-line pt-4 text-xs leading-relaxed text-ink-soft", copy.ta && "font-tamil")}>
+        <p>
+          <strong className="text-ink">{copy.disclaimer}</strong> {copy.noAmbulance}
+        </p>
+        <p className="mt-2">{copy.clocks}</p>
+        <p className="mt-2">{copy.sources}</p>
+      </footer>
     </div>
   );
 }
