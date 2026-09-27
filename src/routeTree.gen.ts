@@ -11,8 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ActivityRouteImport } from './routes/activity'
-import { Route as ReviewRouteImport } from './routes/review'
-import { Route as UpdateHospitalRouteImport } from './routes/update-hospital'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ApiStrokeCallRouteImport } from './routes/api/stroke-call'
 
 const IndexRoute = IndexRouteImport.update({
@@ -25,14 +24,9 @@ const ActivityRoute = ActivityRouteImport.update({
   path: '/activity',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ReviewRoute = ReviewRouteImport.update({
-  id: '/review',
-  path: '/review',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const UpdateHospitalRoute = UpdateHospitalRouteImport.update({
-  id: '/update-hospital',
-  path: '/update-hospital',
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiStrokeCallRoute = ApiStrokeCallRouteImport.update({
@@ -44,45 +38,34 @@ const ApiStrokeCallRoute = ApiStrokeCallRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
-  '/review': typeof ReviewRoute
-  '/update-hospital': typeof UpdateHospitalRoute
+  '/contact': typeof ContactRoute
   '/api/stroke-call': typeof ApiStrokeCallRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
-  '/review': typeof ReviewRoute
-  '/update-hospital': typeof UpdateHospitalRoute
+  '/contact': typeof ContactRoute
   '/api/stroke-call': typeof ApiStrokeCallRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
-  '/review': typeof ReviewRoute
-  '/update-hospital': typeof UpdateHospitalRoute
+  '/contact': typeof ContactRoute
   '/api/stroke-call': typeof ApiStrokeCallRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    '/' | '/activity' | '/review' | '/update-hospital' | '/api/stroke-call'
+  fullPaths: '/' | '/activity' | '/contact' | '/api/stroke-call'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/activity' | '/review' | '/update-hospital' | '/api/stroke-call'
-  id:
-    | '__root__'
-    | '/'
-    | '/activity'
-    | '/review'
-    | '/update-hospital'
-    | '/api/stroke-call'
+  to: '/' | '/activity' | '/contact' | '/api/stroke-call'
+  id: '__root__' | '/' | '/activity' | '/contact' | '/api/stroke-call'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ActivityRoute: typeof ActivityRoute
-  ReviewRoute: typeof ReviewRoute
-  UpdateHospitalRoute: typeof UpdateHospitalRoute
+  ContactRoute: typeof ContactRoute
   ApiStrokeCallRoute: typeof ApiStrokeCallRoute
 }
 
@@ -102,18 +85,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ActivityRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/review': {
-      id: '/review'
-      path: '/review'
-      fullPath: '/review'
-      preLoaderRoute: typeof ReviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/update-hospital': {
-      id: '/update-hospital'
-      path: '/update-hospital'
-      fullPath: '/update-hospital'
-      preLoaderRoute: typeof UpdateHospitalRouteImport
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/stroke-call': {
@@ -129,8 +105,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ActivityRoute: ActivityRoute,
-  ReviewRoute: ReviewRoute,
-  UpdateHospitalRoute: UpdateHospitalRoute,
+  ContactRoute: ContactRoute,
   ApiStrokeCallRoute: ApiStrokeCallRoute,
 }
 export const routeTree = rootRouteImport

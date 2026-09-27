@@ -183,17 +183,9 @@ function Intro({ onStart, onSkip }: { onStart: (lang: Lang) => void; onSkip: () 
         <span className="font-tamil text-xs font-medium">உடனே மருத்துவமனையைக் கண்டுபிடி</span>
       </button>
       </div>
-      <p className="mt-8 text-center text-[11px] leading-relaxed text-ink-soft/80">
-        <Link to="/update-hospital" className="hover:text-ink">
-          Update a hospital
-          <span className="font-tamil"> · மருத்துவமனை விவரம்</span>
-        </Link>
-        <span className="mx-1.5" aria-hidden="true">
-          ·
-        </span>
-        <Link to="/review" className="hover:text-ink">
-          Leave a review
-          <span className="font-tamil"> · கருத்து</span>
+      <p className="mt-8 text-center">
+        <Link to="/contact" className="text-[11px] text-ink-soft/80 hover:text-ink">
+          Contact Us
         </Link>
       </p>
       <p className="mt-6 text-center">
