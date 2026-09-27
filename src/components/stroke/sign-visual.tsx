@@ -24,10 +24,17 @@ export function SignVisual({ sign, lang = null }: { sign: Sign; lang?: Lang | nu
     const video = videoRef.current;
     if (!video) return;
     video.muted = true;
+    const fit = () => {
+      const duration = video.duration;
+      video.playbackRate = Number.isFinite(duration) && duration > 7 ? duration / 6 : 1;
+    };
+    fit();
+    video.addEventListener("loadedmetadata", fit);
     const pending = video.play();
     if (pending) {
       pending.then(() => setNeedsTap(false)).catch(() => setNeedsTap(true));
     }
+    return () => video.removeEventListener("loadedmetadata", fit);
   }, [showVideo, sign.id]);
 
   return (
@@ -51,7 +58,6 @@ export function SignVisual({ sign, lang = null }: { sign: Sign; lang?: Lang | nu
           src={sign.video}
           poster={sign.poster}
           muted
-          loop={sign.loop !== false}
           playsInline
           autoPlay
           preload="auto"

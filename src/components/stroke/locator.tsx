@@ -513,7 +513,7 @@ function HospitalCard({
       )}
     >
       <div className={cn("flex items-center justify-between gap-3 px-4 py-2.5", tab)}>
-        <p className={cn("text-sm font-semibold", copy.ta && "font-tamil")}>
+        <p className={cn("min-w-0 text-sm font-semibold leading-tight", copy.ta && "font-tamil")}>
           {gov ? copy.government : copy.private}
           {" · "}
           {comprehensive ? copy.comprehensive : copy.strokeReady}
