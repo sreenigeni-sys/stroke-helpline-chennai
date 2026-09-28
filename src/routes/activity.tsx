@@ -1,5 +1,6 @@
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { listStrokeActivity, type WindowPhase } from "@/components/stroke/activity.functions";
+import { listStrokeActivity, type StrokeActivity, type WindowPhase } from "@/components/stroke/activity.functions";
 
 const WINDOW_LABEL: Record<WindowPhase, string> = {
   green: "4.5-hour window",
@@ -10,12 +11,27 @@ const WINDOW_LABEL: Record<WindowPhase, string> = {
 };
 
 export const Route = createFileRoute("/activity")({
-  loader: () => listStrokeActivity(),
   component: ActivityPage,
 });
 
 function ActivityPage() {
-  const activity = Route.useLoaderData();
+  const [activity, setActivity] = useState<StrokeActivity | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let live = true;
+    listStrokeActivity()
+      .then((data) => {
+        if (live) setActivity(data);
+      })
+      .catch(() => {
+        if (live) setError("Could not load the calls. Try again.");
+      });
+    return () => {
+      live = false;
+    };
+  }, []);
+
   return (
     <main className="mx-auto min-h-screen max-w-lg px-4 py-6">
       <header className="flex items-center justify-between gap-3">
@@ -28,6 +44,9 @@ function ActivityPage() {
       <p className="mt-1 text-sm text-ink-soft">
         Counted when someone taps Call on a hospital. Each line is that call’s treatment window.
       </p>
+      {error ? <p className="mt-4 text-sm font-semibold text-signal">{error}</p> : null}
+      {activity ? (
+        <>
       <p className="mt-4 font-display text-5xl tabular-nums">{activity.total}</p>
       <ul className="mt-3 grid gap-2">
         {activity.byWindow
@@ -69,6 +88,10 @@ function ActivityPage() {
             </li>
           ))}
         </ul>
+      )}
+        </>
+      ) : error ? null : (
+        <p className="mt-4 text-sm text-ink-soft">Loading the calls…</p>
       )}
     </main>
   );

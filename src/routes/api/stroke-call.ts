@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { readStrokeCall } from "@/components/stroke/activity.functions";
-import { getSql } from "@/lib/db";
+import { saveStrokeCall } from "@/components/stroke/activity-store.server";
 
 export const Route = createFileRoute("/api/stroke-call")({
   server: {
@@ -12,8 +12,7 @@ export const Route = createFileRoute("/api/stroke-call")({
         } catch {
           return new Response("Bad call", { status: 400 });
         }
-        const sql = await getSql();
-        await sql`insert into stroke_calls (window_phase, target) values (${data.window}, ${data.target})`;
+        await saveStrokeCall(data.window, data.target);
         return new Response(null, { status: 204 });
       },
     },
