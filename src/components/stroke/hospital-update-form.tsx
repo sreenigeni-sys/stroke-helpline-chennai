@@ -26,7 +26,7 @@ export function HospitalUpdateForm() {
   const [fields, setFields] = useState(EMPTY);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState<"github" | "email" | null>(null);
+  const [sent, setSent] = useState<"web3forms" | "email" | null>(null);
 
   function set<K extends keyof typeof EMPTY>(key: K, value: (typeof EMPTY)[K]) {
     setFields((current) => ({ ...current, [key]: value }));
@@ -45,16 +45,14 @@ export function HospitalUpdateForm() {
         cathLab: fields.cathLab as HospitalUpdate["cathLab"],
       };
       const result = await submitHospitalUpdate({ data: payload });
-      if (result.via === "ignored") {
-        setSent("github");
-        return;
-      }
       if (result.via === "email") {
         const text = hospitalUpdateText(payload);
         const href = `mailto:${HOSPITAL_UPDATE_EMAIL}?subject=${encodeURIComponent(`Hospital update: ${payload.name}`)}&body=${encodeURIComponent(text)}`;
         window.location.href = href;
+        setSent("email");
+        return;
       }
-      setSent(result.via);
+      setSent("web3forms");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Could not send that. Try again.");
     } finally {
@@ -67,7 +65,7 @@ export function HospitalUpdateForm() {
       <section>
         <h2 className="text-sm font-semibold text-ink">Update received</h2>
         <p className="mt-1 text-sm text-ink-soft">
-          {sent === "github"
+          {sent === "web3forms"
             ? "Thank you. We will review it before the hospital list changes."
             : `Thank you. If your email app did not open, send the details to ${HOSPITAL_UPDATE_EMAIL}.`}
         </p>

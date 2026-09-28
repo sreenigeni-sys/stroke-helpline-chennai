@@ -1,6 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 
-export const HOSPITAL_UPDATE_EMAIL = "contact@ubhcare.com";
+export const HOSPITAL_UPDATE_EMAIL = "sreenivas@arunaineurocentre.com";
+
+// Web3Forms relays straight to the inbox tied to this access key — never a
+// public page, no dashboard for anyone but the account owner. Access keys
+// are meant to ship in client/server code (Web3Forms' own docs embed them
+// in plain HTML forms); they only select the destination inbox.
+const WEB3FORMS_ACCESS_KEY = "c9fca02a-c83d-4ca9-837a-bf700d5976fd";
+const WEB3FORMS_ENDPOINT = "https://api.web3forms.com/submit";
 
 const OWNERS = ["Government", "Private"] as const;
 const YES_NO = ["Yes", "No"] as const;
@@ -71,29 +78,33 @@ export function hospitalUpdateText(update: HospitalUpdate) {
     .join("\n");
 }
 
+// Primary path: Web3Forms relays the submission straight to a private inbox,
+// server-side, with no dependence on the visitor's own mail client. If that
+// call fails for any reason, the client falls back to a mailto: draft to
+// HOSPITAL_UPDATE_EMAIL. Neither path touches a public system.
 export const submitHospitalUpdate = createServerFn({ method: "POST" })
   .validator(readHospitalUpdate)
   .handler(async ({ data }) => {
     if (data.website) return { via: "ignored" as const };
-    const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
-    if (!token) return { via: "email" as const };
-    const response = await fetch(
-      "https://api.github.com/repos/sreenigeni-sys/stroke-helpline-chennai/issues",
-      {
+    try {
+      const response = await fetch(WEB3FORMS_ENDPOINT, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/vnd.github+json",
           "Content-Type": "application/json",
-          "User-Agent": "stroke-helpline-chennai",
-          "X-GitHub-Api-Version": "2022-11-28",
+          Accept: "application/json",
         },
         body: JSON.stringify({
-          title: `Hospital update: ${data.name}`,
-          body: `${hospitalUpdateText(data)}\n\nSent from the Stroke Helpline landing page. Review before changing the public list.`,
+          access_key: WEB3FORMS_ACCESS_KEY,
+          subject: `Hospital update: ${data.name}`,
+          from_name: "Stroke Helpline Chennai",
+          replyto: data.contact,
+          message: hospitalUpdateText(data),
         }),
-      },
-    );
-    if (!response.ok) return { via: "email" as const };
-    return { via: "github" as const };
+      });
+      const result = (await response.json().catch(() => null)) as { success?: boolean } | null;
+      if (response.ok && result?.success) return { via: "web3forms" as const };
+    } catch {
+      // network/Web3Forms failure — fall through to the mailto fallback.
+    }
+    return { via: "email" as const };
   });
