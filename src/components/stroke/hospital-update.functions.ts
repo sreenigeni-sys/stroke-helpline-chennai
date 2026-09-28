@@ -100,6 +100,9 @@ export const submitHospitalUpdate = createServerFn({ method: "POST" })
           replyto: data.contact,
           message: hospitalUpdateText(data),
         }),
+        // A stalled connection here must not leave "Sending…" stuck forever —
+        // time out and fall through to the mailto: fallback below.
+        signal: AbortSignal.timeout(8000),
       });
       const result = (await response.json().catch(() => null)) as { success?: boolean } | null;
       if (response.ok && result?.success) return { via: "web3forms" as const };

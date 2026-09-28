@@ -22,9 +22,16 @@ function nextId() {
   return Date.now() * 1000 + Math.floor(Math.random() * 1000);
 }
 
+// A stalled Blob request must not hang a page load or a submission forever.
+const BLOB_TIMEOUT_MS = 8000;
+
 async function readDoc(): Promise<ActivityDoc> {
   const { get } = await import("@vercel/blob");
-  const result = await get(DOC, { access: "private", useCache: false });
+  const result = await get(DOC, {
+    access: "private",
+    useCache: false,
+    abortSignal: AbortSignal.timeout(BLOB_TIMEOUT_MS),
+  });
   if (!result || result.statusCode !== 200 || !result.stream) {
     return { calls: [], reviews: [], totals: { ...EMPTY_TOTALS } };
   }
@@ -59,6 +66,7 @@ function appendBlob(kind: "calls" | "reviews", row: ActivityDoc["calls"][number]
       allowOverwrite: true,
       contentType: "application/json",
       cacheControlMaxAge: 0,
+      abortSignal: AbortSignal.timeout(BLOB_TIMEOUT_MS),
     });
   });
   writeChain = run.then(

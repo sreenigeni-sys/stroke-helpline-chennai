@@ -93,7 +93,14 @@ function createNeonSql(): Promise<Sql> {
     types.setTypeParser(OID_INT8, Number);
     types.setTypeParser(OID_DATE, identity);
     types.setTypeParser(OID_INTERVAL, identity);
-    const pool = new Pool({ connectionString: databaseUrl });
+    const pool = new Pool({
+      connectionString: databaseUrl,
+      // A stuck connection or a wedged query must not hang a request forever —
+      // bound both the connect step and the query itself.
+      connectionTimeoutMillis: 8000,
+      query_timeout: 10000,
+      statement_timeout: 10000,
+    });
     return toSql(async <T>(text: string, params: unknown[]) => {
       const res = await pool.query(text, params);
       return res.rows as T[];
