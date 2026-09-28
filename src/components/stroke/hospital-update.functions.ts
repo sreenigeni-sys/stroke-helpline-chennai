@@ -1,11 +1,13 @@
-import { createServerFn } from "@tanstack/react-start";
-
 export const HOSPITAL_UPDATE_EMAIL = "sreenivas@arunaineurocentre.com";
 
 // Web3Forms relays straight to the inbox tied to this access key — never a
 // public page, no dashboard for anyone but the account owner. Access keys
-// are meant to ship in client/server code (Web3Forms' own docs embed them
-// in plain HTML forms); they only select the destination inbox.
+// are meant to ship in client code (Web3Forms' own docs embed them in plain
+// HTML forms); they only select the destination inbox. This MUST run in the
+// browser, not as a server function: Web3Forms' free tier 403s any
+// server-to-server call ("Use our API in client side ... Pro plan is
+// required" — confirmed against the live access key), so the request has to
+// come from the visitor's own browser.
 const WEB3FORMS_ACCESS_KEY = "c9fca02a-c83d-4ca9-837a-bf700d5976fd";
 const WEB3FORMS_ENDPOINT = "https://api.web3forms.com/submit";
 
@@ -79,35 +81,35 @@ export function hospitalUpdateText(update: HospitalUpdate) {
 }
 
 // Primary path: Web3Forms relays the submission straight to a private inbox,
-// server-side, with no dependence on the visitor's own mail client. If that
-// call fails for any reason, the client falls back to a mailto: draft to
-// HOSPITAL_UPDATE_EMAIL. Neither path touches a public system.
-export const submitHospitalUpdate = createServerFn({ method: "POST" })
-  .validator(readHospitalUpdate)
-  .handler(async ({ data }) => {
-    if (data.website) return { via: "ignored" as const };
-    try {
-      const response = await fetch(WEB3FORMS_ENDPOINT, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          access_key: WEB3FORMS_ACCESS_KEY,
-          subject: `Hospital update: ${data.name}`,
-          from_name: "Stroke Helpline Chennai",
-          replyto: data.contact,
-          message: hospitalUpdateText(data),
-        }),
-        // A stalled connection here must not leave "Sending…" stuck forever —
-        // time out and fall through to the mailto: fallback below.
-        signal: AbortSignal.timeout(8000),
-      });
-      const result = (await response.json().catch(() => null)) as { success?: boolean } | null;
-      if (response.ok && result?.success) return { via: "web3forms" as const };
-    } catch {
-      // network/Web3Forms failure — fall through to the mailto fallback.
-    }
-    return { via: "email" as const };
-  });
+// with no dependence on the visitor's own mail client. Runs entirely in the
+// browser (see the WEB3FORMS_ACCESS_KEY comment above). If it fails for any
+// reason, the caller falls back to a mailto: draft to HOSPITAL_UPDATE_EMAIL.
+// Neither path touches a public system.
+export async function submitHospitalUpdate({ data: raw }: { data: unknown }) {
+  const data = readHospitalUpdate(raw);
+  if (data.website) return { via: "ignored" as const };
+  try {
+    const response = await fetch(WEB3FORMS_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        access_key: WEB3FORMS_ACCESS_KEY,
+        subject: `Hospital update: ${data.name}`,
+        from_name: "Stroke Helpline Chennai",
+        replyto: data.contact,
+        message: hospitalUpdateText(data),
+      }),
+      // A stalled connection here must not leave "Sending…" stuck forever —
+      // time out and fall through to the mailto: fallback below.
+      signal: AbortSignal.timeout(8000),
+    });
+    const result = (await response.json().catch(() => null)) as { success?: boolean } | null;
+    if (response.ok && result?.success) return { via: "web3forms" as const };
+  } catch {
+    // network/Web3Forms failure — fall through to the mailto fallback.
+  }
+  return { via: "email" as const };
+}
