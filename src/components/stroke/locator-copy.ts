@@ -72,6 +72,8 @@ export function locatorCopy(lang: Lang | null) {
     legendPvtReady: ta ? "தனியார் · வரம்பு சிகிச்சை" : "Private stroke-limited care",
     tapMap: ta ? "அவர்கள் தெருவில் முள் வைக்க வரைபடத்தைத் தொடுங்கள்." : "Tap the map to drop a pin on their street.",
     nearest: ta ? "அருகிலுள்ள மருத்துவமனைகள்" : "Nearest hospitals",
+    listView: ta ? "பட்டியல்" : "List",
+    mapView: ta ? "வரைபடம்" : "Map",
     recheck: ta ? "அறிகுறிகளை மீண்டும் பார்க்க" : "Check signs again",
     explain: ta
       ? "த்ராம்பெக்டமி என்றால் இரத்தக் கட்டியை வெளியே எடுப்பது. “அழைத்துக் கேளுங்கள்” என்றால் அந்த வசதி தெளிவாகச் சொல்லப்படவில்லை."

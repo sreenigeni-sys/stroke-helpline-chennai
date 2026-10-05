@@ -77,6 +77,7 @@ export function Locator({
   const [locating, setLocating] = useState<"search" | "tighten" | null>(null);
   const [locError, setLocError] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [view, setView] = useState<"list" | "map">("list");
   const [query, setQuery] = useState(
     user?.label && user.label !== "Pinned spot" && user.label !== "குறித்த இடம்" ? user.label : "",
   );
@@ -322,7 +323,51 @@ export function Locator({
         </p>
       ) : null}
 
-      <div className="mt-5 grid items-start gap-5 lg:grid-cols-2">
+      <div className="mt-5 flex flex-wrap items-end justify-between gap-3">
+        <h1 className={cn("text-3xl leading-tight", copy.ta ? "font-tamil font-semibold" : "font-display")}>
+          {copy.nearest}
+        </h1>
+        <div className="mb-1 flex flex-wrap items-center gap-2">
+          <div className="flex rounded-full border border-line p-0.5">
+            <button
+              type="button"
+              aria-pressed={view === "list"}
+              onClick={() => setView("list")}
+              className={cn(
+                "h-9 rounded-full px-3 text-sm font-semibold",
+                copy.ta && "font-tamil",
+                TAP,
+                view === "list" ? "bg-[#1b4fad] text-white" : "text-ink",
+              )}
+            >
+              {copy.listView}
+            </button>
+            <button
+              type="button"
+              aria-pressed={view === "map"}
+              onClick={() => setView("map")}
+              className={cn(
+                "h-9 rounded-full px-3 text-sm font-semibold",
+                copy.ta && "font-tamil",
+                TAP,
+                view === "map" ? "bg-[#1b4fad] text-white" : "text-ink",
+              )}
+            >
+              {copy.mapView}
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={onRecheck}
+            className={cn("shrink-0 text-sm font-semibold text-ink-soft", copy.ta && "font-tamil")}
+          >
+            {copy.recheck}
+          </button>
+        </div>
+      </div>
+      <p className={cn("mt-3 text-sm text-ink-soft", copy.ta && "font-tamil")}>{copy.explain}</p>
+
+      <div className="mt-5 grid items-start gap-5">
         <div>
           <FilterRow
             tamil={copy.ta}
@@ -368,6 +413,7 @@ export function Locator({
             user={user}
             center={CHENNAI_CENTER}
             lang={lang}
+            tall={view === "map"}
             onPick={(id) => {
               setActiveId(id);
               document.getElementById(`hospital-${id}`)?.scrollIntoView({
@@ -386,26 +432,22 @@ export function Locator({
           />
           <p className={cn("mt-2 text-xs text-ink-soft", copy.ta && "font-tamil")}>{copy.tapMap}</p>
         </div>
-        <div>
-          <div className="flex items-end justify-between gap-3">
-            <h1 className={cn("text-3xl leading-tight", copy.ta ? "font-tamil font-semibold" : "font-display")}>
-              {copy.nearest}
-            </h1>
-            <button
-              type="button"
-              onClick={onRecheck}
-              className={cn("mb-1 shrink-0 text-sm font-semibold text-ink-soft", copy.ta && "font-tamil")}
-            >
-              {copy.recheck}
-            </button>
-          </div>
-          <p className={cn("mt-3 text-sm text-ink-soft", copy.ta && "font-tamil")}>{copy.explain}</p>
-        </div>
       </div>
       {rows.length === 0 ? (
         <p className={cn("mt-4 rounded-card border border-line bg-surface px-4 py-8 text-center font-semibold text-signal", copy.ta && "font-tamil")}>
           {copy.noMatch}
         </p>
+      ) : view === "map" ? (
+        <div className="mt-4 max-w-xl">
+          <HospitalCard
+            hospital={(rows.find((hospital) => hospital.id === activeId) ?? rows[0])!}
+            active
+            fromYou={Boolean(user)}
+            index={0}
+            onsetIso={onsetIso}
+            lang={lang}
+          />
+        </div>
       ) : (
         <div className="mt-4 grid items-start gap-3 md:grid-cols-2">
           {rows.map((hospital, index) => (
