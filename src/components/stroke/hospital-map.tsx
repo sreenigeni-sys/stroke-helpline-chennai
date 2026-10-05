@@ -41,6 +41,15 @@ function esc(value: string) {
   });
 }
 
+export function pinStyle(level: Level, ownership: Ownership) {
+  const ready = level === "comprehensive";
+  const gov = ownership === "Government";
+  if (ready && gov) return { color: "#15803d", round: false };
+  if (ready) return { color: "#6d28d9", round: true };
+  if (gov) return { color: "#0369a1", round: false };
+  return { color: "#c2410c", round: true };
+}
+
 function spread(pins: MapPin[]) {
   const seen = new Map<string, number>();
   return pins.map((pin) => {
@@ -65,6 +74,7 @@ export function HospitalMap({
   onPick,
   onPlace,
   lang = null,
+  tall = false,
 }: {
   pins: MapPin[];
   user: { lat: number; lng: number; label?: string } | null;
@@ -72,6 +82,7 @@ export function HospitalMap({
   onPick: (id: string) => void;
   onPlace: (lat: number, lng: number) => void;
   lang?: Lang | null;
+  tall?: boolean;
 }) {
   const elRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<LeafletMap | null>(null);
@@ -150,24 +161,14 @@ export function HospitalMap({
       group.clearLayers();
       const shown = spread(pins);
       for (const hospital of shown) {
+        const pin = pinStyle(hospital.level, hospital.ownership);
         const comprehensive = hospital.level === "comprehensive";
         const gov = hospital.ownership === "Government";
-        const color = comprehensive
-          ? gov
-            ? "#3dff9a"
-            : "#d6ff4a"
-          : gov
-            ? "#4cc3ff"
-            : "#ffb020";
-        const size = comprehensive ? 22 : 15;
-        const radius = gov ? "4px" : "999px";
+        const size = comprehensive ? 22 : 16;
+        const radius = pin.round ? "999px" : "4px";
         const icon = L.divIcon({
           className: "stroke-pin",
-          html: `<div style="width:${size}px;height:${size}px;border-radius:${radius};background:${color};border:3px solid #0b1220;box-shadow:${
-            comprehensive
-              ? "0 0 0 4px color-mix(in srgb, " + color + " 55%, transparent), 0 2px 6px rgba(0,0,0,.45)"
-              : "0 2px 6px rgba(0,0,0,.45)"
-          }"></div>`,
+          html: `<div style="width:${size}px;height:${size}px;border-radius:${radius};background:${pin.color};border:2px solid #ffffff;box-shadow:0 0 0 2px #0b1220, 0 2px 6px rgba(0,0,0,.4)"></div>`,
           iconSize: [size, size],
           iconAnchor: [size / 2, size / 2],
         });
@@ -229,7 +230,7 @@ export function HospitalMap({
 
   return (
     <div className="relative overflow-hidden rounded-card border border-line">
-      <div ref={elRef} className="map-frame" />
+      <div ref={elRef} className={tall ? "map-frame map-frame-tall" : "map-frame"} />
       <button
         type="button"
         onClick={() => setWide((value) => !value)}
