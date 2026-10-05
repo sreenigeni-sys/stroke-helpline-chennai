@@ -79,10 +79,8 @@
   background: var(--color-paper-deep);
 }
 
-@media (min-width: 1024px) {
-  .map-frame {
-    height: min(70vh, 36rem);
-  }
+.map-frame-tall {
+  height: min(72vh, 40rem);
 }
 
 .leaflet-container {
