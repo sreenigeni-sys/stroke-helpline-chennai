@@ -5,7 +5,7 @@ import { PLACES, type Place } from "@/data/places";
 import { cn } from "@/lib/cn";
 import { distanceKm, formatDistance } from "@/lib/geo";
 import { Countdown } from "@/components/stroke/countdown";
-import { HospitalMap } from "@/components/stroke/hospital-map";
+import { HospitalMap, pinStyle } from "@/components/stroke/hospital-map";
 import { readClock } from "@/lib/clock";
 import { recordStrokeCall } from "@/components/stroke/activity.functions";
 import { markedWords, type Lang, type Session } from "@/components/stroke/session";
@@ -366,6 +366,11 @@ export function Locator({
         </div>
       </div>
       <p className={cn("mt-3 text-sm text-ink-soft", copy.ta && "font-tamil")}>{copy.explain}</p>
+      {view === "map" ? (
+        <div className="mt-4">
+          <PinLegend copy={copy} />
+        </div>
+      ) : null}
 
       <div className="mt-5 grid items-start gap-5">
         <div>
@@ -390,24 +395,7 @@ export function Locator({
             ]}
             onChange={setOwnership}
           />
-          <ul className={cn("mt-3 mb-3 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-ink", copy.ta && "font-tamil")}>
-            <li className="flex items-center gap-1.5">
-              <span className="size-3 rounded-sm bg-[#3dff9a]" aria-hidden="true" />
-              {copy.legendGovComp}
-            </li>
-            <li className="flex items-center gap-1.5">
-              <span className="size-3 rounded-full bg-[#d6ff4a]" aria-hidden="true" />
-              {copy.legendPvtComp}
-            </li>
-            <li className="flex items-center gap-1.5">
-              <span className="size-3 rounded-sm bg-[#4cc3ff]" aria-hidden="true" />
-              {copy.legendGovReady}
-            </li>
-            <li className="flex items-center gap-1.5">
-              <span className="size-3 rounded-full bg-[#ffb020]" aria-hidden="true" />
-              {copy.legendPvtReady}
-            </li>
-          </ul>
+          {view === "list" ? <PinLegend copy={copy} /> : null}
           <HospitalMap
             pins={rows}
             user={user}
@@ -471,6 +459,32 @@ export function Locator({
         <p className="mt-2">{copy.sources}</p>
       </footer>
     </div>
+  );
+}
+
+function PinLegend({ copy }: { copy: ReturnType<typeof locatorCopy> }) {
+  const items = [
+    { level: "comprehensive" as const, ownership: "Government" as const, label: copy.legendGovComp },
+    { level: "comprehensive" as const, ownership: "Private" as const, label: copy.legendPvtComp },
+    { level: "primary" as const, ownership: "Government" as const, label: copy.legendGovReady },
+    { level: "primary" as const, ownership: "Private" as const, label: copy.legendPvtReady },
+  ];
+  return (
+    <ul className={cn("mb-3 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-ink", copy.ta && "font-tamil")}>
+      {items.map((item) => {
+        const pin = pinStyle(item.level, item.ownership);
+        return (
+          <li key={item.label} className="flex items-center gap-1.5">
+            <span
+              className={cn("size-3 border border-[#0b1220]", pin.round ? "rounded-full" : "rounded-sm")}
+              style={{ background: pin.color }}
+              aria-hidden="true"
+            />
+            {item.label}
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
@@ -540,13 +554,8 @@ function HospitalCard({
     [copy.mri, facts.mri],
     [copy.thrombectomy, facts.thrombectomy],
   ] as const;
-  const tab = comprehensive
-    ? gov
-      ? "bg-[#3dff9a] text-[#062016]"
-      : "bg-[#d6ff4a] text-[#1a2400]"
-    : gov
-      ? "bg-[#4cc3ff] text-[#041820]"
-      : "bg-[#ffb020] text-[#2a1400]";
+  const pin = pinStyle(hospital.level, hospital.ownership);
+  const tab = "text-white";
   return (
     <article
       id={`hospital-${hospital.id}`}
@@ -556,7 +565,7 @@ function HospitalCard({
         active && "ring-2 ring-[#1b4fad]",
       )}
     >
-      <div className={cn("flex items-center justify-between gap-3 px-4 py-2.5", tab)}>
+      <div className={cn("flex items-center justify-between gap-3 px-4 py-2.5", tab)} style={{ background: pin.color }}>
         <p className={cn("min-w-0 text-sm font-semibold leading-tight", copy.ta && "font-tamil")}>
           {gov ? copy.government : copy.private}
           {" · "}
