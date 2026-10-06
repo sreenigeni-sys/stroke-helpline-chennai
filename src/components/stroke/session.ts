@@ -16,7 +16,7 @@ export type Session = {
 
 export function freshSession(): Session {
   return {
-    phase: "locator",
+    phase: "intro",
     signIndex: 0,
     answers: { B: null, E: null, F: null, A: null, S: null },
     onsetIso: null,

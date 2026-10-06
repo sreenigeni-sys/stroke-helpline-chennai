@@ -29,15 +29,8 @@ export function StrokeApp() {
 
   const concern = concernOf(session.answers);
   const atFinder = session.phase === "locator";
+  const atIntro = session.phase === "intro";
   const tamil = session.lang === "ta";
-
-  function goHome() {
-    patch((current) => ({
-      ...freshSession(),
-      onsetIso: current.onsetIso,
-      user: current.user,
-    }));
-  }
 
   return (
     <>
@@ -54,7 +47,7 @@ export function StrokeApp() {
                 {tamil ? "சென்னை பக்கவாத உதவி" : "Stroke Helpline Chennai"}
               </p>
               <p className={cn("mt-0.5 text-xs font-semibold tracking-wide text-[#1b4fad] uppercase", tamil && "font-tamil normal-case")}>
-                {tamil ? "பக்கவாத சிகிச்சை மையத்தைக் கண்டறியுங்கள்" : "Find stroke care fast"}
+                {tamil ? "பக்கவாத அறிகுறிகளைச் சரிபார்க்கவும்" : "Check stroke warning signs"}
               </p>
               {atFinder ? (
                 <p className={cn("mt-1 text-[11px] leading-snug text-ink-soft", tamil && "font-tamil")}>
@@ -82,15 +75,15 @@ export function StrokeApp() {
                 தமிழ்
               </button>
             </div>
-          ) : (
+          ) : !atIntro ? (
             <button
               type="button"
-              onClick={goHome}
-              className={cn("shrink-0 pt-1 text-right text-sm font-semibold text-[#1b4fad]", tamil && "font-tamil")}
+              onClick={() => openHospitals((current) => ({ ...current, phase: "locator" }))}
+              className={cn("flex min-h-11 shrink-0 items-center rounded-full bg-[#1b4fad] px-4 text-sm font-bold text-white shadow-card", tamil && "font-tamil")}
             >
               {tamil ? "மருத்துவமனைகளைக் காட்டு" : "Find hospitals"}
             </button>
-          )}
+          ) : null}
         </header>
         {session.phase === "locator" ? (
           <Locator

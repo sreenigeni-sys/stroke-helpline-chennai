@@ -177,8 +177,8 @@ export function HospitalMap({
             ? "பக்கவாத சிகிச்சை விவரம் பட்டியலிடப்பட்டது"
             : "Stroke-care listing";
         const services = tamil
-          ? `சிடி படமெடுப்பு: ${serviceWord(facts.ct, lang)}<br/>எம்ஆர்ஐ: ${serviceWord(facts.mri, lang)}<br/>த்ராம்பெக்டமி: ${serviceWord(facts.thrombectomy, lang)}`
-          : `CT imaging: ${serviceWord(facts.ct)}<br/>MRI: ${serviceWord(facts.mri)}<br/>Thrombectomy: ${serviceWord(facts.thrombectomy)}`;
+          ? `24/7 சிடி: ${serviceWord(facts.ct, lang)}<br/>24/7 எம்ஆர்ஐ: ${serviceWord(facts.mri, lang)}<br/>24/7 த்ராம்பெக்டமி: ${serviceWord(facts.thrombectomy, lang)}`
+          : `24/7 CT: ${serviceWord(facts.ct)}<br/>24/7 MRI: ${serviceWord(facts.mri)}<br/>24/7 thrombectomy: ${serviceWord(facts.thrombectomy)}`;
         const note = pathwayLine(hospital.id, lang);
         const pathway = note ? `<br/>${esc(note)}` : "";
         const phone = hospital.phone

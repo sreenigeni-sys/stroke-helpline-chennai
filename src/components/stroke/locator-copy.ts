@@ -86,9 +86,9 @@ export function locatorCopy(lang: Lang | null) {
     sources: ta
       ? "சேவை மற்றும் சரிபார்ப்பு தேதியைப் பார்க்கவும். ஒவ்வொரு கிளையின் தற்போதைய ஏற்றுக்கொள்ளல் தனியாக உறுதிப்படுத்தப்பட வேண்டும்."
       : "Check the source class and list date. Current acceptance must be confirmed separately for each branch.",
-    ct: ta ? "சிடி படமெடுப்பு" : "CT imaging",
-    mri: ta ? "எம்ஆர்ஐ" : "MRI",
-    thrombectomy: ta ? "த்ராம்பெக்டமி" : "Thrombectomy",
+    ct: ta ? "24/7 சிடி" : "24/7 CT",
+    mri: ta ? "24/7 எம்ஆர்ஐ" : "24/7 MRI",
+    thrombectomy: ta ? "24/7 த்ராம்பெக்டமி" : "24/7 thrombectomy",
     reviewed: ta ? "பட்டியல் மதிப்பாய்வு · அரசு சான்றிதழ் அல்ல" : "Reviewed listing · not formal certification",
     publicInfo: ta ? "பொது/மருத்துவமனைத் தகவல் · தனியாக உறுதிப்படுத்தப்படவில்லை" : "Provider/publicly reported · not independently verified",
     recordDate(date: string) { return ta ? `பட்டியல் தேதி: ${date}` : `List date: ${date}`; },

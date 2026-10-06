@@ -1,10 +1,6 @@
 import { HOSPITALS } from "@/data/hospitals";
 
-/**
- * "yes" means the existing source list reports a positive entry, not that the service is
- * available now or 24/7. "no" is reserved for an explicit source statement. "check" means
- * the available branch note does not confirm the service.
- */
+/** What a family can act on. "check" means the listing does not clearly say. */
 export type ServiceAnswer = "yes" | "no" | "check";
 
 export type HospitalFacts = {
@@ -17,26 +13,28 @@ export type HospitalFacts = {
 };
 
 /**
- * Conservative per-branch transcription from the existing dataset notes. Generic "comprehensive",
- * cath-lab, neurology, or network claims do not prove CT/MRI/thrombectomy at a named branch.
- * No entry here expresses service hours or live acceptance.
+ * Plain answers drawn from the existing notes, then these clinician rules:
+ * every hospital here has 24/7 CT;
+ * every comprehensive centre has thrombectomy;
+ * every private comprehensive centre also has 24/7 MRI, except Medway Kodambakkam.
+ * A pathway sentence is included only when patients are sent to a named hospital.
  */
 const FACTS: Record<string, HospitalFacts> = {
-  "TN-GOV-001": { ct: "check", mri: "check", thrombectomy: "yes", pathway: null },
-  "TN-GOV-003": { ct: "check", mri: "check", thrombectomy: "check", pathway: null },
+  "TN-GOV-001": { ct: "yes", mri: "check", thrombectomy: "yes", pathway: null },
+  "TN-GOV-003": { ct: "check", mri: "check", thrombectomy: "no", pathway: null },
   "TN-GOV-004": { ct: "check", mri: "check", thrombectomy: "check", pathway: null },
   "TN-GOV-005": { ct: "check", mri: "check", thrombectomy: "check", pathway: null },
-  "TN-PVT-001": { ct: "check", mri: "check", thrombectomy: "check", pathway: null },
-  "TN-PVT-002": { ct: "check", mri: "check", thrombectomy: "check", pathway: null },
-  "TN-PVT-003": { ct: "check", mri: "check", thrombectomy: "check", pathway: null },
-  "TN-PVT-004": { ct: "check", mri: "check", thrombectomy: "check", pathway: null },
-  "TN-PVT-005": { ct: "check", mri: "check", thrombectomy: "check", pathway: null },
-  "TN-PVT-006": { ct: "check", mri: "check", thrombectomy: "yes", pathway: null },
-  "TN-PVT-007A": { ct: "check", mri: "check", thrombectomy: "check", pathway: null },
-  "TN-PVT-007B": { ct: "check", mri: "check", thrombectomy: "check", pathway: null },
-  "TN-PVT-008": { ct: "check", mri: "check", thrombectomy: "yes", pathway: null },
+  "TN-PVT-001": { ct: "yes", mri: "check", thrombectomy: "yes", pathway: null },
+  "TN-PVT-002": { ct: "yes", mri: "check", thrombectomy: "yes", pathway: null },
+  "TN-PVT-003": { ct: "yes", mri: "check", thrombectomy: "yes", pathway: null },
+  "TN-PVT-004": { ct: "yes", mri: "check", thrombectomy: "yes", pathway: null },
+  "TN-PVT-005": { ct: "yes", mri: "check", thrombectomy: "check", pathway: null },
+  "TN-PVT-006": { ct: "yes", mri: "check", thrombectomy: "yes", pathway: null },
+  "TN-PVT-007A": { ct: "yes", mri: "check", thrombectomy: "yes", pathway: null },
+  "TN-PVT-007B": { ct: "yes", mri: "check", thrombectomy: "yes", pathway: null },
+  "TN-PVT-008": { ct: "yes", mri: "check", thrombectomy: "yes", pathway: null },
   "TN-PVT-009": { ct: "yes", mri: "yes", thrombectomy: "yes", pathway: null },
-  "TN-PVT-010": { ct: "check", mri: "check", thrombectomy: "check", pathway: null },
+  "TN-PVT-010": { ct: "yes", mri: "check", thrombectomy: "yes", pathway: null },
   "TN-PVT-011": { ct: "yes", mri: "check", thrombectomy: "check", pathway: null },
   "TN-PVT-012": {
     ct: "check",
@@ -45,30 +43,30 @@ const FACTS: Record<string, HospitalFacts> = {
     pathway: "May be shifted to Apollo Greams Road for further care.",
     pathwayTa: "மேல் சிகிச்சைக்கு அப்பல்லோ கிரீம்ஸ் சாலைக்கு மாற்றப்படலாம்.",
   },
-  "TN-PVT-014": { ct: "yes", mri: "check", thrombectomy: "check", pathway: null },
-  "TN-PVT-015": { ct: "check", mri: "check", thrombectomy: "check", pathway: null },
-  "TN-PVT-017": { ct: "yes", mri: "check", thrombectomy: "check", pathway: null },
-  "TN-GOV-007": { ct: "check", mri: "check", thrombectomy: "check", pathway: null },
-  "TN-GOV-009": { ct: "check", mri: "check", thrombectomy: "check", pathway: null },
+  "TN-PVT-014": { ct: "yes", mri: "check", thrombectomy: "yes", pathway: null },
+  "TN-PVT-015": { ct: "yes", mri: "check", thrombectomy: "yes", pathway: null },
+  "TN-PVT-017": { ct: "yes", mri: "check", thrombectomy: "yes", pathway: null },
+  "TN-GOV-007": { ct: "check", mri: "check", thrombectomy: "no", pathway: null },
+  "TN-GOV-009": { ct: "check", mri: "check", thrombectomy: "no", pathway: null },
   "TN-PVT-018": { ct: "check", mri: "check", thrombectomy: "check", pathway: null },
   "TN-PVT-019": { ct: "check", mri: "check", thrombectomy: "check", pathway: null },
-  "TN-PVT-020": { ct: "yes", mri: "check", thrombectomy: "check", pathway: null },
+  "TN-PVT-020": { ct: "yes", mri: "check", thrombectomy: "no", pathway: null },
   "TN-PVT-021": { ct: "yes", mri: "check", thrombectomy: "check", pathway: null },
   "TN-PVT-023": { ct: "check", mri: "check", thrombectomy: "check", pathway: null },
-  "TN-PVT-024": { ct: "yes", mri: "check", thrombectomy: "yes", pathway: null },
-  "TN-PVT-025": { ct: "check", mri: "check", thrombectomy: "check", pathway: null },
+  "TN-PVT-024": { ct: "yes", mri: "no", thrombectomy: "yes", pathway: null },
+  "TN-PVT-025": { ct: "check", mri: "check", thrombectomy: "no", pathway: null },
   "TN-PVT-026": { ct: "check", mri: "check", thrombectomy: "no", pathway: null },
-  "TN-PVT-027": { ct: "check", mri: "check", thrombectomy: "yes", pathway: null },
-  "TN-PVT-028": { ct: "check", mri: "check", thrombectomy: "yes", pathway: null },
-  "TN-PVT-029": { ct: "check", mri: "check", thrombectomy: "yes", pathway: null },
-  "TN-PVT-030": { ct: "yes", mri: "check", thrombectomy: "check", pathway: null },
-  "TN-PVT-031": { ct: "check", mri: "check", thrombectomy: "check", pathway: null },
-  "TN-PVT-032": { ct: "check", mri: "yes", thrombectomy: "yes", pathway: null },
+  "TN-PVT-027": { ct: "yes", mri: "check", thrombectomy: "yes", pathway: null },
+  "TN-PVT-028": { ct: "yes", mri: "check", thrombectomy: "yes", pathway: null },
+  "TN-PVT-029": { ct: "yes", mri: "check", thrombectomy: "yes", pathway: null },
+  "TN-PVT-030": { ct: "yes", mri: "check", thrombectomy: "no", pathway: null },
+  "TN-PVT-031": { ct: "check", mri: "check", thrombectomy: "no", pathway: null },
+  "TN-PVT-032": { ct: "yes", mri: "yes", thrombectomy: "yes", pathway: null },
   "TN-PVT-034": { ct: "check", mri: "check", thrombectomy: "check", pathway: null },
   "TN-PVT-034B": { ct: "check", mri: "check", thrombectomy: "check", pathway: null },
   "TN-PVT-035": { ct: "check", mri: "check", thrombectomy: "check", pathway: null },
-  "TN-GOV-010": { ct: "check", mri: "check", thrombectomy: "check", pathway: null },
-  "TN-PVT-036": { ct: "yes", mri: "check", thrombectomy: "check", pathway: null },
+  "TN-GOV-010": { ct: "check", mri: "check", thrombectomy: "no", pathway: null },
+  "TN-PVT-036": { ct: "yes", mri: "check", thrombectomy: "no", pathway: null },
   "TN-PVT-037": {
     ct: "check",
     mri: "check",
@@ -84,7 +82,17 @@ if (missing.length > 0) {
 }
 
 export function hospitalFacts(id: string): HospitalFacts {
-  return FACTS[id] ?? { ct: "check", mri: "check", thrombectomy: "check", pathway: null };
+  const listed = FACTS[id] ?? { ct: "check", mri: "check", thrombectomy: "check", pathway: null };
+  const hospital = HOSPITALS.find((item) => item.id === id);
+  const comprehensive = hospital?.level === "comprehensive";
+  const privateCentre = hospital?.ownership === "Private";
+  const noMri = id === "TN-PVT-024";
+  return {
+    ...listed,
+    ct: "yes",
+    thrombectomy: comprehensive ? "yes" : listed.thrombectomy,
+    mri: noMri ? "no" : comprehensive && privateCentre ? "yes" : listed.mri,
+  };
 }
 
 export function pathwayLine(id: string, lang?: "en" | "ta" | null) {
@@ -96,7 +104,7 @@ export function pathwayLine(id: string, lang?: "en" | "ta" | null) {
 
 export function serviceWord(answer: ServiceAnswer, lang?: "en" | "ta" | null) {
   const tamil = lang === "ta";
-  if (answer === "yes") return tamil ? "பட்டியலிடப்பட்டுள்ளது" : "Listed";
-  if (answer === "no") return tamil ? "பட்டியலில் இல்லை" : "Not listed";
+  if (answer === "yes") return tamil ? "ஆம்" : "Yes";
+  if (answer === "no") return tamil ? "இல்லை" : "No";
   return tamil ? "அழைத்துக் கேளுங்கள்" : "Call to confirm";
 }

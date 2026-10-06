@@ -5,9 +5,9 @@ import { seoHead, SITE_SCHEMA } from "@/lib/seo";
 export const Route = createFileRoute("/")({
   head: () =>
     seoHead({
-      title: "Find Stroke-Care Hospitals in Chennai | Stroke Chennai",
+      title: "Stroke Symptoms & Hospitals in Chennai | Stroke Chennai",
       description:
-        "Find Chennai hospital branches with stroke-care listings, contacts and directions. Call 108 for ambulance help. Current acceptance is not live.",
+        "Start a quick stroke-warning-sign check or find Chennai hospital branches. Call 108 for ambulance help; listings don't confirm current acceptance.",
       path: "/",
       schema: SITE_SCHEMA,
     }),
