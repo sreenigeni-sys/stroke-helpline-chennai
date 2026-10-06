@@ -6,9 +6,9 @@ import { fileURLToPath } from "node:url";
 import test from "node:test";
 import {
   appNameFromHost,
-  createHeadInjector,
+  createHeadInjector as createHeadInjectorWithDefaults,
   grokXCreatorHeadTags,
-  injectGrokPwaHead,
+  injectGrokPwaHead as injectGrokPwaHeadWithDefaults,
   isDocumentPath,
   isInstallQuery,
   publicAppHost,
@@ -20,6 +20,11 @@ import {
 import { renderInstallPage } from "./grok-pwa-plugin.mjs";
 
 const TEMPLATE_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+const TEST_CWD = mkdtempSync(join(tmpdir(), "grok-pwa-test-cwd-"));
+const injectGrokPwaHead = (html, ctx = {}) =>
+  injectGrokPwaHeadWithDefaults(html, { cwd: TEST_CWD, ...ctx });
+const createHeadInjector = (ctx = {}) =>
+  createHeadInjectorWithDefaults({ cwd: TEST_CWD, ...ctx });
 
 test("injects before </head>", () => {
   const out = injectGrokPwaHead("<html><head><title>x</title></head><body></body></html>");
@@ -102,17 +107,72 @@ test("does not duplicate x:creator tags", () => {
   assert.equal(twice.split('property="x:creator:id"').length - 1, 1);
 });
 
-test("platform chrome overwrites share-card metas and always sets og:title", () => {
-  const html =
-    '<html><head><title>Hello World</title><meta property="og:title" content="Old"><meta name="twitter:card" content="summary"></head></html>';
-  const out = injectGrokPwaHead(html, { appName: "Wild Race" });
-  assert.match(out, /name="twitter:card" content="summary_large_image"/);
-  assert.match(out, /property="og:title" content="Hello World"/);
-  assert.doesNotMatch(out, /content="Old"/);
-  assert.doesNotMatch(out, /content="summary"/);
-  assert.equal(out.split('name="twitter:card"').length - 1, 1);
+test("preserves route-specific share metadata instead of replacing it with site defaults", () => {
+  const root = mkdtempSync(join(tmpdir(), "grok-og-route-meta-"));
+  const html = '<html><head><title>Stroke Symptoms in Chennai</title>' +
+    '<meta property="og:title" content="Stroke Symptoms in Chennai">' +
+    '<meta property="og:description" content="Route description">' +
+    '<meta property="og:url" content="https://strokechennai.org/stroke-symptoms-chennai">' +
+    '<meta property="og:site_name" content="Stroke Helpline Chennai">' +
+    '<meta property="og:image" content="https://strokechennai.org/route-card.jpg">' +
+    '<meta property="og:image:alt" content="Route preview image">' +
+    '<meta name="twitter:card" content="summary_large_image">' +
+    '<meta name="twitter:title" content="Stroke Symptoms in Chennai">' +
+    '<meta name="twitter:description" content="Route description">' +
+    '<meta name="twitter:image" content="https://strokechennai.org/route-card.jpg">' +
+    '<meta name="twitter:image:alt" content="Route preview image"></head></html>';
+  const out = injectGrokPwaHead(html, {
+    host: "strokechennai.org",
+    cwd: root,
+    site: {
+      title: "Fallback title",
+      description: "Fallback description",
+      card: "custom",
+      image: "/og.jpg",
+    },
+  });
+  assert.match(out, /property="og:title" content="Stroke Symptoms in Chennai"/);
+  assert.match(out, /property="og:description" content="Route description"/);
+  assert.match(out, /property="og:url" content="https:\/\/strokechennai\.org\/stroke-symptoms-chennai"/);
+  assert.match(out, /property="og:image" content="https:\/\/strokechennai\.org\/route-card\.jpg"/);
+  assert.match(out, /property="og:image:alt" content="Route preview image"/);
+  assert.match(out, /name="twitter:title" content="Stroke Symptoms in Chennai"/);
+  assert.match(out, /name="twitter:description" content="Route description"/);
+  assert.match(out, /name="twitter:image" content="https:\/\/strokechennai\.org\/route-card\.jpg"/);
+  assert.match(out, /name="twitter:image:alt" content="Route preview image"/);
   assert.equal(out.split('property="og:title"').length - 1, 1);
-  assert.doesNotMatch(out, /property="og:image"/);
+  assert.equal(out.split('property="og:description"').length - 1, 1);
+  assert.equal(out.split('property="og:image"').length - 1, 1);
+  assert.equal(out.split('name="twitter:card"').length - 1, 1);
+});
+
+test("fills missing social metadata from site defaults without changing a supplied route title", () => {
+  const root = mkdtempSync(join(tmpdir(), "grok-og-fallback-meta-"));
+  const html = '<html><head><title>Local page title</title>' +
+    '<meta property="og:title" content="Local page title"></head></html>';
+  const out = injectGrokPwaHead(html, {
+    host: "strokechennai.org",
+    cwd: root,
+    site: {
+      title: "Stroke Helpline Chennai",
+      description: "Default share description",
+      siteName: "Stroke Helpline Chennai",
+      imageAlt: "Stroke Assist Chennai logo",
+      card: "custom",
+      image: "/og.jpg",
+    },
+  });
+  assert.match(out, /property="og:title" content="Local page title"/);
+  assert.match(out, /property="og:description" content="Default share description"/);
+  assert.match(out, /name="twitter:description" content="Default share description"/);
+  assert.match(out, /property="og:site_name" content="Stroke Helpline Chennai"/);
+  assert.match(out, /name="twitter:title" content="Stroke Helpline Chennai"/);
+  assert.match(out, /property="og:url" content="https:\/\/strokechennai\.org\/"/);
+  assert.match(out, /property="og:image" content="https:\/\/strokechennai\.org\/og\.jpg"/);
+  assert.match(out, /name="twitter:image" content="https:\/\/strokechennai\.org\/og\.jpg"/);
+  assert.match(out, /property="og:image:alt" content="Stroke Assist Chennai logo"/);
+  assert.match(out, /name="twitter:image:alt" content="Stroke Assist Chennai logo"/);
+  assert.equal(out.split('property="og:title"').length - 1, 1);
 });
 
 test("does not duplicate twitter:card or og:title", () => {
@@ -208,7 +268,7 @@ test("snapshotOgIdentity stamps banner from public/x-banner.jpg", () => {
 });
 
 test("emits x:game:image for a public host when site.banner is set", () => {
-  const html = "<html><head><meta property=\"x:game:image\" content=\"old\"></head></html>";
+  const html = "<html><head></head></html>";
   const out = injectGrokPwaHead(html, {
     host: "wild-race.grok.me",
     site: { title: "Wild Race", type: "x:game", card: "custom", banner: "/x-banner.jpg" },
@@ -219,7 +279,6 @@ test("emits x:game:image for a public host when site.banner is set", () => {
   );
   assert.match(out, /property="x:game:image:width" content="1200"/);
   assert.match(out, /property="x:game:image:height" content="264"/);
-  assert.doesNotMatch(out, /content="old"/);
   assert.equal(out.split('property="x:game:image"').length - 1, 1);
 });
 
@@ -503,4 +562,3 @@ test("vite plugin bakes og identity as a virtual module", () => {
   assert.match(plugin, /virtual:grok-og-identity/);
   assert.match(plugin, /snapshotOgIdentity/);
 });
-
