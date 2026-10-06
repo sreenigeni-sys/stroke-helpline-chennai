@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PublicPage } from "@/components/stroke/public-page";
-import { seoHead } from "@/lib/seo";
+import { seoHead, SITE_ORIGIN } from "@/lib/seo";
 
 const PAGE_PATH = "/stroke-emergency-chennai";
 const PAGE_TITLE = "Suspected Stroke in Chennai? Find Emergency Care";
@@ -24,6 +24,7 @@ export const Route = createFileRoute("/stroke-emergency-chennai")({
         about: { "@type": "MedicalCondition", name: "Stroke" },
         inLanguage: ["en-IN", "ta-IN"],
       },
+      breadcrumbs: [{ name: "Home", url: `${SITE_ORIGIN}/` }],
     }),
   component: EmergencyPage,
 });

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { StrokeApp } from "@/components/stroke/stroke-app";
-import { seoHead } from "@/lib/seo";
+import { hospitalListSchema } from "@/lib/stroke-schema";
+import { seoHead, SITE_ORIGIN } from "@/lib/seo";
 
 export const Route = createFileRoute("/stroke-hospitals-chennai")({
   head: () =>
@@ -17,8 +18,10 @@ export const Route = createFileRoute("/stroke-hospitals-chennai")({
         description: "Branch-level stroke-care information and a hospital finder for Chennai.",
         url: "https://strokechennai.org/stroke-hospitals-chennai",
         isPartOf: { "@id": "https://strokechennai.org/#website" },
+        mainEntity: hospitalListSchema(),
         inLanguage: ["en-IN", "ta-IN"],
       },
+      breadcrumbs: [{ name: "Home", url: `${SITE_ORIGIN}/` }],
     }),
   component: HospitalFinderPage,
 });
