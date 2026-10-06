@@ -14,7 +14,7 @@ export const Route = createRootRoute({
       {
         name: "description",
         content:
-          "Stroke Helpline Chennai: a one-minute BEFAST stroke check, then the nearest stroke-ready hospital and a clock from last-seen-normal. Not a diagnosis.",
+          "Check stroke warning signs or find Chennai hospital branches. The directory does not confirm live acceptance or diagnose stroke.",
       },
       { name: "theme-color", content: "#0b1220" },
     ],

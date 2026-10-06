@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Navigation, Phone } from "lucide-react";
+import { Countdown } from "@/components/stroke/countdown";
+import { recordStrokeCall } from "@/components/stroke/activity.functions";
 import { CHENNAI_CENTER, HOSPITALS, type Hospital } from "@/data/hospitals";
 import { PLACES, type Place } from "@/data/places";
 import { cn } from "@/lib/cn";
 import { distanceKm, formatDistance } from "@/lib/geo";
-import { Countdown } from "@/components/stroke/countdown";
-import { HospitalMap, pinStyle } from "@/components/stroke/hospital-map";
 import { readClock } from "@/lib/clock";
-import { recordStrokeCall } from "@/components/stroke/activity.functions";
+import { HospitalMap } from "@/components/stroke/hospital-map";
+import { pinStyle } from "@/components/stroke/pin-style";
 import { markedWords, type Lang, type Session } from "@/components/stroke/session";
 import { hospitalFacts, pathwayLine, serviceWord } from "@/data/hospital-facts";
 import { locatorCopy } from "@/components/stroke/locator-copy";
@@ -88,7 +89,7 @@ export function Locator({
   onUserRef.current = onUser;
   const copyRef = useRef(copy);
   copyRef.current = copy;
-  const pinned = useRef(Boolean(user?.label));
+  const pinned = useRef(true);
   const [gpsEpoch, setGpsEpoch] = useState(0);
 
   useEffect(() => {
@@ -193,12 +194,6 @@ export function Locator({
           {copy.clear}
         </div>
       ) : null}
-
-      <div className={cn("mb-4 rounded-card border border-line bg-surface px-4 py-3 text-sm font-semibold text-ink", copy.ta && "font-tamil")}>
-        <p>{copy.noFood}</p>
-        <p className="mt-1">{copy.lieDown}</p>
-        <p className="mt-1">{copy.sugar}</p>
-      </div>
 
       <Countdown onsetIso={onsetIso} onEdit={onEditTime} lang={lang} />
 
@@ -380,7 +375,7 @@ export function Locator({
             value={tier}
             options={[
               { id: "all", label: copy.allTiers, active: "border-transparent bg-[#1b4fad] text-white" },
-              { id: "comprehensive", label: copy.comprehensive, active: "border-transparent bg-[#3dff9a] text-[#062016]" },
+              { id: "comprehensive", label: copy.comprehensive, active: "border-transparent bg-[#1b4fad] text-white" },
             ]}
             onChange={setTier}
           />
@@ -396,29 +391,34 @@ export function Locator({
             onChange={setOwnership}
           />
           {view === "list" ? <PinLegend copy={copy} /> : null}
-          <HospitalMap
-            pins={rows}
-            user={user}
-            center={CHENNAI_CENTER}
-            lang={lang}
-            tall={view === "map"}
-            onPick={(id) => {
-              setActiveId(id);
-              document.getElementById(`hospital-${id}`)?.scrollIntoView({
-                behavior: "smooth",
-                block: "center",
-              });
-            }}
-            onPlace={(lat, lng) => {
-              pinned.current = true;
-              cancelGps();
-              onUser({ lat, lng, at: Date.now(), label: copy.pinned });
-              setQuery("");
-              setPlacesOpen(false);
-              setLocError(null);
-            }}
-          />
-          <p className={cn("mt-2 text-xs text-ink-soft", copy.ta && "font-tamil")}>{copy.tapMap}</p>
+          {view === "map" ? (
+            <>
+              <p className={cn("mb-2 text-xs leading-relaxed text-ink-soft", copy.ta && "font-tamil")}>{copy.mapPrivacy}</p>
+              <HospitalMap
+                pins={rows}
+                user={user}
+                center={CHENNAI_CENTER}
+                lang={lang}
+                tall
+                onPick={(id) => {
+                  setActiveId(id);
+                  document.getElementById(`hospital-${id}`)?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center",
+                  });
+                }}
+                onPlace={(lat, lng) => {
+                  pinned.current = true;
+                  cancelGps();
+                  onUser({ lat, lng, at: Date.now(), label: copy.pinned });
+                  setQuery("");
+                  setPlacesOpen(false);
+                  setLocError(null);
+                }}
+              />
+              <p className={cn("mt-2 text-xs text-ink-soft", copy.ta && "font-tamil")}>{copy.tapMap}</p>
+            </>
+          ) : null}
         </div>
       </div>
       {rows.length === 0 ? (
@@ -464,15 +464,13 @@ export function Locator({
 
 function PinLegend({ copy }: { copy: ReturnType<typeof locatorCopy> }) {
   const items = [
-    { level: "comprehensive" as const, ownership: "Government" as const, label: copy.legendGovComp },
-    { level: "comprehensive" as const, ownership: "Private" as const, label: copy.legendPvtComp },
-    { level: "primary" as const, ownership: "Government" as const, label: copy.legendGovReady },
-    { level: "primary" as const, ownership: "Private" as const, label: copy.legendPvtReady },
+    { ownership: "Government" as const, label: copy.government },
+    { ownership: "Private" as const, label: copy.private },
   ];
   return (
     <ul className={cn("mb-3 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-ink", copy.ta && "font-tamil")}>
       {items.map((item) => {
-        const pin = pinStyle(item.level, item.ownership);
+        const pin = pinStyle(item.ownership);
         return (
           <li key={item.label} className="flex items-center gap-1.5">
             <span
@@ -484,6 +482,7 @@ function PinLegend({ copy }: { copy: ReturnType<typeof locatorCopy> }) {
           </li>
         );
       })}
+      <li className="w-full text-xs font-normal text-ink-soft">{copy.comprehensivePin}</li>
     </ul>
   );
 }
@@ -544,9 +543,10 @@ function HospitalCard({
   lang: Lang | null;
 }) {
   const copy = locatorCopy(lang);
-  const callable = canCall(hospital.phone);
+  const callable = canCall(hospital.phone) && (hospital.phone !== "108" || hospital.ownership === "Government");
   const comprehensive = hospital.level === "comprehensive";
   const gov = hospital.ownership === "Government";
+  const showGovernment108 = gov && hospital.phone !== "108";
   const facts = hospitalFacts(hospital.id);
   const pathway = pathwayLine(hospital.id, lang);
   const services = [
@@ -554,8 +554,16 @@ function HospitalCard({
     [copy.mri, facts.mri],
     [copy.thrombectomy, facts.thrombectomy],
   ] as const;
-  const pin = pinStyle(hospital.level, hospital.ownership);
+  const pin = pinStyle(hospital.ownership);
   const tab = "text-white";
+
+  function recordCallTap(target: string) {
+    const payload = { window: readClock(onsetIso, Date.now()).phase, target };
+    const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+    const queued = typeof navigator.sendBeacon === "function" && navigator.sendBeacon("/api/stroke-call", blob);
+    if (!queued) void recordStrokeCall({ data: payload }).catch(() => undefined);
+  }
+
   return (
     <article
       id={`hospital-${hospital.id}`}
@@ -604,22 +612,16 @@ function HospitalCard({
         <p className={cn("mt-3 text-sm font-semibold text-ink", copy.ta && "font-tamil")}>{pathway}</p>
       ) : null}
       <p className={cn("text-xs font-semibold text-ink-soft", copy.ta && "font-tamil", pathway ? "mt-1" : "mt-3")}>
-        {hospital.source === "clinician_verified" ? copy.reviewed : copy.publicInfo}
+        {hospital.source === "clinician_verified" ? copy.reviewed : copy.publicInfo} · {copy.recordDate(hospital.lastVerified)}
+      </p>
+      <p className={cn("mt-2 rounded-lg bg-paper-deep px-3 py-2 text-xs font-semibold text-ink-soft", copy.ta && "font-tamil")}>
+        {copy.liveStatus}
       </p>
       <div className="mt-3 grid grid-cols-2 gap-2">
         {callable ? (
           <a
             href={`tel:${hospital.phone}`}
-            onClick={() => {
-              const payload = {
-                window: readClock(onsetIso, Date.now()).phase,
-                target: hospital.phone === "108" ? "108" : hospital.name,
-              };
-              const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
-              if (!navigator.sendBeacon("/api/stroke-call", blob)) {
-                void recordStrokeCall({ data: payload }).catch(() => undefined);
-              }
-            }}
+            onClick={() => recordCallTap(hospital.phone === "108" ? "108" : hospital.name)}
             className={cn(
               "flex h-11 items-center justify-center gap-2 rounded-full bg-ok text-sm font-semibold text-[#062016]",
               copy.ta && "font-tamil",
@@ -634,6 +636,20 @@ function HospitalCard({
             {copy.noNumber}
           </span>
         )}
+        {showGovernment108 ? (
+          <a
+            href="tel:108"
+            onClick={() => recordCallTap("108")}
+            className={cn(
+              "flex h-11 items-center justify-center gap-2 rounded-full border border-line bg-surface text-sm font-semibold text-ink",
+              copy.ta && "font-tamil",
+              TAP,
+            )}
+          >
+            <Phone className="size-4" aria-hidden="true" />
+            {copy.call("108")}
+          </a>
+        ) : null}
         <a
           href={`https://www.google.com/maps/dir/?api=1&destination=${hospital.lat},${hospital.lng}`}
           target="_blank"

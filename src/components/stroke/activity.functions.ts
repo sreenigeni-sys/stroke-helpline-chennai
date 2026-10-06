@@ -6,6 +6,7 @@ const KINDS = ["appreciate", "report"] as const;
 export type WindowPhase = (typeof PHASES)[number];
 export type ReviewKind = (typeof KINDS)[number];
 
+/** Activity data remains private; public clients may only submit call-tap events/reviews. */
 export type StrokeActivity = {
   total: number;
   byWindow: { phase: WindowPhase; count: number }[];
@@ -56,8 +57,3 @@ export const submitPageReview = createServerFn({ method: "POST" })
     await savePageReview(data.kind, data.message);
     return { ok: true };
   });
-
-export const listStrokeActivity = createServerFn({ method: "GET" }).handler(async () => {
-  const store = await import("@/components/stroke/activity-store.server");
-  return store.listStrokeActivity();
-});

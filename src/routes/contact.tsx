@@ -1,8 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { HospitalUpdateForm } from "@/components/stroke/hospital-update-form";
 import { ReviewForm } from "@/components/stroke/review-form";
+import { seoHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/contact")({
+  head: () =>
+    seoHead({
+      title: "Contact Stroke Helpline Chennai",
+      description: "Send a correction to hospital information or contact Stroke Helpline Chennai.",
+      path: "/contact",
+      noindex: true,
+    }),
   component: ContactPage,
 });
 

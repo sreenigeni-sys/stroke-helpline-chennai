@@ -12,7 +12,7 @@ type ActivityDoc = {
 
 const EMPTY_TOTALS = Object.fromEntries(PHASES.map((phase) => [phase, 0])) as Record<WindowPhase, number>;
 
-function useBlob() {
+function usesBlobStorage() {
   const token = process.env.BLOB_READ_WRITE_TOKEN?.trim();
   const database = process.env.DATABASE_URL?.trim();
   return Boolean(token) && !database;
@@ -77,7 +77,7 @@ function appendBlob(kind: "calls" | "reviews", row: ActivityDoc["calls"][number]
 }
 
 export async function saveStrokeCall(window: WindowPhase, target: string) {
-  if (useBlob()) {
+  if (usesBlobStorage()) {
     await appendBlob("calls", {
       id: nextId(),
       calledAt: new Date().toISOString(),
@@ -91,7 +91,7 @@ export async function saveStrokeCall(window: WindowPhase, target: string) {
 }
 
 export async function savePageReview(kind: ReviewKind, message: string) {
-  if (useBlob()) {
+  if (usesBlobStorage()) {
     await appendBlob("reviews", {
       id: nextId(),
       createdAt: new Date().toISOString(),
@@ -105,7 +105,7 @@ export async function savePageReview(kind: ReviewKind, message: string) {
 }
 
 export async function listStrokeActivity(): Promise<StrokeActivity> {
-  if (useBlob()) {
+  if (usesBlobStorage()) {
     const doc = await readDoc();
     const calls = [...doc.calls].sort((a, b) => (a.calledAt < b.calledAt ? 1 : -1));
     const reviews = [...doc.reviews].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));

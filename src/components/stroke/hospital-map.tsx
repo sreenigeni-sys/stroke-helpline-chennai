@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import type { LayerGroup, Map as LeafletMap } from "leaflet";
 import "leaflet/dist/leaflet.css";
-import type { Level, Ownership } from "@/data/hospitals";
+import type { Level, Ownership, Source } from "@/data/hospitals";
+import { pinStyle } from "@/components/stroke/pin-style";
 import { hospitalFacts, pathwayLine, serviceWord } from "@/data/hospital-facts";
 import type { Lang } from "@/components/stroke/session";
 
@@ -12,6 +13,8 @@ export type MapPin = {
   level: Level;
   address: string;
   phone: string;
+  source: Source;
+  lastVerified: string;
   lat: number;
   lng: number;
 };
@@ -39,15 +42,6 @@ function esc(value: string) {
         return "\u0026#39;";
     }
   });
-}
-
-export function pinStyle(level: Level, ownership: Ownership) {
-  const ready = level === "comprehensive";
-  const gov = ownership === "Government";
-  if (ready && gov) return { color: "#15803d", round: false };
-  if (ready) return { color: "#6d28d9", round: true };
-  if (gov) return { color: "#0369a1", round: false };
-  return { color: "#c2410c", round: true };
 }
 
 function spread(pins: MapPin[]) {
@@ -161,7 +155,7 @@ export function HospitalMap({
       group.clearLayers();
       const shown = spread(pins);
       for (const hospital of shown) {
-        const pin = pinStyle(hospital.level, hospital.ownership);
+        const pin = pinStyle(hospital.ownership);
         const comprehensive = hospital.level === "comprehensive";
         const gov = hospital.ownership === "Government";
         const size = comprehensive ? 22 : 16;
@@ -177,23 +171,33 @@ export function HospitalMap({
         const owner = tamil ? (gov ? "அரசு" : "தனியார்") : hospital.ownership;
         const tier = comprehensive
           ? tamil
-            ? "பக்கவாத தயார்"
-            : "Stroke-ready"
+            ? "விரிவான வசதி பட்டியலிடப்பட்டது"
+            : "Comprehensive capability listed"
           : tamil
-            ? "பக்கவாத வரம்பு சிகிச்சை"
-            : "Stroke-limited care";
+            ? "பக்கவாத சிகிச்சை விவரம் பட்டியலிடப்பட்டது"
+            : "Stroke-care listing";
         const services = tamil
           ? `24/7 சிடி: ${serviceWord(facts.ct, lang)}<br/>24/7 எம்ஆர்ஐ: ${serviceWord(facts.mri, lang)}<br/>24/7 த்ராம்பெக்டமி: ${serviceWord(facts.thrombectomy, lang)}`
           : `24/7 CT: ${serviceWord(facts.ct)}<br/>24/7 MRI: ${serviceWord(facts.mri)}<br/>24/7 thrombectomy: ${serviceWord(facts.thrombectomy)}`;
         const note = pathwayLine(hospital.id, lang);
         const pathway = note ? `<br/>${esc(note)}` : "";
-        const phone = hospital.phone ? `<br/>${tamil ? "அழை" : "Call"} ${esc(hospital.phone)}` : "";
+        const phone = hospital.phone && hospital.phone !== "108"
+          ? `<br/>${tamil ? "அழை" : "Call listed number"} ${esc(hospital.phone)}`
+          : "";
+        const ambulance = gov
+          ? `<br/><a href="tel:108">${tamil ? "அரசு 108 ஆம்புலன்ஸ் சேவையை அழைக்கவும்" : "Call 108 ambulance service"}</a>`
+          : "";
+        const source = hospital.source === "clinician_verified"
+          ? (tamil ? "பட்டியல் மதிப்பாய்வு · அரசு சான்றிதழ் அல்ல" : "Reviewed listing · not formal certification")
+          : (tamil ? "பொது/மருத்துவமனைத் தகவல் · தனியாக உறுதிப்படுத்தப்படவில்லை" : "Public/provider information · not independently verified");
+        const status = tamil ? "தற்போதைய ஏற்றுக்கொள்ளல் உறுதிப்படுத்தப்படவில்லை" : "Current acceptance not confirmed";
+        const listDate = tamil ? "பட்டியல் தேதி" : "List date";
         const marker = L.marker([hospital.lat, hospital.lng], {
           icon,
           zIndexOffset: comprehensive ? 400 : 0,
         }).addTo(group);
         marker.bindPopup(
-          `<strong>${esc(hospital.name)}</strong><br/>${esc(owner)} · ${esc(tier)}<br/>${services}${pathway}${phone}`,
+          `<strong>${esc(hospital.name)}</strong><br/>${esc(owner)} · ${esc(tier)}<br/>${services}${pathway}<br/>${esc(source)} · ${esc(listDate)}: ${esc(hospital.lastVerified)}<br/><strong>${esc(status)}</strong>${phone}${ambulance}`,
         );
         marker.on("click", (event) => {
           if (event.originalEvent) L.DomEvent.stopPropagation(event.originalEvent);

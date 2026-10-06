@@ -177,20 +177,15 @@ function Intro({ onStart, onSkip }: { onStart: (lang: Lang) => void; onSkip: () 
       <button
         type="button"
         onClick={onSkip}
-        className={cn("mt-3 flex min-h-12 flex-col items-center justify-center text-ink-soft", TAP)}
+        className={cn("mt-4 flex min-h-14 w-full flex-col items-center justify-center rounded-full bg-[#1b4fad] px-3 py-2 text-white shadow-card", TAP)}
       >
-        <span className="text-sm font-semibold">Find hospital immediately</span>
-        <span className="font-tamil text-xs font-medium">உடனே மருத்துவமனையைக் கண்டுபிடி</span>
+        <span className="text-base font-bold">Find hospitals now</span>
+        <span className="font-tamil text-sm font-medium">உடனே மருத்துவமனைகளைக் கண்டறியுங்கள்</span>
       </button>
       </div>
       <p className="mt-8 text-center">
         <Link to="/contact" className="text-[11px] text-ink-soft/80 hover:text-ink">
           Contact Us
-        </Link>
-      </p>
-      <p className="mt-6 text-center">
-        <Link to="/activity" className="text-xs font-semibold text-ink-soft">
-          Stroke call activity
         </Link>
       </p>
       <p className="mt-6 text-center text-[11px] leading-relaxed text-ink-soft/80">
