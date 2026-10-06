@@ -1,4 +1,4 @@
-import { useMemo, useState, type MouseEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import type { Level, Ownership, Source } from "@/data/hospitals";
 import { pinStyle } from "@/components/stroke/pin-style";
 import type { Lang } from "@/components/stroke/session";
@@ -51,6 +51,39 @@ function frame(pins: MapPin[], here: { lat: number; lng: number }): Box {
   return { north: north + latPad, south: south - latPad, east: east + lngPad, west: west - lngPad };
 }
 
+function matchAspect(box: Box, aspect: number): Box {
+  const latC = (box.north + box.south) / 2;
+  const lngC = (box.east + box.west) / 2;
+  let latSpan = Math.min(1.4, Math.max(0.012, box.north - box.south));
+  let lngSpan = Math.max(0.012, box.east - box.west);
+  if (lngSpan / latSpan < aspect) lngSpan = latSpan * aspect;
+  else latSpan = Math.min(1.4, lngSpan / aspect);
+  lngSpan = latSpan * aspect;
+  return {
+    north: latC + latSpan / 2,
+    south: latC - latSpan / 2,
+    east: lngC + lngSpan / 2,
+    west: lngC - lngSpan / 2,
+  };
+}
+
+function shiftBox(box: Box, dx: number, dy: number, scale: number, width: number, height: number, aspect: number): Box {
+  const latSpan = box.north - box.south;
+  const lngSpan = box.east - box.west;
+  const latC = (box.north + box.south) / 2 + (dy / height) * latSpan;
+  const lngC = (box.east + box.west) / 2 - (dx / width) * lngSpan;
+  const nextLat = latSpan / scale;
+  return matchAspect(
+    {
+      north: latC + nextLat / 2,
+      south: latC - nextLat / 2,
+      east: lngC + lngSpan / 2,
+      west: lngC - lngSpan / 2,
+    },
+    aspect,
+  );
+}
+
 function streetImage(box: Box) {
   const bbox = `${box.west.toFixed(5)},${box.south.toFixed(5)},${box.east.toFixed(5)},${box.north.toFixed(5)}`;
   return `https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/export?bbox=${bbox}&bboxSR=4326&size=1000,800&format=png&f=image`;
@@ -73,19 +106,93 @@ export function HospitalMap({
   lang?: Lang | null;
   tall?: boolean;
 }) {
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const pointers = useRef(new Map<number, { x: number; y: number }>());
+  const gesture = useRef<{ box: Box; x: number; y: number; dist: number } | null>(null);
   const [wide, setWide] = useState(false);
   const [broken, setBroken] = useState(false);
+  const [aspect, setAspect] = useState(1.25);
+  const [manual, setManual] = useState<Box | null>(null);
+  const [offset, setOffset] = useState({ x: 0, y: 0, scale: 1 });
+  const offsetRef = useRef(offset);
   const shown = useMemo(() => (wide ? spread(pins) : spread(pins).slice(0, 12)), [pins, wide]);
   const here = user ?? center;
-  const box = useMemo(() => frame(shown, here), [shown, here]);
+  const fitted = useMemo(() => matchAspect(frame(shown, here), aspect), [shown, here, aspect]);
+  const box = manual ?? fitted;
   const image = streetImage(box);
+  const [live, setLive] = useState(image);
 
-  function place(event: MouseEvent<HTMLDivElement>) {
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host) return;
+    const read = () => setAspect(host.clientWidth / Math.max(1, host.clientHeight));
+    read();
+    const observer = new ResizeObserver(read);
+    observer.observe(host);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (image === live) return;
+    const pic = new Image();
+    pic.onload = () => {
+      setLive(image);
+      const still = { x: 0, y: 0, scale: 1 };
+      offsetRef.current = still;
+      setOffset(still);
+    };
+    pic.onerror = () => setBroken(true);
+    pic.src = image;
+  }, [image, live]);
+
+  function zoomBy(scale: number) {
+    const host = hostRef.current;
+    if (!host) return;
+    setManual(shiftBox(box, 0, 0, scale, host.clientWidth, host.clientHeight, aspect));
+  }
+
+  function onPointerDown(event: PointerEvent<HTMLDivElement>) {
     if (broken) return;
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = (event.clientX - rect.left) / rect.width;
-    const y = (event.clientY - rect.top) / rect.height;
-    onPlace(box.north - y * (box.north - box.south), box.west + x * (box.east - box.west));
+    event.currentTarget.setPointerCapture(event.pointerId);
+    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    const pts = [...pointers.current.values()];
+    const midX = pts.reduce((sum, point) => sum + point.x, 0) / pts.length;
+    const midY = pts.reduce((sum, point) => sum + point.y, 0) / pts.length;
+    const dist = pts.length > 1 ? Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) : 0;
+    gesture.current = { box, x: midX, y: midY, dist };
+  }
+
+  function onPointerMove(event: PointerEvent<HTMLDivElement>) {
+    if (!pointers.current.has(event.pointerId) || !gesture.current) return;
+    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    const pts = [...pointers.current.values()];
+    const midX = pts.reduce((sum, point) => sum + point.x, 0) / pts.length;
+    const midY = pts.reduce((sum, point) => sum + point.y, 0) / pts.length;
+    const dist = pts.length > 1 ? Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) : gesture.current.dist;
+    const scale = gesture.current.dist > 0 && dist > 0 ? dist / gesture.current.dist : 1;
+    const next = { x: midX - gesture.current.x, y: midY - gesture.current.y, scale };
+    offsetRef.current = next;
+    setOffset(next);
+  }
+
+  function onPointerUp(event: PointerEvent<HTMLDivElement>) {
+    const host = hostRef.current;
+    const active = gesture.current;
+    pointers.current.delete(event.pointerId);
+    if (pointers.current.size > 0 || !active || !host) return;
+    const shift = offsetRef.current;
+    const moved = Math.hypot(shift.x, shift.y) > 6 || Math.abs(shift.scale - 1) > 0.04;
+    gesture.current = null;
+    if (!moved) {
+      const rect = host.getBoundingClientRect();
+      const x = (event.clientX - rect.left) / rect.width;
+      const y = (event.clientY - rect.top) / rect.height;
+      onPlace(box.north - y * (box.north - box.south), box.west + x * (box.east - box.west));
+      offsetRef.current = { x: 0, y: 0, scale: 1 };
+      setOffset({ x: 0, y: 0, scale: 1 });
+      return;
+    }
+    setManual(shiftBox(active.box, shift.x, shift.y, shift.scale, host.clientWidth, host.clientHeight, aspect));
   }
 
   function spot(lat: number, lng: number) {
@@ -98,8 +205,12 @@ export function HospitalMap({
   return (
     <div className="relative overflow-hidden rounded-card border border-line">
       <div
-        className={`relative ${tall ? "map-frame map-frame-tall" : "map-frame"}`}
-        onClick={place}
+        ref={hostRef}
+        className={`relative touch-none ${tall ? "map-frame map-frame-tall" : "map-frame"}`}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
       >
         {broken ? (
           <iframe
@@ -108,18 +219,18 @@ export function HospitalMap({
             src={`https://maps.google.com/maps?q=${here.lat},${here.lng}&z=12&output=embed`}
           />
         ) : (
-          <img
-            key={image}
-            src={image}
-            alt={lang === "ta" ? "சென்னை சாலை வரைபடம்" : "Chennai street map"}
-            className="absolute inset-0 h-full w-full"
-            referrerPolicy="no-referrer"
-            onError={() => setBroken(true)}
-          />
-        )}
-        {broken
-          ? null
-          : shown.map((hospital) => {
+          <div
+            className="absolute inset-0"
+            style={{ transform: `translate(${offset.x}px, ${offset.y}px) scale(${offset.scale})` }}
+          >
+            <img
+              src={live}
+              alt={lang === "ta" ? "சென்னை சாலை வரைபடம்" : "Chennai street map"}
+              className="absolute inset-0 h-full w-full"
+              referrerPolicy="no-referrer"
+              draggable={false}
+            />
+            {shown.map((hospital) => {
               const pin = pinStyle(hospital.level, hospital.ownership);
               const size = hospital.level === "comprehensive" ? 22 : 16;
               return (
@@ -128,6 +239,7 @@ export function HospitalMap({
                   type="button"
                   title={hospital.name}
                   aria-label={hospital.name}
+                  onPointerDown={(event) => event.stopPropagation()}
                   onClick={(event) => {
                     event.stopPropagation();
                     onPick(hospital.id);
@@ -144,28 +256,58 @@ export function HospitalMap({
                 />
               );
             })}
-        {broken ? null : (
-          <span
-            className="pointer-events-none absolute z-20 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-white"
-            style={{
-              ...spot(here.lat, here.lng),
-              width: 16,
-              height: 16,
-              background: user ? "var(--color-signal)" : "#ffffff",
-              boxShadow: user
-                ? "0 0 0 6px color-mix(in srgb, var(--color-signal) 28%, transparent)"
-                : "0 0 0 2px #14325f",
-            }}
-          />
+            <span
+              className="pointer-events-none absolute z-20 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-white"
+              style={{
+                ...spot(here.lat, here.lng),
+                width: 16,
+                height: 16,
+                background: user ? "var(--color-signal)" : "#ffffff",
+                boxShadow: user
+                  ? "0 0 0 6px color-mix(in srgb, var(--color-signal) 28%, transparent)"
+                  : "0 0 0 2px #14325f",
+              }}
+            />
+          </div>
         )}
       </div>
+      {broken ? null : (
+        <p className="pointer-events-none absolute bottom-2 left-1/2 z-30 -translate-x-1/2 rounded-full bg-surface/95 px-3 py-1 text-[11px] font-semibold text-ink">
+          {lang === "ta" ? "இழுத்து நகர்த்துங்கள்" : "Drag to move"}
+        </p>
+      )}
       <button
         type="button"
-        onClick={() => setWide((value) => !value)}
+        onClick={() => {
+          setWide((value) => !value);
+          setManual(null);
+          offsetRef.current = { x: 0, y: 0, scale: 1 };
+          setOffset({ x: 0, y: 0, scale: 1 });
+        }}
         className="absolute top-3 left-3 z-30 rounded-full bg-surface px-3 py-2 text-xs font-semibold text-ink shadow-card"
       >
         {wide ? "Zoom to nearest" : "Show all"}
       </button>
+      {broken ? null : (
+        <div className="absolute top-3 right-3 z-30 flex flex-col gap-2">
+          <button
+            type="button"
+            aria-label={lang === "ta" ? "பெரிதாக்கு" : "Zoom in"}
+            onClick={() => zoomBy(1.6)}
+            className="flex size-11 items-center justify-center rounded-full bg-surface text-xl font-semibold text-ink shadow-card"
+          >
+            +
+          </button>
+          <button
+            type="button"
+            aria-label={lang === "ta" ? "சிறிதாக்கு" : "Zoom out"}
+            onClick={() => zoomBy(0.65)}
+            className="flex size-11 items-center justify-center rounded-full bg-surface text-xl font-semibold text-ink shadow-card"
+          >
+            −
+          </button>
+        </div>
+      )}
     </div>
   );
 }
