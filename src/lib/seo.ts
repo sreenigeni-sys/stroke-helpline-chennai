@@ -37,10 +37,12 @@ export function seoHead({ title, description, path, schema, noindex = false }: S
       { property: "og:description", content: description },
       { property: "og:url", content: url },
       { property: "og:image", content: SHARE_IMAGE },
+      { property: "og:image:alt", content: "Stroke Assist Chennai logo" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: title },
       { name: "twitter:description", content: description },
       { name: "twitter:image", content: SHARE_IMAGE },
+      { name: "twitter:image:alt", content: "Stroke Assist Chennai logo" },
     ],
     links: [{ rel: "canonical", href: url }],
     ...(pageSchema

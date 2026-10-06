@@ -16,6 +16,7 @@ const SHARE_META_KEYS = new Set([
   "og:image",
   "og:image:width",
   "og:image:height",
+  "og:image:alt",
   "og:type",
   "og:url",
   "og:site_name",
@@ -23,6 +24,7 @@ const SHARE_META_KEYS = new Set([
   "twitter:title",
   "twitter:image",
   "twitter:description",
+  "twitter:image:alt",
   "x:game:image",
   "x:game:image:width",
   "x:game:image:height",
@@ -342,18 +344,23 @@ export function grokOgHeadTags({
 } = {}) {
   const title = resolveOgTitle(site, appName, host, documentTitle);
   const publicHost = resolvePublicHost(host);
+  const siteName = String(site.siteName ?? site.title ?? appName).trim();
+  const description = String(site.description ?? "").trim();
+  const imageAlt = String(site.imageAlt ?? "").trim();
+  const type = String(site.type ?? "").toLowerCase() === "x:game" ? "x:game" : "website";
   const tags = [
     `<meta name="twitter:card" content="summary_large_image">`,
+    `<meta property="og:type" content="${escapeHtml(type)}">`,
+    `<meta property="og:site_name" content="${escapeHtml(siteName)}">`,
     `<meta property="og:title" content="${escapeHtml(title)}">`,
+    `<meta name="twitter:title" content="${escapeHtml(title)}">`,
   ];
-  const description = String(site.description ?? "").trim();
   if (description) {
     tags.push(`<meta property="og:description" content="${escapeHtml(description)}">`);
-  }
-  if (String(site.type ?? "").toLowerCase() === "x:game") {
-    tags.push(`<meta property="og:type" content="x:game">`);
+    tags.push(`<meta name="twitter:description" content="${escapeHtml(description)}">`);
   }
   if (publicHost) {
+    tags.push(`<meta property="og:url" content="https://${escapeHtml(publicHost)}/">`);
     const asset = resolveOgCardAsset(site, cwd);
     const custom = Boolean(asset);
     let image = custom
@@ -364,6 +371,11 @@ export function grokOgHeadTags({
     tags.push(`<meta property="og:image" content="${escapeHtml(image)}">`);
     tags.push(`<meta property="og:image:width" content="1200">`);
     tags.push(`<meta property="og:image:height" content="630">`);
+    tags.push(`<meta name="twitter:image" content="${escapeHtml(image)}">`);
+    if (imageAlt) {
+      tags.push(`<meta property="og:image:alt" content="${escapeHtml(imageAlt)}">`);
+      tags.push(`<meta name="twitter:image:alt" content="${escapeHtml(imageAlt)}">`);
+    }
     const banner = String(site.banner ?? "").trim();
     if (banner) {
       const bannerUrl = `https://${publicHost}${banner.startsWith("/") ? banner : `/${banner}`}`;
@@ -383,6 +395,20 @@ export function stripShareMetaTags(html) {
     }
     return tag;
   });
+}
+
+function shareMetaKey(tag) {
+  const match = String(tag).match(/\b(?:property|name)\s*=\s*["']([^"']+)["']/i);
+  return match?.[1]?.toLowerCase() ?? "";
+}
+
+function existingShareMetaKeys(html) {
+  const keys = new Set();
+  for (const match of String(html).matchAll(/<meta\b[^>]*>/gi)) {
+    const key = shareMetaKey(match[0]);
+    if (SHARE_META_KEYS.has(key)) keys.add(key);
+  }
+  return keys;
 }
 
 function insertAfterHeadOpen(html, snippet) {
@@ -432,7 +458,14 @@ export function injectGrokPwaHead(html, ctx = {}) {
     host,
     documentTitle,
   );
-  let next = stripShareMetaTags(html);
+  let next = String(html);
+  const presentShareMeta = existingShareMetaKeys(next);
+  const missingShareMeta = grokOgHeadTags({ host, appName, site, documentTitle, cwd }).filter((tag) => {
+    const key = shareMetaKey(tag);
+    if (!key || presentShareMeta.has(key)) return false;
+    presentShareMeta.add(key);
+    return true;
+  });
 
   const missing = grokPwaHeadTags(appName)
     .filter(([key]) => {
@@ -442,10 +475,7 @@ export function injectGrokPwaHead(html, ctx = {}) {
     })
     .map(([, tag]) => tag);
 
-  next = insertAfterHeadOpen(
-    next,
-    grokOgHeadTags({ host, appName, site, documentTitle, cwd }).join(""),
-  );
+  next = insertAfterHeadOpen(next, missingShareMeta.join(""));
 
   if (!next.includes("/grok-app-builder/extensions.js")) {
     missing.push(...grokExtensionsHeadTags(projectId));
@@ -479,8 +509,9 @@ function findHeadClose(buf) {
 
 /**
  * Streaming head injector: buffers only until `</head>` (ASCII marker; never
- * appears inside a UTF-8 continuation byte), overwrites share-card metas,
- * then passes later chunks through so streaming SSR keeps streaming.
+ * appears inside a UTF-8 continuation byte), preserves route-level share tags,
+ * fills missing defaults, then passes later chunks through so streaming SSR
+ * keeps streaming.
  */
 export function createHeadInjector(ctx = {}) {
   const normalized = normalizeHeadContext(ctx);
