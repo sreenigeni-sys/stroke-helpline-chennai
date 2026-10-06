@@ -115,12 +115,15 @@ export function HospitalMap({
   const [manual, setManual] = useState<Box | null>(null);
   const [offset, setOffset] = useState({ x: 0, y: 0, scale: 1 });
   const offsetRef = useRef(offset);
-  const shown = useMemo(() => (wide ? spread(pins) : spread(pins).slice(0, 12)), [pins, wide]);
+  const placedPins = useMemo(() => spread(pins), [pins]);
+  const focus = wide ? placedPins : placedPins.slice(0, 12);
   const here = user ?? center;
-  const fitted = useMemo(() => matchAspect(frame(shown, here), aspect), [shown, here, aspect]);
+  const fitted = useMemo(() => matchAspect(frame(focus, here), aspect), [focus, here, aspect]);
   const box = manual ?? fitted;
   const image = streetImage(box);
   const [live, setLive] = useState(image);
+  const [settled, setSettled] = useState<Box | null>(null);
+  const pinBox = settled ?? box;
 
   useEffect(() => {
     const host = hostRef.current;
@@ -134,21 +137,30 @@ export function HospitalMap({
 
   useEffect(() => {
     if (image === live) return;
+    let cancelled = false;
+    const requested = box;
     const pic = new Image();
     pic.onload = () => {
+      if (cancelled) return;
       setLive(image);
+      setSettled(requested);
       const still = { x: 0, y: 0, scale: 1 };
       offsetRef.current = still;
       setOffset(still);
     };
-    pic.onerror = () => setBroken(true);
+    pic.onerror = () => {
+      if (!cancelled) setBroken(true);
+    };
     pic.src = image;
-  }, [image, live]);
+    return () => {
+      cancelled = true;
+    };
+  }, [image, live, box]);
 
   function zoomBy(scale: number) {
     const host = hostRef.current;
     if (!host) return;
-    setManual(shiftBox(box, 0, 0, scale, host.clientWidth, host.clientHeight, aspect));
+    setManual(shiftBox(pinBox, 0, 0, scale, host.clientWidth, host.clientHeight, aspect));
   }
 
   function onPointerDown(event: PointerEvent<HTMLDivElement>) {
@@ -159,7 +171,7 @@ export function HospitalMap({
     const midX = pts.reduce((sum, point) => sum + point.x, 0) / pts.length;
     const midY = pts.reduce((sum, point) => sum + point.y, 0) / pts.length;
     const dist = pts.length > 1 ? Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) : 0;
-    gesture.current = { box, x: midX, y: midY, dist };
+    gesture.current = { box: pinBox, x: midX, y: midY, dist };
   }
 
   function onPointerMove(event: PointerEvent<HTMLDivElement>) {
@@ -187,7 +199,7 @@ export function HospitalMap({
       const rect = host.getBoundingClientRect();
       const x = (event.clientX - rect.left) / rect.width;
       const y = (event.clientY - rect.top) / rect.height;
-      onPlace(box.north - y * (box.north - box.south), box.west + x * (box.east - box.west));
+      onPlace(pinBox.north - y * (pinBox.north - pinBox.south), pinBox.west + x * (pinBox.east - pinBox.west));
       offsetRef.current = { x: 0, y: 0, scale: 1 };
       setOffset({ x: 0, y: 0, scale: 1 });
       return;
@@ -197,8 +209,8 @@ export function HospitalMap({
 
   function spot(lat: number, lng: number) {
     return {
-      left: `${((lng - box.west) / (box.east - box.west)) * 100}%`,
-      top: `${((box.north - lat) / (box.north - box.south)) * 100}%`,
+      left: `${((lng - pinBox.west) / (pinBox.east - pinBox.west)) * 100}%`,
+      top: `${((pinBox.north - lat) / (pinBox.north - pinBox.south)) * 100}%`,
     };
   }
 
@@ -230,7 +242,7 @@ export function HospitalMap({
               referrerPolicy="no-referrer"
               draggable={false}
             />
-            {shown.map((hospital) => {
+            {placedPins.map((hospital) => {
               const pin = pinStyle(hospital.level, hospital.ownership);
               const size = hospital.level === "comprehensive" ? 22 : 16;
               return (
