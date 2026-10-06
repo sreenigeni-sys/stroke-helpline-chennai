@@ -375,7 +375,7 @@ export function Locator({
             value={tier}
             options={[
               { id: "all", label: copy.allTiers, active: "border-transparent bg-[#1b4fad] text-white" },
-              { id: "comprehensive", label: copy.comprehensive, active: "border-transparent bg-[#1b4fad] text-white" },
+              { id: "comprehensive", label: copy.comprehensive, active: "border-transparent bg-[#3dff9a] text-[#062016]" },
             ]}
             onChange={setTier}
           />
@@ -391,34 +391,30 @@ export function Locator({
             onChange={setOwnership}
           />
           {view === "list" ? <PinLegend copy={copy} /> : null}
-          {view === "map" ? (
-            <>
-              <p className={cn("mb-2 text-xs leading-relaxed text-ink-soft", copy.ta && "font-tamil")}>{copy.mapPrivacy}</p>
-              <HospitalMap
-                pins={rows}
-                user={user}
-                center={CHENNAI_CENTER}
-                lang={lang}
-                tall
-                onPick={(id) => {
-                  setActiveId(id);
-                  document.getElementById(`hospital-${id}`)?.scrollIntoView({
-                    behavior: "smooth",
-                    block: "center",
-                  });
-                }}
-                onPlace={(lat, lng) => {
-                  pinned.current = true;
-                  cancelGps();
-                  onUser({ lat, lng, at: Date.now(), label: copy.pinned });
-                  setQuery("");
-                  setPlacesOpen(false);
-                  setLocError(null);
-                }}
-              />
-              <p className={cn("mt-2 text-xs text-ink-soft", copy.ta && "font-tamil")}>{copy.tapMap}</p>
-            </>
-          ) : null}
+          <p className={cn("mb-2 text-xs leading-relaxed text-ink-soft", copy.ta && "font-tamil")}>{copy.mapPrivacy}</p>
+          <HospitalMap
+            pins={rows}
+            user={user}
+            center={CHENNAI_CENTER}
+            lang={lang}
+            tall={view === "map"}
+            onPick={(id) => {
+              setActiveId(id);
+              document.getElementById(`hospital-${id}`)?.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+              });
+            }}
+            onPlace={(lat, lng) => {
+              pinned.current = true;
+              cancelGps();
+              onUser({ lat, lng, at: Date.now(), label: copy.pinned });
+              setQuery("");
+              setPlacesOpen(false);
+              setLocError(null);
+            }}
+          />
+          <p className={cn("mt-2 text-xs text-ink-soft", copy.ta && "font-tamil")}>{copy.tapMap}</p>
         </div>
       </div>
       {rows.length === 0 ? (
@@ -464,13 +460,15 @@ export function Locator({
 
 function PinLegend({ copy }: { copy: ReturnType<typeof locatorCopy> }) {
   const items = [
-    { ownership: "Government" as const, label: copy.government },
-    { ownership: "Private" as const, label: copy.private },
+    { level: "comprehensive" as const, ownership: "Government" as const, label: copy.legendGovComp },
+    { level: "comprehensive" as const, ownership: "Private" as const, label: copy.legendPvtComp },
+    { level: "primary" as const, ownership: "Government" as const, label: copy.legendGovReady },
+    { level: "primary" as const, ownership: "Private" as const, label: copy.legendPvtReady },
   ];
   return (
     <ul className={cn("mb-3 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-ink", copy.ta && "font-tamil")}>
       {items.map((item) => {
-        const pin = pinStyle(item.ownership);
+        const pin = pinStyle(item.level, item.ownership);
         return (
           <li key={item.label} className="flex items-center gap-1.5">
             <span
@@ -482,7 +480,6 @@ function PinLegend({ copy }: { copy: ReturnType<typeof locatorCopy> }) {
           </li>
         );
       })}
-      <li className="w-full text-xs font-normal text-ink-soft">{copy.comprehensivePin}</li>
     </ul>
   );
 }
@@ -554,7 +551,7 @@ function HospitalCard({
     [copy.mri, facts.mri],
     [copy.thrombectomy, facts.thrombectomy],
   ] as const;
-  const pin = pinStyle(hospital.ownership);
+  const pin = pinStyle(hospital.level, hospital.ownership);
   const tab = "text-white";
 
   function recordCallTap(target: string) {

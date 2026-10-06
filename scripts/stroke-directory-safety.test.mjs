@@ -98,8 +98,8 @@ test("directory and emergency pages use specific schema types linked to the stab
   assert.doesNotMatch(emergency, /reviewedBy|lastReviewed/);
 });
 
-test("the third-party map is mounted only after Map is selected and the privacy notice is present", async () => {
+test("the hospital map stays on the page, with a privacy notice", async () => {
   const locator = await read("src/components/stroke/locator.tsx");
-  assert.match(locator, /view === "map" \? \([\s\S]*?<HospitalMap/);
+  assert.match(locator, /<HospitalMap[\s\S]*tall=\{view === "map"\}/);
   assert.match(locator, /copy\.mapPrivacy/);
 });

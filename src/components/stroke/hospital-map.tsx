@@ -155,7 +155,7 @@ export function HospitalMap({
       group.clearLayers();
       const shown = spread(pins);
       for (const hospital of shown) {
-        const pin = pinStyle(hospital.ownership);
+        const pin = pinStyle(hospital.level, hospital.ownership);
         const comprehensive = hospital.level === "comprehensive";
         const gov = hospital.ownership === "Government";
         const size = comprehensive ? 22 : 16;
@@ -171,11 +171,11 @@ export function HospitalMap({
         const owner = tamil ? (gov ? "அரசு" : "தனியார்") : hospital.ownership;
         const tier = comprehensive
           ? tamil
-            ? "விரிவான வசதி பட்டியலிடப்பட்டது"
-            : "Comprehensive capability listed"
+            ? "பக்கவாத தயார்"
+            : "Stroke-ready"
           : tamil
-            ? "பக்கவாத சிகிச்சை விவரம் பட்டியலிடப்பட்டது"
-            : "Stroke-care listing";
+            ? "பக்கவாத வரம்பு சிகிச்சை"
+            : "Stroke-limited care";
         const services = tamil
           ? `24/7 சிடி: ${serviceWord(facts.ct, lang)}<br/>24/7 எம்ஆர்ஐ: ${serviceWord(facts.mri, lang)}<br/>24/7 த்ராம்பெக்டமி: ${serviceWord(facts.thrombectomy, lang)}`
           : `24/7 CT: ${serviceWord(facts.ct)}<br/>24/7 MRI: ${serviceWord(facts.mri)}<br/>24/7 thrombectomy: ${serviceWord(facts.thrombectomy)}`;
