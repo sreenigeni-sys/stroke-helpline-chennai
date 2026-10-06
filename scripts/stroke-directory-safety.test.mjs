@@ -68,8 +68,8 @@ test("108 is directory-only for government branches; public call activity stays 
   assert.match(locator, /hospital\.phone !== "108" \|\| hospital\.ownership === "Government"/);
   assert.match(locator, /showGovernment108 = gov && hospital\.phone !== "108"/);
   assert.match(locator, /href="tel:108"/);
-  assert.match(map, /pinStyle/);
-  assert.doesNotMatch(map, /cartocdn|leaflet/);
+  assert.match(map, /arcgisonline/);
+  assert.doesNotMatch(map, /cartocdn/);
   assert.match(locator, /recordStrokeCall\(\{ data: payload \}\)/);
   assert.match(activityRoute, /throw redirect\(\{ to: "\/" \}\)/);
   assert.match(activityFunctions, /export const recordStrokeCall/);

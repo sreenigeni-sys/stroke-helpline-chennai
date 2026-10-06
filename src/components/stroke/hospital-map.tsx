@@ -1,6 +1,9 @@
-import { useMemo, useState, type MouseEvent } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { LayerGroup, Map as LeafletMap, TileLayer } from "leaflet";
+import "leaflet/dist/leaflet.css";
 import type { Level, Ownership, Source } from "@/data/hospitals";
 import { pinStyle } from "@/components/stroke/pin-style";
+import { hospitalFacts, pathwayLine, serviceWord } from "@/data/hospital-facts";
 import type { Lang } from "@/components/stroke/session";
 
 export type MapPin = {
@@ -15,6 +18,31 @@ export type MapPin = {
   lat: number;
   lng: number;
 };
+
+type LeafletNs = typeof import("leaflet");
+
+async function loadLeaflet(): Promise<LeafletNs> {
+  const mod = await import("leaflet");
+  if (typeof mod.map === "function") return mod;
+  return mod.default as unknown as LeafletNs;
+}
+
+function esc(value: string) {
+  return value.replace(/[&<>"']/g, (char) => {
+    switch (char) {
+      case "&":
+        return "\u0026amp;";
+      case "<":
+        return "\u0026lt;";
+      case ">":
+        return "\u0026gt;";
+      case '"':
+        return "\u0026quot;";
+      default:
+        return "\u0026#39;";
+    }
+  });
+}
 
 function spread(pins: MapPin[]) {
   const seen = new Map<string, number>();
@@ -33,20 +61,28 @@ function spread(pins: MapPin[]) {
   });
 }
 
-function frame(pins: MapPin[], here: { lat: number; lng: number }) {
-  let north = here.lat;
-  let south = here.lat;
-  let east = here.lng;
-  let west = here.lng;
-  for (const pin of pins) {
-    north = Math.max(north, pin.lat);
-    south = Math.min(south, pin.lat);
-    east = Math.max(east, pin.lng);
-    west = Math.min(west, pin.lng);
-  }
-  const latPad = Math.max(0.012, (north - south) * 0.18);
-  const lngPad = Math.max(0.012, (east - west) * 0.18);
-  return { north: north + latPad, south: south - latPad, east: east + lngPad, west: west - lngPad };
+function addStreets(L: LeafletNs, map: LeafletMap) {
+  const esri = L.tileLayer(
+    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+    {
+      attribution: "Tiles &copy; Esri",
+      maxZoom: 19,
+    },
+  );
+  const osm = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "&copy; OpenStreetMap",
+    maxZoom: 19,
+  });
+  let failed = 0;
+  let current: TileLayer = esri;
+  esri.on("tileerror", () => {
+    failed += 1;
+    if (failed < 2 || current !== esri) return;
+    map.removeLayer(esri);
+    osm.addTo(map);
+    current = osm;
+  });
+  esri.addTo(map);
 }
 
 export function HospitalMap({
@@ -66,90 +102,166 @@ export function HospitalMap({
   lang?: Lang | null;
   tall?: boolean;
 }) {
+  const elRef = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<LeafletMap | null>(null);
+  const groupRef = useRef<LayerGroup | null>(null);
+  const onPickRef = useRef(onPick);
+  const onPlaceRef = useRef(onPlace);
+  onPickRef.current = onPick;
+  onPlaceRef.current = onPlace;
+  const [ready, setReady] = useState(false);
   const [wide, setWide] = useState(false);
-  const shown = useMemo(() => (wide ? spread(pins) : spread(pins).slice(0, 12)), [pins, wide]);
-  const here = user ?? center;
-  const box = useMemo(() => frame(shown, here), [shown, here]);
+  const pinKey = pins.map((pin) => pin.id).join("|");
+  const userKey = user ? `${user.lat.toFixed(4)},${user.lng.toFixed(4)},${user.label ?? ""}` : "city";
 
-  function place(event: MouseEvent<HTMLDivElement>) {
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = (event.clientX - rect.left) / rect.width;
-    const y = (event.clientY - rect.top) / rect.height;
-    onPlace(box.north - y * (box.north - box.south), box.west + x * (box.east - box.west));
-  }
+  useEffect(() => {
+    const host = elRef.current;
+    if (!host) return;
+    let cancelled = false;
+    let map: LeafletMap | null = null;
+    let observer: ResizeObserver | null = null;
 
-  function spot(lat: number, lng: number) {
-    return {
-      left: `${((lng - box.west) / (box.east - box.west)) * 100}%`,
-      top: `${((box.north - lat) / (box.north - box.south)) * 100}%`,
+    void (async () => {
+      const L = await loadLeaflet();
+      if (cancelled || !elRef.current) return;
+      map = L.map(elRef.current, { scrollWheelZoom: true, zoomControl: false }).setView(
+        [center.lat, center.lng],
+        11,
+      );
+      addStreets(L, map);
+      L.control.zoom({ position: "bottomright" }).addTo(map);
+      groupRef.current = L.layerGroup().addTo(map);
+      map.on("click", (event) => {
+        onPlaceRef.current(event.latlng.lat, event.latlng.lng);
+      });
+      mapRef.current = map;
+      if (cancelled) {
+        map.remove();
+        mapRef.current = null;
+        groupRef.current = null;
+        return;
+      }
+      setReady(true);
+      requestAnimationFrame(() => map?.invalidateSize());
+      const resize = new ResizeObserver(() => map?.invalidateSize());
+      observer = resize;
+      if (cancelled || !elRef.current) {
+        resize.disconnect();
+        return;
+      }
+      resize.observe(elRef.current);
+    })();
+
+    return () => {
+      cancelled = true;
+      observer?.disconnect();
+      map?.remove();
+      mapRef.current = null;
+      groupRef.current = null;
+      setReady(false);
     };
-  }
+  }, [center.lat, center.lng]);
+
+  useEffect(() => {
+    if (!ready) return;
+    const map = mapRef.current;
+    const group = groupRef.current;
+    if (!map || !group) return;
+    let cancelled = false;
+
+    void (async () => {
+      const L = await loadLeaflet();
+      if (cancelled || !mapRef.current || !groupRef.current) return;
+      group.clearLayers();
+      const shown = spread(pins);
+      for (const hospital of shown) {
+        const pin = pinStyle(hospital.level, hospital.ownership);
+        const comprehensive = hospital.level === "comprehensive";
+        const gov = hospital.ownership === "Government";
+        const size = comprehensive ? 22 : 16;
+        const radius = pin.round ? "999px" : "4px";
+        const icon = L.divIcon({
+          className: "stroke-pin",
+          html: `<div style="width:${size}px;height:${size}px;border-radius:${radius};background:${pin.color};border:2px solid #ffffff;box-shadow:0 0 0 2px #0b1220"></div>`,
+          iconSize: [size, size],
+          iconAnchor: [size / 2, size / 2],
+        });
+        const facts = hospitalFacts(hospital.id);
+        const tamil = lang === "ta";
+        const owner = tamil ? (gov ? "அரசு" : "தனியார்") : hospital.ownership;
+        const tier = comprehensive
+          ? tamil
+            ? "பக்கவாத தயார்"
+            : "Stroke-ready"
+          : tamil
+            ? "பக்கவாத வரம்பு சிகிச்சை"
+            : "Stroke-limited care";
+        const services = tamil
+          ? `24/7 சிடி: ${serviceWord(facts.ct, lang)}<br/>24/7 எம்ஆர்ஐ: ${serviceWord(facts.mri, lang)}<br/>24/7 த்ராம்பெக்டமி: ${serviceWord(facts.thrombectomy, lang)}`
+          : `24/7 CT: ${serviceWord(facts.ct)}<br/>24/7 MRI: ${serviceWord(facts.mri)}<br/>24/7 thrombectomy: ${serviceWord(facts.thrombectomy)}`;
+        const note = pathwayLine(hospital.id, lang);
+        const pathway = note ? `<br/>${esc(note)}` : "";
+        const source =
+          hospital.source === "clinician_verified"
+            ? tamil
+              ? "மருத்துவர் சரிபார்த்தது"
+              : "Clinician-reviewed"
+            : tamil
+              ? "பொதுத் தகவல்"
+              : "Public information";
+        const marker = L.marker([hospital.lat, hospital.lng], {
+          icon,
+          zIndexOffset: comprehensive ? 400 : 0,
+        }).addTo(group);
+        marker.bindPopup(
+          `<strong>${esc(hospital.name)}</strong><br/>${esc(owner)} · ${esc(tier)}<br/>${services}${pathway}<br/>${esc(source)}`,
+        );
+        marker.on("click", (event) => {
+          if (event.originalEvent) L.DomEvent.stopPropagation(event.originalEvent);
+          onPickRef.current(hospital.id);
+        });
+      }
+
+      const here = user ?? center;
+      const hereIcon = L.divIcon({
+        className: "stroke-pin",
+        html: user
+          ? `<div style="width:16px;height:16px;border-radius:999px;background:var(--color-signal);border:3px solid #ffffff;box-shadow:0 0 0 6px color-mix(in srgb, var(--color-signal) 28%, transparent)"></div>`
+          : `<div style="width:14px;height:14px;border-radius:999px;background:#ffffff;border:2px solid #14325f"></div>`,
+        iconSize: [16, 16],
+        iconAnchor: [8, 8],
+      });
+      L.marker([here.lat, here.lng], { icon: hereIcon, zIndexOffset: 800 })
+        .addTo(group)
+        .bindPopup(
+          user?.label ??
+            (user ? (lang === "ta" ? "நீங்கள் இங்கே" : "You are here") : lang === "ta" ? "சென்னை மையம்" : "Chennai centre"),
+        );
+
+      const focus = wide ? shown : shown.slice(0, 10);
+      const points = focus.map((pin) => L.latLng(pin.lat, pin.lng));
+      points.push(L.latLng(here.lat, here.lng));
+      map.invalidateSize();
+      if (points.length > 0) {
+        map.fitBounds(L.latLngBounds(points), { padding: [28, 28], maxZoom: 14 });
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [ready, pinKey, userKey, wide, pins, user, center, lang]);
 
   return (
     <div className="relative overflow-hidden rounded-card border border-line">
-      <div
-        className={`relative ${tall ? "map-frame map-frame-tall" : "map-frame"}`}
-        onClick={place}
-        style={{
-          background:
-            "linear-gradient(#e7f1fb, #f7f4ea), linear-gradient(to right, rgba(20,50,95,.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(20,50,95,.08) 1px, transparent 1px)",
-          backgroundSize: "auto, 16% 16%, 16% 16%",
-        }}
-      >
-        {shown.map((hospital) => {
-          const pin = pinStyle(hospital.level, hospital.ownership);
-          const size = hospital.level === "comprehensive" ? 22 : 16;
-          return (
-            <button
-              key={hospital.id}
-              type="button"
-              title={hospital.name}
-              aria-label={hospital.name}
-              onClick={(event) => {
-                event.stopPropagation();
-                onPick(hospital.id);
-              }}
-              className="absolute z-10 -translate-x-1/2 -translate-y-1/2 border-2 border-white"
-              style={{
-                ...spot(hospital.lat, hospital.lng),
-                width: size,
-                height: size,
-                borderRadius: pin.round ? 999 : 4,
-                background: pin.color,
-                boxShadow: "0 0 0 2px #0b1220",
-              }}
-            />
-          );
-        })}
-        <span
-          className="pointer-events-none absolute z-20 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-white"
-          style={{
-            ...spot(here.lat, here.lng),
-            width: 16,
-            height: 16,
-            background: user ? "var(--color-signal)" : "#ffffff",
-            boxShadow: user
-              ? "0 0 0 6px color-mix(in srgb, var(--color-signal) 28%, transparent)"
-              : "0 0 0 2px #14325f",
-          }}
-          aria-label={user?.label ?? (user ? (lang === "ta" ? "நீங்கள் இங்கே" : "You are here") : lang === "ta" ? "சென்னை மையம்" : "Chennai centre")}
-        />
-      </div>
+      <div ref={elRef} className={tall ? "map-frame map-frame-tall" : "map-frame"} />
       <button
         type="button"
         onClick={() => setWide((value) => !value)}
-        className="absolute top-3 left-3 z-30 rounded-full bg-surface px-3 py-2 text-xs font-semibold text-ink shadow-card"
+        className="absolute top-3 left-3 z-10 rounded-full bg-surface px-3 py-2 text-xs font-semibold text-ink shadow-card"
       >
         {wide ? "Zoom to nearest" : "Show all"}
       </button>
-      <a
-        href={`https://www.google.com/maps/@${here.lat},${here.lng},12z`}
-        target="_blank"
-        rel="noreferrer"
-        className="absolute top-3 right-3 z-30 rounded-full bg-surface px-3 py-2 text-xs font-semibold text-ink shadow-card"
-      >
-        Streets
-      </a>
     </div>
   );
 }
