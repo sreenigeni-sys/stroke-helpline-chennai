@@ -86,9 +86,13 @@
 .leaflet-container {
   z-index: 0;
   font-family: var(--font-sans);
-  background: var(--color-paper-deep);
+  background: #d5e3f0;
   height: 100%;
   width: 100%;
+}
+
+.leaflet-container img.leaflet-tile {
+  mix-blend-mode: normal !important;
 }
 
 .leaflet-div-icon.stroke-pin {
