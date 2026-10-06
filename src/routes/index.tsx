@@ -7,7 +7,7 @@ export const Route = createFileRoute("/")({
     seoHead({
       title: "Stroke Symptoms & Hospitals in Chennai | Stroke Chennai",
       description:
-        "Start a quick stroke-warning-sign check or find Chennai hospital branches. Call 108 for ambulance help; listings don't confirm current acceptance.",
+        "Start a quick stroke-warning-sign check or find Chennai hospital branches. Listings do not confirm current acceptance.",
       path: "/",
       schema: SITE_SCHEMA,
     }),

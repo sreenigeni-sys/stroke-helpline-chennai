@@ -7,7 +7,7 @@ export const Route = createFileRoute("/stroke-symptoms-chennai")({
     seoHead({
       title: "Stroke Symptoms in Chennai: Find Emergency Care",
       description:
-        "Recognize sudden stroke warning signs, call 108 for ambulance help, and find Chennai hospitals. Do not wait for an online self-test.",
+        "Recognize sudden stroke warning signs and find Chennai hospitals. Do not wait for an online self-test.",
       path: "/stroke-symptoms-chennai",
     }),
   component: SymptomsPage,

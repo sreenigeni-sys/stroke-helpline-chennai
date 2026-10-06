@@ -1,13 +1,13 @@
 # Stroke Helpline Chennai
 
-A bilingual emergency-navigation app focused on helping Chennai families reach hospital branches with stroke-care information. The homepage starts with the warning-sign screen and a prominent “Find hospitals now” action; emergency actions remain visible throughout.
+A bilingual emergency-navigation app focused on helping Chennai families reach hospital branches with stroke-care information. The homepage preserves the original warning-sign and last-known-well flow, with a prominent “Find hospitals now” action that opens the finder directly.
 
-- Location is requested only when the visitor taps the location button; area search and the Chennai-centre list remain available.
+- Device location is requested only after the visitor taps “Find hospitals now” or the location button; the finder remains usable if permission is denied, with area search and the Chennai-centre list available.
 - Distances are straight-line distances, not live road-travel estimates.
 - Existing hospital entries, category tags, service rules and notes are preserved unchanged from the public/clinician-reviewed source dataset. The directory’s capability tags remain distinct from live acceptance and formal certification.
 - The app does not have live hospital acceptance/bed status. Every result says current acceptance is not confirmed.
-- Call 108 for ambulance help or 112 for emergency assistance. The app does not dispatch an ambulance; follow dispatch guidance.
-- Symptom, location, and timing state is kept in memory for the current visit and is not written to local storage. This build sends no new individual call events; `/activity` is redirected. Historical call records may remain in the existing database/blob and have not been purged.
+- No 108/112 call bar appears on the landing or general content pages. Government hospital cards show a separate 108 ambulance action; each branch’s existing direct contact remains separate. Private cards do not offer 108, and 112 is not offered by this app.
+- The original browser session restore remains enabled for screening answers, last-known-well time, language, and selected location. Hospital call-button taps are stored in the private database or private Blob for administrative review; `/activity` remains hidden from the public and redirects home, and no public activity-read endpoint is exposed. Events record only the selected hospital/108 target and time-window category, not patient identity. Historical events have not been purged.
 - The third-party map loads only after a visitor opens Map. A notice explains that CARTO tile requests can reveal the visible area and ordinary connection data; device location is requested only after a tap.
 
 ## Run locally

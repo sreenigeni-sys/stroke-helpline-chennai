@@ -181,8 +181,11 @@ export function HospitalMap({
           : `24/7 CT: ${serviceWord(facts.ct)}<br/>24/7 MRI: ${serviceWord(facts.mri)}<br/>24/7 thrombectomy: ${serviceWord(facts.thrombectomy)}`;
         const note = pathwayLine(hospital.id, lang);
         const pathway = note ? `<br/>${esc(note)}` : "";
-        const phone = hospital.phone
-          ? `<br/>${hospital.phone === "108" ? (tamil ? "ஆம்புலன்ஸ் 108-ஐ அழை" : "Call 108 ambulance") : (tamil ? "அழை" : "Call listed number")} ${esc(hospital.phone)}`
+        const phone = hospital.phone && hospital.phone !== "108"
+          ? `<br/>${tamil ? "அழை" : "Call listed number"} ${esc(hospital.phone)}`
+          : "";
+        const ambulance = gov
+          ? `<br/><a href="tel:108">${tamil ? "அரசு 108 ஆம்புலன்ஸ் சேவையை அழைக்கவும்" : "Call 108 ambulance service"}</a>`
           : "";
         const source = hospital.source === "clinician_verified"
           ? (tamil ? "பட்டியல் மதிப்பாய்வு · அரசு சான்றிதழ் அல்ல" : "Reviewed listing · not formal certification")
@@ -194,7 +197,7 @@ export function HospitalMap({
           zIndexOffset: comprehensive ? 400 : 0,
         }).addTo(group);
         marker.bindPopup(
-          `<strong>${esc(hospital.name)}</strong><br/>${esc(owner)} · ${esc(tier)}<br/>${services}${pathway}<br/>${esc(source)} · ${esc(listDate)}: ${esc(hospital.lastVerified)}<br/><strong>${esc(status)}</strong>${phone}`,
+          `<strong>${esc(hospital.name)}</strong><br/>${esc(owner)} · ${esc(tier)}<br/>${services}${pathway}<br/>${esc(source)} · ${esc(listDate)}: ${esc(hospital.lastVerified)}<br/><strong>${esc(status)}</strong>${phone}${ambulance}`,
         );
         marker.on("click", (event) => {
           if (event.originalEvent) L.DomEvent.stopPropagation(event.originalEvent);

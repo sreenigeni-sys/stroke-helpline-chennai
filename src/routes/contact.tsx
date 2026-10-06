@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { HospitalUpdateForm } from "@/components/stroke/hospital-update-form";
 import { ReviewForm } from "@/components/stroke/review-form";
-import { CallBar } from "@/components/stroke/call-bar";
 import { seoHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/contact")({
@@ -17,7 +16,7 @@ export const Route = createFileRoute("/contact")({
 
 function ContactPage() {
   return (
-    <main className="mx-auto min-h-screen max-w-md px-4 py-6 pb-24">
+    <main className="mx-auto min-h-screen max-w-md px-4 py-6">
       <header className="flex items-center justify-between gap-3">
         <img src="/brand/arunai.png" alt="Arunai Neuro Foundation" className="h-8 w-auto max-w-[8rem]" />
         <Link to="/" className="text-sm font-semibold text-[#1b4fad]">
@@ -42,7 +41,6 @@ function ContactPage() {
           <ReviewForm />
         </div>
       </section>
-      <CallBar />
     </main>
   );
 }

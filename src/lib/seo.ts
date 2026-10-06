@@ -80,7 +80,7 @@ export const SITE_SCHEMA = {
       url: `${SITE_ORIGIN}/`,
       name: "Stroke symptoms and hospitals in Chennai",
       description:
-        "Start a quick warning-sign check or find Chennai hospital branches. Call 108 for ambulance help. Listings do not confirm current acceptance.",
+        "Start a quick warning-sign check or find Chennai hospital branches. Listings do not confirm current acceptance.",
       isPartOf: { "@id": `${SITE_ORIGIN}/#website` },
       about: { "@type": "Thing", name: "Stroke warning signs and hospital navigation in Chennai" },
       inLanguage: ["en-IN", "ta-IN"],

@@ -8,15 +8,15 @@ export function locatorCopy(lang: Lang | null) {
       return ta ? `பக்கவாத அறிகுறி இருக்கலாம்: ${signs}.` : `Possible stroke signs: ${signs}.`;
     },
     travel: ta
-      ? "ஆம்புலன்ஸ் உதவிக்கு 108-ஐ அழைக்கவும். உங்களுடன் ஒருவர் இருந்தால், நீங்கள் அழைக்கும் போது அவர் அருகிலுள்ள மருத்துவமனைத் தகவலைப் பார்க்கலாம்."
-      : "Call 108 for ambulance help. If someone is with you, ask them to check nearby hospital information while you call.",
+      ? "உடனடி மருத்துவ உதவியைப் பெறுங்கள். உங்களுடன் ஒருவர் இருந்தால், அவர் அருகிலுள்ள மருத்துவமனைத் தகவலைப் பார்க்கலாம்."
+      : "Seek emergency medical help now. If someone is with you, ask them to check nearby hospital information.",
     unsure(signs: string) {
       return ta ? `உறுதி இல்லை: ${signs}.` : `Not sure about: ${signs}.`;
     },
     treatUrgent: ta ? "அதையும் அவசரமாக எடுத்துக் கொள்ளுங்கள்." : "Treat that as urgent.",
     clear: ta
-      ? "இந்த அறிகுறிகள் தெரியவில்லை என்பதால் பக்கவாதம் இல்லை என்று உறுதியாகாது. திடீர் மாற்றம் இருந்தால் 108-ஐ அழைத்து உடனடி உதவி பெறுங்கள்."
-      : "Not seeing these signs does not rule out stroke. If something has changed suddenly, call 108 and seek urgent medical help.",
+      ? "இந்த அறிகுறிகள் தெரியவில்லை என்பதால் பக்கவாதம் இல்லை என்று உறுதியாகாது. திடீர் மாற்றம் இருந்தால் உடனடி மருத்துவ உதவி பெறுங்கள்."
+      : "Not seeing these signs does not rule out stroke. If something has changed suddenly, seek urgent medical help.",
     finding: ta ? "உங்களைத் தேடுகிறது…" : "Finding you…",
     tightening: ta ? "இடத்தைத் துல்லியமாக்குகிறது…" : "Tightening GPS…",
     updateLocation: ta ? "இடத்தைப் புதுப்பி" : "Update my location",
@@ -78,8 +78,8 @@ export function locatorCopy(lang: Lang | null) {
     noMatch: ta ? "இந்த வடிகட்டலுக்கு மருத்துவமனை இல்லை." : "No hospitals match this filter.",
     disclaimer: ta ? "இந்தப் பக்கம் பக்கவாதத்தைக் கண்டறியாது" : "This app does not diagnose stroke",
     noAmbulance: ta
-      ? "ஆம்புலன்ஸையும் அனுப்பாது. தற்போதைய ஏற்றுக்கொள்ளல் உறுதியாக இல்லை; 108/112 அனுப்பும் குழுவின் வழிகாட்டுதலைப் பின்பற்றுங்கள்."
-      : "and does not dispatch an ambulance. Current acceptance is not confirmed; follow 108/112 dispatch guidance.",
+      ? "ஆம்புலன்ஸையும் அனுப்பாது. தற்போதைய ஏற்றுக்கொள்ளல் உறுதியாக இல்லை; அவசர உதவி வழங்குநரின் வழிகாட்டுதலைப் பின்பற்றுங்கள்."
+      : "and does not dispatch an ambulance. Current acceptance is not confirmed; follow emergency-response guidance.",
     clocks: ta
       ? "நேரக் கணிப்பை வைத்து மருத்துவமனையைத் தேர்ந்தெடுக்க வேண்டாம். தெரிந்தால், கடைசியாக இயல்பாக இருந்த நேரத்தை அவசரக் குழுவிடம் சொல்லுங்கள்; அழைப்பைத் தாமதிக்க வேண்டாம்."
       : "Do not use a countdown to choose a hospital. If known, tell the emergency team when the person was last known to be well; do not delay the call.",

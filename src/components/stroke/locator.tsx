@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Navigation, Phone } from "lucide-react";
+import { Countdown } from "@/components/stroke/countdown";
+import { recordStrokeCall } from "@/components/stroke/activity.functions";
 import { CHENNAI_CENTER, HOSPITALS, type Hospital } from "@/data/hospitals";
 import { PLACES, type Place } from "@/data/places";
 import { cn } from "@/lib/cn";
 import { distanceKm, formatDistance } from "@/lib/geo";
+import { readClock } from "@/lib/clock";
 import { HospitalMap } from "@/components/stroke/hospital-map";
 import { pinStyle } from "@/components/stroke/pin-style";
 import { markedWords, type Lang, type Session } from "@/components/stroke/session";
@@ -51,17 +54,21 @@ function locateMessage(error: unknown, tamil: boolean) {
 
 export function Locator({
   answers,
+  onsetIso,
   user,
   concern,
   lang,
+  onEditTime,
   onRecheck,
   onReset,
   onUser,
 }: {
   answers: Session["answers"];
+  onsetIso: string | null;
   user: Session["user"];
   concern: "yes" | "unsure" | "clear" | "skipped";
   lang: Lang | null;
+  onEditTime: () => void;
   onRecheck: () => void;
   onReset: () => void;
   onUser: (user: Session["user"]) => void;
@@ -187,6 +194,8 @@ export function Locator({
           {copy.clear}
         </div>
       ) : null}
+
+      <Countdown onsetIso={onsetIso} onEdit={onEditTime} lang={lang} />
 
       <div className="mt-4 flex flex-col gap-2 sm:flex-row">
         <button
@@ -423,6 +432,7 @@ export function Locator({
             active
             fromYou={Boolean(user)}
             index={0}
+            onsetIso={onsetIso}
             lang={lang}
           />
         </div>
@@ -435,6 +445,7 @@ export function Locator({
               active={activeId === hospital.id}
               fromYou={Boolean(user)}
               index={index}
+              onsetIso={onsetIso}
               lang={lang}
             />
           ))}
@@ -521,18 +532,21 @@ function HospitalCard({
   active,
   fromYou,
   index,
+  onsetIso,
   lang,
 }: {
   hospital: Hospital & { dist: number };
   active: boolean;
   fromYou: boolean;
   index: number;
+  onsetIso: string | null;
   lang: Lang | null;
 }) {
   const copy = locatorCopy(lang);
-  const callable = canCall(hospital.phone);
+  const callable = canCall(hospital.phone) && (hospital.phone !== "108" || hospital.ownership === "Government");
   const comprehensive = hospital.level === "comprehensive";
   const gov = hospital.ownership === "Government";
+  const showGovernment108 = gov && hospital.phone !== "108";
   const facts = hospitalFacts(hospital.id);
   const pathway = pathwayLine(hospital.id, lang);
   const services = [
@@ -542,6 +556,14 @@ function HospitalCard({
   ] as const;
   const pin = pinStyle(hospital.ownership);
   const tab = "text-white";
+
+  function recordCallTap(target: string) {
+    const payload = { window: readClock(onsetIso, Date.now()).phase, target };
+    const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+    const queued = typeof navigator.sendBeacon === "function" && navigator.sendBeacon("/api/stroke-call", blob);
+    if (!queued) void recordStrokeCall({ data: payload }).catch(() => undefined);
+  }
+
   return (
     <article
       id={`hospital-${hospital.id}`}
@@ -599,6 +621,7 @@ function HospitalCard({
         {callable ? (
           <a
             href={`tel:${hospital.phone}`}
+            onClick={() => recordCallTap(hospital.phone === "108" ? "108" : hospital.name)}
             className={cn(
               "flex h-11 items-center justify-center gap-2 rounded-full bg-ok text-sm font-semibold text-[#062016]",
               copy.ta && "font-tamil",
@@ -613,6 +636,20 @@ function HospitalCard({
             {copy.noNumber}
           </span>
         )}
+        {showGovernment108 ? (
+          <a
+            href="tel:108"
+            onClick={() => recordCallTap("108")}
+            className={cn(
+              "flex h-11 items-center justify-center gap-2 rounded-full border border-line bg-surface text-sm font-semibold text-ink",
+              copy.ta && "font-tamil",
+              TAP,
+            )}
+          >
+            <Phone className="size-4" aria-hidden="true" />
+            {copy.call("108")}
+          </a>
+        ) : null}
         <a
           href={`https://www.google.com/maps/dir/?api=1&destination=${hospital.lat},${hospital.lng}`}
           target="_blank"

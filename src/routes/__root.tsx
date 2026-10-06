@@ -14,7 +14,7 @@ export const Route = createRootRoute({
       {
         name: "description",
         content:
-          "Find stroke-care hospital information in Chennai. Call 108 for ambulance help. The directory does not confirm live acceptance or diagnose stroke.",
+          "Check stroke warning signs or find Chennai hospital branches. The directory does not confirm live acceptance or diagnose stroke.",
       },
       { name: "theme-color", content: "#0b1220" },
     ],

@@ -7,7 +7,7 @@ export const Route = createFileRoute("/stroke-hospitals-chennai")({
     seoHead({
       title: "Stroke-Care Hospitals in Chennai: Find a Branch",
       description:
-        "Find Chennai hospital branches with stroke-care information. Compare listed capabilities, distance, phone and directions. Call 108 for ambulance help.",
+        "Find Chennai hospital branches with stroke-care information. Compare listed capabilities, distance, phone and directions.",
       path: "/stroke-hospitals-chennai",
       schema: {
         "@context": "https://schema.org",
@@ -36,7 +36,7 @@ function HospitalFinderPage() {
         <section>
           <h2 className="font-display text-2xl">Capability is not live acceptance</h2>
           <p className="mt-2 leading-relaxed text-ink-soft">
-            The current list does not receive live hospital capacity updates. A listed CT, MRI, stroke team or thrombectomy service does not guarantee that the service is available at this moment. Follow 108/112 dispatch guidance; do not treat a static list as an “available now” status.
+            The current list does not receive live hospital capacity updates. A listed CT, MRI, stroke team or thrombectomy service does not guarantee that the service is available at this moment. Follow emergency-response guidance; do not treat a static list as an “available now” status.
           </p>
         </section>
         <section>
