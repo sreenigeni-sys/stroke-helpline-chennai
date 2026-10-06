@@ -609,10 +609,7 @@ function HospitalCard({
         <p className={cn("mt-3 text-sm font-semibold text-ink", copy.ta && "font-tamil")}>{pathway}</p>
       ) : null}
       <p className={cn("text-xs font-semibold text-ink-soft", copy.ta && "font-tamil", pathway ? "mt-1" : "mt-3")}>
-        {hospital.source === "clinician_verified" ? copy.reviewed : copy.publicInfo} · {copy.recordDate(hospital.lastVerified)}
-      </p>
-      <p className={cn("mt-2 rounded-lg bg-paper-deep px-3 py-2 text-xs font-semibold text-ink-soft", copy.ta && "font-tamil")}>
-        {copy.liveStatus}
+        {hospital.source === "clinician_verified" ? copy.reviewed : copy.publicInfo}
       </p>
       <div className="mt-3 grid grid-cols-2 gap-2">
         {callable ? (

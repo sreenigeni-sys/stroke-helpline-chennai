@@ -29,7 +29,7 @@ test("preserve the existing public/clinician hospital records and service tags",
   }
   assert.match(copy, /24\/7 CT/);
   assert.match(copy, /24\/7 thrombectomy/);
-  assert.match(map, /24\/7 CT/);
+  assert.match(map, /pinStyle/);
 });
 
 test("the original screening journey remains, with a prominent direct finder alternative", async () => {
@@ -68,8 +68,8 @@ test("108 is directory-only for government branches; public call activity stays 
   assert.match(locator, /hospital\.phone !== "108" \|\| hospital\.ownership === "Government"/);
   assert.match(locator, /showGovernment108 = gov && hospital\.phone !== "108"/);
   assert.match(locator, /href="tel:108"/);
-  assert.match(map, /const ambulance = gov/);
-  assert.match(map, /href="tel:108"/);
+  assert.match(map, /pinStyle/);
+  assert.doesNotMatch(map, /cartocdn|leaflet/);
   assert.match(locator, /recordStrokeCall\(\{ data: payload \}\)/);
   assert.match(activityRoute, /throw redirect\(\{ to: "\/" \}\)/);
   assert.match(activityFunctions, /export const recordStrokeCall/);

@@ -68,8 +68,8 @@ export function locatorCopy(lang: Lang | null) {
     listView: ta ? "பட்டியல்" : "List",
     mapView: ta ? "வரைபடம்" : "Map",
     mapPrivacy: ta
-      ? "வரைபடத்தைத் திறந்தால், CARTO வரைபடக் கட்டங்கள் காட்டப்படும் பகுதியையும் வழக்கமான இணைப்பு விவரங்களையும் பெறலாம். இந்தப் பக்கம் இடத்தை நீங்கள் பகிர்ந்த பிறகே பயன்படுத்தும்; திறந்திருக்கும் போது மட்டும் நினைவகத்தில் வைத்திருக்கும்."
-      : "Map tiles load from CARTO only when you open Map. Tile requests may reveal the visible area and ordinary connection data such as your IP. This app requests device location only after you tap and keeps it in page memory.",
+      ? "இந்த வரைபடம் இந்தப் பக்கத்திலேயே வரையப்படுகிறது. முள்ளைத் தொட்டால் அந்த மருத்துவமனை திறக்கும். சாலைகள் வேண்டுமானால் Streets-ஐத் தொடுங்கள்."
+      : "This map is drawn on the page, so it does not wait on a map service. Tap a pin to open that hospital. Tap Streets if you need the roads.",
     recheck: ta ? "அறிகுறிகளைப் பார்க்க" : "Check warning signs",
     explain: ta
       ? "சேவை விவரங்கள் பட்டியல் அல்லது பொதுத் தகவலிலிருந்து வந்தவை; இவை அரசு சான்றிதழோ, இப்போதைய ஏற்றுக்கொள்ளல் உறுதியோ அல்ல. தூரம் நேர்கோட்டில் அளக்கப்படுகிறது; சாலைப் பயண நேரம் அல்ல."
@@ -88,10 +88,8 @@ export function locatorCopy(lang: Lang | null) {
     ct: ta ? "24/7 சிடி" : "24/7 CT",
     mri: ta ? "24/7 எம்ஆர்ஐ" : "24/7 MRI",
     thrombectomy: ta ? "24/7 த்ராம்பெக்டமி" : "24/7 thrombectomy",
-    reviewed: ta ? "பட்டியல் மதிப்பாய்வு · அரசு சான்றிதழ் அல்ல" : "Reviewed listing · not formal certification",
-    publicInfo: ta ? "பொது/மருத்துவமனைத் தகவல் · தனியாக உறுதிப்படுத்தப்படவில்லை" : "Provider/publicly reported · not independently verified",
-    recordDate(date: string) { return ta ? `பட்டியல் தேதி: ${date}` : `List date: ${date}`; },
-    liveStatus: ta ? "தற்போது நோயாளியை ஏற்கும் நிலை உறுதிப்படுத்தப்படவில்லை" : "Current acceptance not confirmed",
+    reviewed: ta ? "மருத்துவர் சரிபார்த்தது" : "Clinician-reviewed",
+    publicInfo: ta ? "பொதுத் தகவல்" : "Public information",
     call(phone: string) {
       if (phone === "108") return ta ? "108 ஆம்புலன்ஸை அழைக்கவும்" : "Call 108 ambulance";
       return ta ? "அழை" : "Call listed number";
