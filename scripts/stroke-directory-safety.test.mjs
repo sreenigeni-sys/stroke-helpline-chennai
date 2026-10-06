@@ -83,6 +83,21 @@ test("108 is directory-only for government branches; public call activity stays 
   for (const page of [symptoms, treatment, home, contact]) assert.doesNotMatch(page, /108|112|tel:108|tel:112/);
 });
 
+test("directory and emergency pages use specific schema types linked to the stable site entity", async () => {
+  const [directory, emergency] = await Promise.all([
+    read("src/routes/stroke-hospitals-chennai.tsx"),
+    read("src/routes/stroke-emergency-chennai.tsx"),
+  ]);
+  assert.match(directory, /"@type": "CollectionPage"/);
+  assert.match(directory, /"@id": "https:\/\/strokechennai\.org\/stroke-hospitals-chennai#webpage"/);
+  assert.match(directory, /isPartOf: \{ "@id": "https:\/\/strokechennai\.org\/#website" \}/);
+  assert.match(emergency, /"@type": "MedicalWebPage"/);
+  assert.match(emergency, /"@id": "https:\/\/strokechennai\.org\/stroke-emergency-chennai#webpage"/);
+  assert.match(emergency, /isPartOf: \{ "@id": "https:\/\/strokechennai\.org\/#website" \}/);
+  assert.match(emergency, /about: \{ "@type": "MedicalCondition", name: "Stroke" \}/);
+  assert.doesNotMatch(emergency, /reviewedBy|lastReviewed/);
+});
+
 test("the third-party map is mounted only after Map is selected and the privacy notice is present", async () => {
   const locator = await read("src/components/stroke/locator.tsx");
   assert.match(locator, /view === "map" \? \([\s\S]*?<HospitalMap/);

@@ -2,13 +2,28 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PublicPage } from "@/components/stroke/public-page";
 import { seoHead } from "@/lib/seo";
 
+const PAGE_PATH = "/stroke-emergency-chennai";
+const PAGE_TITLE = "Suspected Stroke in Chennai? Find Emergency Care";
+const PAGE_DESCRIPTION =
+  "Use the Chennai finder to check hospital-branch stroke services, direct contacts and directions. Seek emergency care without delay.";
+
 export const Route = createFileRoute("/stroke-emergency-chennai")({
   head: () =>
     seoHead({
-      title: "Suspected Stroke in Chennai? Find Emergency Care",
-      description:
-        "Use the Chennai finder to check hospital-branch stroke services, direct contacts and directions. Seek emergency care without delay.",
-      path: "/stroke-emergency-chennai",
+      title: PAGE_TITLE,
+      description: PAGE_DESCRIPTION,
+      path: PAGE_PATH,
+      schema: {
+        "@context": "https://schema.org",
+        "@type": "MedicalWebPage",
+        "@id": "https://strokechennai.org/stroke-emergency-chennai#webpage",
+        url: `https://strokechennai.org${PAGE_PATH}`,
+        name: PAGE_TITLE,
+        description: PAGE_DESCRIPTION,
+        isPartOf: { "@id": "https://strokechennai.org/#website" },
+        about: { "@type": "MedicalCondition", name: "Stroke" },
+        inLanguage: ["en-IN", "ta-IN"],
+      },
     }),
   component: EmergencyPage,
 });
