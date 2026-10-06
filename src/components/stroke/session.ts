@@ -14,11 +14,9 @@ export type Session = {
   user: { lat: number; lng: number; at?: number; accuracy?: number; label?: string } | null;
 };
 
-const KEY = "stroke-assist-v1";
-
 export function freshSession(): Session {
   return {
-    phase: "intro",
+    phase: "locator",
     signIndex: 0,
     answers: { B: null, E: null, F: null, A: null, S: null },
     onsetIso: null,
@@ -26,60 +24,6 @@ export function freshSession(): Session {
     lang: null,
     user: null,
   };
-}
-
-function validAnswer(value: unknown): Answer | null {
-  return value === "yes" || value === "no" || value === "unsure" ? value : null;
-}
-
-export function loadSession(): Session {
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return freshSession();
-    const parsed = JSON.parse(raw) as Partial<Session>;
-    const base = freshSession();
-    const phase = parsed.phase;
-    const okPhase =
-      phase === "intro" || phase === "signs" || phase === "time" || phase === "locator";
-    const answers = parsed.answers ?? base.answers;
-    return {
-      phase: okPhase ? phase : "intro",
-      signIndex:
-        typeof parsed.signIndex === "number"
-          ? Math.min(SIGNS.length - 1, Math.max(0, Math.floor(parsed.signIndex)))
-          : 0,
-      answers: {
-        B: validAnswer(answers.B),
-        E: validAnswer(answers.E),
-        F: validAnswer(answers.F),
-        A: validAnswer(answers.A),
-        S: validAnswer(answers.S),
-      },
-      onsetIso: typeof parsed.onsetIso === "string" ? parsed.onsetIso : null,
-      timeReturn: parsed.timeReturn === "locator" ? "locator" : "signs",
-      lang: parsed.lang === "en" || parsed.lang === "ta" ? parsed.lang : null,
-      user:
-        parsed.user &&
-        typeof parsed.user.lat === "number" &&
-        typeof parsed.user.lng === "number" &&
-        Number.isFinite(parsed.user.lat) &&
-        Number.isFinite(parsed.user.lng)
-          ? {
-              lat: parsed.user.lat,
-              lng: parsed.user.lng,
-              at: typeof parsed.user.at === "number" ? parsed.user.at : undefined,
-              accuracy: typeof parsed.user.accuracy === "number" ? parsed.user.accuracy : undefined,
-              label: typeof parsed.user.label === "string" ? parsed.user.label : undefined,
-            }
-          : null,
-    };
-  } catch {
-    return freshSession();
-  }
-}
-
-export function saveSession(session: Session) {
-  localStorage.setItem(KEY, JSON.stringify(session));
 }
 
 export function concernOf(answers: Session["answers"]): "yes" | "unsure" | "clear" | "skipped" {

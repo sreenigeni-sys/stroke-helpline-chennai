@@ -188,11 +188,6 @@ function Intro({ onStart, onSkip }: { onStart: (lang: Lang) => void; onSkip: () 
           Contact Us
         </Link>
       </p>
-      <p className="mt-6 text-center">
-        <Link to="/activity" className="text-xs font-semibold text-ink-soft">
-          Stroke call activity
-        </Link>
-      </p>
       <p className="mt-6 text-center text-[11px] leading-relaxed text-ink-soft/80">
         This page is not intended to be diagnostic and is not a replacement for assessment by a
         healthcare professional.

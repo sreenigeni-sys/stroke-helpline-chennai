@@ -8,31 +8,24 @@ export function locatorCopy(lang: Lang | null) {
       return ta ? `பக்கவாத அறிகுறி இருக்கலாம்: ${signs}.` : `Possible stroke signs: ${signs}.`;
     },
     travel: ta
-      ? "போகும் முன் மருத்துவமனையை அழையுங்கள். குழுவும் ஸ்கேன்னரும் மணிக்கு மாறும்."
-      : "If you travel, call the hospital before you arrive — teams and scanners change by the hour.",
+      ? "ஆம்புலன்ஸ் உதவிக்கு 108-ஐ அழைக்கவும். உங்களுடன் ஒருவர் இருந்தால், நீங்கள் அழைக்கும் போது அவர் அருகிலுள்ள மருத்துவமனைத் தகவலைப் பார்க்கலாம்."
+      : "Call 108 for ambulance help. If someone is with you, ask them to check nearby hospital information while you call.",
     unsure(signs: string) {
       return ta ? `உறுதி இல்லை: ${signs}.` : `Not sure about: ${signs}.`;
     },
     treatUrgent: ta ? "அதையும் அவசரமாக எடுத்துக் கொள்ளுங்கள்." : "Treat that as urgent.",
     clear: ta
-      ? "நீங்கள் BEFAST அறிகுறியைக் குறிக்கவில்லை. அதனால் பக்கவாதம் இல்லை என்று ஆகாது. ஏதாவது தவறாகத் தோன்றினால், போகும் முன் அழையுங்கள்."
-      : "You did not mark a BEFAST sign. That does not rule out a stroke. If something still feels wrong, call the hospital before you go.",
-    noFood: ta
-      ? "தண்ணீர், உணவு, மருந்து எதுவும் கொடுக்க வேண்டாம்."
-      : "Do not give any water, food, or medicine.",
-    lieDown: ta
-      ? "தரையில் படுக்க வையுங்கள், ஒரு பக்கமாக."
-      : "Make them lie down flat, on their side.",
-    sugar: ta ? "இரத்த சர்க்கரையைப் பாருங்கள்." : "Check blood sugar.",
+      ? "இந்த அறிகுறிகள் தெரியவில்லை என்பதால் பக்கவாதம் இல்லை என்று உறுதியாகாது. திடீர் மாற்றம் இருந்தால் 108-ஐ அழைத்து உடனடி உதவி பெறுங்கள்."
+      : "Not seeing these signs does not rule out stroke. If something has changed suddenly, call 108 and seek urgent medical help.",
     finding: ta ? "உங்களைத் தேடுகிறது…" : "Finding you…",
     tightening: ta ? "இடத்தைத் துல்லியமாக்குகிறது…" : "Tightening GPS…",
     updateLocation: ta ? "இடத்தைப் புதுப்பி" : "Update my location",
     findNearest: ta ? "எனக்கு அருகில் உள்ளதைக் காட்டு" : "Find nearest to me",
     cityCentre: ta ? "நகர மையம்" : "Use city centre",
-    reset: "Reset clock and location",
+    reset: ta ? "தேர்வுசெய்த இடத்தை நீக்கு" : "Clear selected location",
     abroad: ta
       ? "வேறு ஒருவருக்காக என்றால், நோயாளியின் இடத்தைத் தேர்ந்தெடுங்கள்."
-      : "If for someone else, please choose the patient's location.",
+      : "If for someone else, choose the patient's location.",
     abroadHint: ta ? "" : "வேறு ஒருவருக்காக என்றால், நோயாளியின் இடத்தைத் தேர்ந்தெடுங்கள்.",
     placePlaceholder: ta ? "அண்ணா நகர், வேளச்சேரி, ஆவடி…" : "Anna Nagar, Velachery, Avadi…",
     noArea: ta ? "அந்தப் பெயரில் பகுதி இல்லை. வரைபடத்தில் தொடுங்கள்." : "No area by that name. Tap the map instead.",
@@ -45,7 +38,7 @@ export function locatorCopy(lang: Lang | null) {
       return ta ? "உங்களிடமிருந்து" : "from you";
     },
     fromCentre: ta ? "சென்னை மையத்திலிருந்து" : "from Chennai centre",
-    sorted: ta ? "வரிசை" : "sorted",
+    sorted: ta ? "நேர்கோட்டுத் தொலைவு வரிசை (பயண நேரம் அல்ல)" : "sorted by straight-line distance (not drive time)",
     blocked: ta
       ? "இடம் தடுக்கப்பட்டுள்ளது. உலாவியில் இந்தத் தளத்துக்கு அனுமதி கொடுத்து, மீண்டும் தொடுங்கள்."
       : "Location is blocked. Allow it for this site in the browser, then tap again.",
@@ -60,43 +53,52 @@ export function locatorCopy(lang: Lang | null) {
         ? `துல்லியம் சுமார் ${rounded} மட்டும். முள் உங்கள் தெருவில் இல்லையென்றால், வரைபடத்தில் தொடுங்கள் அல்லது பகுதியைத் தேர்ந்தெடுங்கள்.`
         : `Only accurate to about ${rounded}. If the pin is not on your street, tap the map or set the area.`;
     },
-    allTiers: ta ? "அனைத்தும்" : "All tiers",
-    comprehensive: ta ? "பக்கவாத தயார்" : "Stroke-ready",
-    strokeReady: ta ? "பக்கவாத வரம்பு சிகிச்சை" : "Stroke-limited care",
+    allTiers: ta ? "அனைத்தும்" : "All listings",
+    comprehensive: ta ? "விரிவான வசதி பட்டியலிடப்பட்டது" : "Comprehensive capability listed",
+    strokeReady: ta ? "பக்கவாத சிகிச்சை விவரம் பட்டியலிடப்பட்டது" : "Stroke-care listing",
     bothTypes: ta ? "அரசு + தனியார்" : "Gov + private",
     government: ta ? "அரசு" : "Government",
     private: ta ? "தனியார்" : "Private",
-    legendGovComp: ta ? "அரசு · பக்கவாத தயார்" : "Gov stroke-ready",
-    legendPvtComp: ta ? "தனியார் · பக்கவாத தயார்" : "Private stroke-ready",
-    legendGovReady: ta ? "அரசு · வரம்பு சிகிச்சை" : "Gov stroke-limited care",
-    legendPvtReady: ta ? "தனியார் · வரம்பு சிகிச்சை" : "Private stroke-limited care",
+    legendGovComp: ta ? "அரசு · விரிவான வசதி பட்டியல்" : "Gov · comprehensive listed",
+    legendPvtComp: ta ? "தனியார் · விரிவான வசதி பட்டியல்" : "Private · comprehensive listed",
+    legendGovReady: ta ? "அரசு · பக்கவாத சேவை பட்டியல்" : "Gov · stroke-care listed",
+    legendPvtReady: ta ? "தனியார் · பக்கவாத சேவை பட்டியல்" : "Private · stroke-care listed",
+    comprehensivePin: ta ? "பெரிய குறி: விரிவான வசதி பட்டியலில் உள்ளது" : "Larger marker: comprehensive capability is listed",
     tapMap: ta ? "அவர்கள் தெருவில் முள் வைக்க வரைபடத்தைத் தொடுங்கள்." : "Tap the map to drop a pin on their street.",
-    nearest: ta ? "அருகிலுள்ள மருத்துவமனைகள்" : "Nearest hospitals",
+    nearest: ta ? "சென்னையில் பக்கவாத சிகிச்சை மருத்துவமனைகள்" : "Stroke-care hospitals in Chennai",
     listView: ta ? "பட்டியல்" : "List",
     mapView: ta ? "வரைபடம்" : "Map",
-    recheck: ta ? "அறிகுறிகளை மீண்டும் பார்க்க" : "Check signs again",
+    mapPrivacy: ta
+      ? "வரைபடத்தைத் திறந்தால், CARTO வரைபடக் கட்டங்கள் காட்டப்படும் பகுதியையும் வழக்கமான இணைப்பு விவரங்களையும் பெறலாம். இந்தப் பக்கம் இடத்தை நீங்கள் பகிர்ந்த பிறகே பயன்படுத்தும்; திறந்திருக்கும் போது மட்டும் நினைவகத்தில் வைத்திருக்கும்."
+      : "Map tiles load from CARTO only when you open Map. Tile requests may reveal the visible area and ordinary connection data such as your IP. This app requests device location only after you tap and keeps it in page memory.",
+    recheck: ta ? "அறிகுறிகளைப் பார்க்க" : "Check warning signs",
     explain: ta
-      ? "த்ராம்பெக்டமி என்றால் இரத்தக் கட்டியை வெளியே எடுப்பது. “அழைத்துக் கேளுங்கள்” என்றால் அந்த வசதி தெளிவாகச் சொல்லப்படவில்லை."
-      : "Thrombectomy means pulling the clot out. “Call to confirm” means that service is not clearly listed.",
+      ? "சேவை விவரங்கள் பட்டியல் அல்லது பொதுத் தகவலிலிருந்து வந்தவை; இவை அரசு சான்றிதழோ, இப்போதைய ஏற்றுக்கொள்ளல் உறுதியோ அல்ல. தூரம் நேர்கோட்டில் அளக்கப்படுகிறது; சாலைப் பயண நேரம் அல்ல."
+      : "Service details come from the existing list or public/provider information; they are not formal certification or live acceptance. Distance is straight-line, not road travel time.",
     noMatch: ta ? "இந்த வடிகட்டலுக்கு மருத்துவமனை இல்லை." : "No hospitals match this filter.",
     disclaimer: ta ? "இந்தப் பக்கம் பக்கவாதத்தைக் கண்டறியாது" : "This app does not diagnose stroke",
-    noAmbulance: ta ? "ஆம்புலன்ஸையும் அனுப்பாது." : "and does not dispatch an ambulance.",
+    noAmbulance: ta
+      ? "ஆம்புலன்ஸையும் அனுப்பாது. தற்போதைய ஏற்றுக்கொள்ளல் உறுதியாக இல்லை; 108/112 அனுப்பும் குழுவின் வழிகாட்டுதலைப் பின்பற்றுங்கள்."
+      : "and does not dispatch an ambulance. Current acceptance is not confirmed; follow 108/112 dispatch guidance.",
     clocks: ta
-      ? "பச்சைக் கடிகாரம் நீங்கள் போட்ட நேரத்திலிருந்து 4.5 மணி — இரத்தக் கட்டியைக் கரைக்கும் மருந்துக்கு பெரும்பாலும் சொல்லப்படும் நேரம். ஆரஞ்சுக் கடிகாரம் 9 மணி — சில மையங்கள் இன்னும் பார்க்கும் நேரம். பரிசோதனைக்கும் ஸ்கேனுக்கும் பிறகு மருத்துவக் குழுவே முடிவு செய்யும்."
-      : "The green clock is 4.5 hours from the time you entered — a window often cited for clot-busting medicine. The orange clock is 9 hours — a later window some centres still assess. Only the hospital team can decide, after an exam and scans.",
+      ? "நேரக் கணிப்பை வைத்து மருத்துவமனையைத் தேர்ந்தெடுக்க வேண்டாம். தெரிந்தால், கடைசியாக இயல்பாக இருந்த நேரத்தை அவசரக் குழுவிடம் சொல்லுங்கள்; அழைப்பைத் தாமதிக்க வேண்டாம்."
+      : "Do not use a countdown to choose a hospital. If known, tell the emergency team when the person was last known to be well; do not delay the call.",
     sources: ta
-      ? "24/7 சிடி, எம்ஆர்ஐ, த்ராம்பெக்டமி பொதுப் பக்கங்களிலிருந்தோ மருத்துவர் பரிசீலனையிலிருந்தோ வந்தவை. இது அரசு சான்றிதழ் அல்ல. பணிக்கு யார் இருக்கிறார்கள் என்று அழைத்துக் கேளுங்கள்."
-      : "24/7 CT, MRI, and thrombectomy come from public pages or a clinician review. They are not a government certificate. Call ahead — who is on duty can change.",
-    ct: ta ? "24/7 சிடி" : "24/7 CT",
-    mri: ta ? "24/7 எம்ஆர்ஐ" : "24/7 MRI",
-    thrombectomy: ta ? "24/7 த்ராம்பெக்டமி" : "24/7 thrombectomy",
-    reviewed: ta ? "மருத்துவர் சரிபார்த்தது" : "Clinician-reviewed",
-    publicInfo: ta ? "பொதுத் தகவல்" : "Public information",
+      ? "சேவை மற்றும் சரிபார்ப்பு தேதியைப் பார்க்கவும். ஒவ்வொரு கிளையின் தற்போதைய ஏற்றுக்கொள்ளல் தனியாக உறுதிப்படுத்தப்பட வேண்டும்."
+      : "Check the source class and list date. Current acceptance must be confirmed separately for each branch.",
+    ct: ta ? "சிடி படமெடுப்பு" : "CT imaging",
+    mri: ta ? "எம்ஆர்ஐ" : "MRI",
+    thrombectomy: ta ? "த்ராம்பெக்டமி" : "Thrombectomy",
+    reviewed: ta ? "பட்டியல் மதிப்பாய்வு · அரசு சான்றிதழ் அல்ல" : "Reviewed listing · not formal certification",
+    publicInfo: ta ? "பொது/மருத்துவமனைத் தகவல் · தனியாக உறுதிப்படுத்தப்படவில்லை" : "Provider/publicly reported · not independently verified",
+    recordDate(date: string) { return ta ? `பட்டியல் தேதி: ${date}` : `List date: ${date}`; },
+    liveStatus: ta ? "தற்போது நோயாளியை ஏற்கும் நிலை உறுதிப்படுத்தப்படவில்லை" : "Current acceptance not confirmed",
     call(phone: string) {
-      return ta ? `அழை ${phone}` : `Call ${phone}`;
+      if (phone === "108") return ta ? "108 ஆம்புலன்ஸை அழைக்கவும்" : "Call 108 ambulance";
+      return ta ? "அழை" : "Call listed number";
     },
-    navigate: ta ? "வழி" : "Navigate",
-    noNumber: ta ? "பொது எண் இல்லை" : "No public number",
+    navigate: ta ? "வழியைத் திற" : "Open directions",
+    noNumber: ta ? "நேரடி எண் பட்டியலிடப்படவில்லை" : "No direct number listed",
     fromYou: ta ? "உங்களிடமிருந்து" : "from you",
     pinned: ta ? "குறித்த இடம்" : "Pinned spot",
     youAreHere: ta ? "நீங்கள் இங்கே" : "You are here",
