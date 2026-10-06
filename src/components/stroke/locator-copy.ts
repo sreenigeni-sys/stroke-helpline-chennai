@@ -22,7 +22,7 @@ export function locatorCopy(lang: Lang | null) {
     updateLocation: ta ? "இடத்தைப் புதுப்பி" : "Update my location",
     findNearest: ta ? "எனக்கு அருகில் உள்ளதைக் காட்டு" : "Find nearest to me",
     cityCentre: ta ? "நகர மையம்" : "Use city centre",
-    reset: ta ? "தேர்வுசெய்த இடத்தை நீக்கு" : "Clear selected location",
+    reset: "Reset clock and location",
     abroad: ta
       ? "வேறு ஒருவருக்காக என்றால், நோயாளியின் இடத்தைத் தேர்ந்தெடுங்கள்."
       : "If for someone else, choose the patient's location.",
