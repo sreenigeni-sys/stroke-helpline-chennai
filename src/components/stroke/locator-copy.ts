@@ -68,8 +68,8 @@ export function locatorCopy(lang: Lang | null) {
     listView: ta ? "பட்டியல்" : "List",
     mapView: ta ? "வரைபடம்" : "Map",
     mapPrivacy: ta
-      ? "சாலை வரைபடம் Esri-யிலிருந்து வரும். திறந்தால் பார்க்கும் பகுதி பகிரப்படலாம். முள்ளைத் தொட்டால் அந்த மருத்துவமனை திறக்கும்."
-      : "Streets load from Esri, not the previous map service. Opening the map can share the area on screen. Tap a pin to open that hospital.",
+      ? "சாலைகள் ஒரே படமாக Esri-யிலிருந்து வரும். படம் வராவிட்டால் Google வரைபடம் திறக்கும். முள்ளைத் தொட்டால் அந்த மருத்துவமனை திறக்கும்."
+      : "Streets load as one picture from Esri. If that picture fails, Google Maps opens instead. Tap a pin to open that hospital.",
     recheck: ta ? "அறிகுறிகளைப் பார்க்க" : "Check warning signs",
     explain: ta
       ? "சேவை விவரங்கள் பட்டியல் அல்லது பொதுத் தகவலிலிருந்து வந்தவை; இவை அரசு சான்றிதழோ, இப்போதைய ஏற்றுக்கொள்ளல் உறுதியோ அல்ல. தூரம் நேர்கோட்டில் அளக்கப்படுகிறது; சாலைப் பயண நேரம் அல்ல."
