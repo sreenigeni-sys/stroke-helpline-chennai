@@ -182,10 +182,7 @@ export function CompetitionForm() {
   if (sent) {
     return (
       <section className="rounded-card border border-line bg-surface px-4 py-5">
-        <h2 className="text-lg font-semibold text-ink">Entry received</h2>
-        <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-          Thank you. The organisers have your entry. The artwork is copied into their Google Drive.
-        </p>
+        <h2 className="text-lg font-semibold text-ink">Thank you. Your entry has been uploaded.</h2>
       </section>
     );
   }
