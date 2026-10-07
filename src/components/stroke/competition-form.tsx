@@ -184,7 +184,7 @@ export function CompetitionForm() {
       <section className="rounded-card border border-line bg-surface px-4 py-5">
         <h2 className="text-lg font-semibold text-ink">Entry received</h2>
         <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-          Thank you. The organisers have your entry. It will show on their Google Sheet shortly.
+          Thank you. The organisers have your entry. The artwork is copied into their Google Drive.
         </p>
       </section>
     );
