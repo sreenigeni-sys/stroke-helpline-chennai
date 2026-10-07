@@ -186,7 +186,7 @@ function Intro({ onStart, onSkip }: { onStart: (lang: Lang) => void; onSkip: () 
       <Link
         to="/competition"
         className={cn(
-          "fixed right-4 bottom-5 z-30 flex size-32 items-center justify-center rounded-full bg-[#C46B16] px-3 text-center text-xs font-bold leading-tight text-white shadow-card",
+          "fixed right-4 bottom-1 z-30 flex size-32 items-center justify-center rounded-full bg-[#C46B16] px-3 text-center text-xs font-bold leading-tight text-white shadow-card",
           TAP,
         )}
       >
