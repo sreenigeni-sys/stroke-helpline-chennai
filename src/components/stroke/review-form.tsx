@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { cn } from "@/lib/cn";
 import { submitPageReview, type ReviewKind } from "@/components/stroke/activity.functions";
-import { CLINIC_EMAIL, copyToClinic, sendOrganiserMessage } from "@/components/stroke/hospital-update.functions";
+import { copyToClinic, sendOrganiserMessage } from "@/components/stroke/hospital-update.functions";
 
 const TAP = "transition-transform duration-150 ease-out active:not-disabled:scale-[0.96]";
 
@@ -11,7 +11,7 @@ export function ReviewForm() {
   const [website, setWebsite] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState<"sent" | "email" | null>(null);
+  const [sent, setSent] = useState(false);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -23,7 +23,7 @@ export function ReviewForm() {
       });
       if (!website && kind) {
         const text = `${kind === "appreciate" ? "Appreciate" : "Report a problem"}\n\n${message.trim()}`;
-        const [clinic] = await Promise.all([
+        const [clinic, organiser] = await Promise.all([
           copyToClinic("Stroke Helpline review", text),
           sendOrganiserMessage({
             subject: "Stroke Helpline review",
@@ -31,14 +31,12 @@ export function ReviewForm() {
             message: text,
           }),
         ]);
-        if (!clinic.ok) {
-          const href = `mailto:${CLINIC_EMAIL}?subject=${encodeURIComponent("Stroke Helpline review")}&body=${encodeURIComponent(text)}`;
-          window.location.href = href;
-          setSent("email");
+        if (!clinic.ok && organiser.via !== "web3forms") {
+          setError("Could not send that just now. Please try again.");
           return;
         }
       }
-      setSent("sent");
+      setSent(true);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Could not send that. Try again.");
     } finally {
@@ -51,9 +49,7 @@ export function ReviewForm() {
       <section>
         <h2 className="text-sm font-semibold text-ink">Thank you</h2>
         <p className="mt-1 text-sm text-ink-soft">
-          {sent === "sent"
-            ? "Thank you for your feedback. We will give it careful consideration and always try to do better."
-            : "Tap Send in your email app. The note is addressed to arunaineurocentre@gmail.com."}
+          Thank you for your feedback. We will give it careful consideration and always try to do better.
         </p>
       </section>
     );

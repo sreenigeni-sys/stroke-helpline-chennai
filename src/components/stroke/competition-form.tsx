@@ -139,10 +139,8 @@ export function CompetitionForm() {
         replyto: fields.email.trim(),
         message,
       });
-      if (result.via === "email") {
-        const href = `mailto:${HOSPITAL_UPDATE_EMAIL}?subject=${encodeURIComponent(`Stroke awareness entry: ${fields.name.trim()}`)}&body=${encodeURIComponent(message)}`;
-        window.location.href = href;
-        setSent("email");
+      if (result.via !== "web3forms") {
+        setError("Your entry is saved, but the email could not be sent just now. Please try again in a moment.");
         return;
       }
       setSent("web3forms");
@@ -158,9 +156,7 @@ export function CompetitionForm() {
       <section className="rounded-card border border-line bg-surface px-4 py-5">
         <h2 className="text-lg font-semibold text-ink">Entry received</h2>
         <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-          {sent === "web3forms"
-            ? "Thank you. The organisers have your entry. It will show on their Google Sheet shortly."
-            : `Thank you. If your email app did not open, send the message to ${HOSPITAL_UPDATE_EMAIL}. The artwork links are in that message.`}
+          Thank you. The organisers have your entry. It will show on their Google Sheet shortly.
         </p>
       </section>
     );

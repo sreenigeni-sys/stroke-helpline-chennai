@@ -81,11 +81,8 @@ export function hospitalUpdateText(update: HospitalUpdate) {
     .join("\n");
 }
 
-// Primary path: Web3Forms relays the submission straight to a private inbox,
-// with no dependence on the visitor's own mail client. Runs entirely in the
-// browser (see the WEB3FORMS_ACCESS_KEY comment above). If it fails for any
-// reason, the caller falls back to a mailto: draft to HOSPITAL_UPDATE_EMAIL.
-// Neither path touches a public system.
+// Sends from the visitor's browser straight to the inbox tied to the access
+// key. A phone number is not a valid reply-to, so it stays in the message body.
 export async function submitHospitalUpdate({ data: raw }: { data: unknown }) {
   const data = readHospitalUpdate(raw);
   if (data.website) return { via: "ignored" as const };
@@ -105,8 +102,7 @@ export async function submitHospitalUpdate({ data: raw }: { data: unknown }) {
         replyto,
         message: text,
       }),
-      // A stalled connection here must not leave "Sending…" stuck forever —
-      // time out and fall through to the mailto: fallback below.
+      // A stalled connection here must not leave "Sending…" stuck forever.
       signal: AbortSignal.timeout(8000),
     });
     const result = (await response.json().catch(() => null)) as { success?: boolean } | null;
@@ -137,7 +133,7 @@ export async function sendOrganiserMessage(input: { subject: string; replyto: st
     const result = (await response.json().catch(() => null)) as { success?: boolean } | null;
     if (response.ok && result?.success) return { via: "web3forms" as const };
   } catch {
-    // Fall through so the visitor can still send a mail draft.
+    // Leave the caller to show a retry, not the phone's mail app.
   }
   return { via: "email" as const };
 }

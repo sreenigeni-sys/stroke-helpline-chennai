@@ -1,8 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { cn } from "@/lib/cn";
 import {
-  CLINIC_EMAIL,
-  HOSPITAL_UPDATE_EMAIL,
   copyToClinic,
   hospitalUpdateText,
   submitHospitalUpdate,
@@ -55,14 +53,11 @@ export function HospitalUpdateForm() {
         submitHospitalUpdate({ data: payload }),
         copyToClinic(`Hospital update: ${payload.name}`, text),
       ]);
-      if (result.via === "ignored" || clinic.ok) {
+      if (result.via === "ignored" || result.via === "web3forms" || clinic.ok) {
         setSent("web3forms");
         return;
       }
-      const cc = result.via === "web3forms" ? "" : `&cc=${encodeURIComponent(HOSPITAL_UPDATE_EMAIL)}`;
-      const href = `mailto:${CLINIC_EMAIL}?subject=${encodeURIComponent(`Hospital update: ${payload.name}`)}&body=${encodeURIComponent(text)}${cc}`;
-      window.location.href = href;
-      setSent("email");
+      setError("Could not send that just now. Please try again.");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Could not send that. Try again.");
     } finally {
@@ -75,9 +70,7 @@ export function HospitalUpdateForm() {
       <section>
         <h2 className="text-sm font-semibold text-ink">Update received</h2>
         <p className="mt-1 text-sm text-ink-soft">
-          {sent === "web3forms"
-            ? "Thank you. It was sent to arunaineurocentre@gmail.com. We will review it before the hospital list changes."
-            : "Tap Send in your email app. The message is addressed to arunaineurocentre@gmail.com."}
+          Thank you. Your update has been emailed to us. We will review it before the hospital list changes.
         </p>
       </section>
     );
