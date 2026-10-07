@@ -20,6 +20,8 @@ import { Route as StrokeRecoveryChennaiRouteImport } from './routes/stroke-recov
 import { Route as StrokeSymptomsChennaiRouteImport } from './routes/stroke-symptoms-chennai'
 import { Route as StrokeTreatmentChennaiRouteImport } from './routes/stroke-treatment-chennai'
 import { Route as ApiCompetitionRouteImport } from './routes/api/competition'
+import { Route as ApiCompetitionEntryRouteImport } from './routes/api/competition-entry'
+import { Route as ApiCompetitionExportRouteImport } from './routes/api/competition-export'
 import { Route as ApiStrokeCallRouteImport } from './routes/api/stroke-call'
 
 const IndexRoute = IndexRouteImport.update({
@@ -78,6 +80,16 @@ const ApiCompetitionRoute = ApiCompetitionRouteImport.update({
   path: '/api/competition',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCompetitionEntryRoute = ApiCompetitionEntryRouteImport.update({
+  id: '/api/competition-entry',
+  path: '/api/competition-entry',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCompetitionExportRoute = ApiCompetitionExportRouteImport.update({
+  id: '/api/competition-export',
+  path: '/api/competition-export',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiStrokeCallRoute = ApiStrokeCallRouteImport.update({
   id: '/api/stroke-call',
   path: '/api/stroke-call',
@@ -96,6 +108,8 @@ export interface FileRoutesByFullPath {
   '/stroke-symptoms-chennai': typeof StrokeSymptomsChennaiRoute
   '/stroke-treatment-chennai': typeof StrokeTreatmentChennaiRoute
   '/api/competition': typeof ApiCompetitionRoute
+  '/api/competition-entry': typeof ApiCompetitionEntryRoute
+  '/api/competition-export': typeof ApiCompetitionExportRoute
   '/api/stroke-call': typeof ApiStrokeCallRoute
 }
 export interface FileRoutesByTo {
@@ -110,6 +124,8 @@ export interface FileRoutesByTo {
   '/stroke-symptoms-chennai': typeof StrokeSymptomsChennaiRoute
   '/stroke-treatment-chennai': typeof StrokeTreatmentChennaiRoute
   '/api/competition': typeof ApiCompetitionRoute
+  '/api/competition-entry': typeof ApiCompetitionEntryRoute
+  '/api/competition-export': typeof ApiCompetitionExportRoute
   '/api/stroke-call': typeof ApiStrokeCallRoute
 }
 export interface FileRoutesById {
@@ -125,6 +141,8 @@ export interface FileRoutesById {
   '/stroke-symptoms-chennai': typeof StrokeSymptomsChennaiRoute
   '/stroke-treatment-chennai': typeof StrokeTreatmentChennaiRoute
   '/api/competition': typeof ApiCompetitionRoute
+  '/api/competition-entry': typeof ApiCompetitionEntryRoute
+  '/api/competition-export': typeof ApiCompetitionExportRoute
   '/api/stroke-call': typeof ApiStrokeCallRoute
 }
 export interface FileRouteTypes {
@@ -141,6 +159,8 @@ export interface FileRouteTypes {
     | '/stroke-symptoms-chennai'
     | '/stroke-treatment-chennai'
     | '/api/competition'
+    | '/api/competition-entry'
+    | '/api/competition-export'
     | '/api/stroke-call'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -155,6 +175,8 @@ export interface FileRouteTypes {
     | '/stroke-symptoms-chennai'
     | '/stroke-treatment-chennai'
     | '/api/competition'
+    | '/api/competition-entry'
+    | '/api/competition-export'
     | '/api/stroke-call'
   id:
     | '__root__'
@@ -169,6 +191,8 @@ export interface FileRouteTypes {
     | '/stroke-symptoms-chennai'
     | '/stroke-treatment-chennai'
     | '/api/competition'
+    | '/api/competition-entry'
+    | '/api/competition-export'
     | '/api/stroke-call'
   fileRoutesById: FileRoutesById
 }
@@ -184,6 +208,8 @@ export interface RootRouteChildren {
   StrokeSymptomsChennaiRoute: typeof StrokeSymptomsChennaiRoute
   StrokeTreatmentChennaiRoute: typeof StrokeTreatmentChennaiRoute
   ApiCompetitionRoute: typeof ApiCompetitionRoute
+  ApiCompetitionEntryRoute: typeof ApiCompetitionEntryRoute
+  ApiCompetitionExportRoute: typeof ApiCompetitionExportRoute
   ApiStrokeCallRoute: typeof ApiStrokeCallRoute
 }
 
@@ -266,6 +292,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCompetitionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/competition-entry': {
+      id: '/api/competition-entry'
+      path: '/api/competition-entry'
+      fullPath: '/api/competition-entry'
+      preLoaderRoute: typeof ApiCompetitionEntryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/competition-export': {
+      id: '/api/competition-export'
+      path: '/api/competition-export'
+      fullPath: '/api/competition-export'
+      preLoaderRoute: typeof ApiCompetitionExportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/stroke-call': {
       id: '/api/stroke-call'
       path: '/api/stroke-call'
@@ -288,6 +328,8 @@ const rootRouteChildren: RootRouteChildren = {
   StrokeSymptomsChennaiRoute: StrokeSymptomsChennaiRoute,
   StrokeTreatmentChennaiRoute: StrokeTreatmentChennaiRoute,
   ApiCompetitionRoute: ApiCompetitionRoute,
+  ApiCompetitionEntryRoute: ApiCompetitionEntryRoute,
+  ApiCompetitionExportRoute: ApiCompetitionExportRoute,
   ApiStrokeCallRoute: ApiStrokeCallRoute,
 }
 export const routeTree = rootRouteImport

@@ -28,8 +28,8 @@ function CompetitionPage() {
       <p className="mt-3 text-sm font-semibold text-ink">25 October 2026</p>
       <p className="mt-2 text-sm leading-relaxed text-ink-soft">
         Raising awareness of stroke response. Open to ages 12–15, 15–18, and 18+ (open to all).
-        Submit digital art, or traditional paper and pencil art on A4 paper. A clear photo of the
-        paper artwork is enough.
+        Choose one topic: Time is brain, or BEFAST to save lives. Submit digital art, or traditional
+        paper and pencil art on A4 paper. A clear photo of the paper artwork is enough.
       </p>
       <section className="mt-5 rounded-card border border-line bg-paper-deep px-4 py-4">
         <h2 className="text-sm font-semibold text-ink">Pledge</h2>

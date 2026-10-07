@@ -5,6 +5,7 @@ import { HOSPITAL_UPDATE_EMAIL, sendOrganiserMessage } from "@/components/stroke
 const TAP = "transition-transform duration-150 ease-out active:not-disabled:scale-[0.96]";
 const MAX_BYTES = 3 * 1024 * 1024;
 const AGE_GROUPS = ["12–15", "15–18", "18+ (Open to All)"] as const;
+const TOPICS = ["Time is brain", "BEFAST to save lives"] as const;
 const ART_TYPES = ["Digital art", "Traditional paper and pencil art, A4"] as const;
 
 export const STROKE_PLEDGE = `I pledge to be a Stroke Champion and protect the brains of my loved ones.
@@ -14,9 +15,11 @@ I will practice brain-healthy habits every day and remember the BE-FAST signs of
 const EMPTY = {
   name: "",
   ageGroup: "",
+  topic: "",
   art: "",
   guardian: "",
-  contact: "",
+  phone: "",
+  email: "",
   note: "",
   website: "",
 };
@@ -52,12 +55,20 @@ export function CompetitionForm() {
   function onSubmit(event: FormEvent) {
     event.preventDefault();
     setError(null);
-    if (!fields.ageGroup || !fields.art) {
-      setError("Choose an age group and the kind of art.");
+    if (!fields.ageGroup || !fields.topic || !fields.art) {
+      setError("Choose an age group, a topic, and the kind of art.");
       return;
     }
     if (fields.ageGroup !== "18+ (Open to All)" && fields.guardian.trim().length < 2) {
       setError("Add a parent or guardian name for this age group.");
+      return;
+    }
+    if (fields.phone.replace(/\D/g, "").length < 8) {
+      setError("Enter a phone number.");
+      return;
+    }
+    if (!fields.email.includes("@")) {
+      setError("Enter an email address.");
       return;
     }
     if (files.length < 1) {
@@ -94,13 +105,28 @@ export function CompetitionForm() {
         }
         urls.push(payload.url);
       }
+      const saved = await fetch("/api/competition-entry", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          ...fields,
+          artwork: urls.join(" "),
+        }),
+        signal: AbortSignal.timeout(15000),
+      });
+      if (!saved.ok) {
+        const payload = (await saved.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(payload?.error || "The entry could not be saved. Try again.");
+      }
       const message = [
         "Stroke awareness competition — 25 October 2026",
         `Name: ${fields.name.trim()}`,
         `Age group: ${fields.ageGroup}`,
+        `Topic: ${fields.topic}`,
         `Art: ${fields.art}`,
+        `Phone: ${fields.phone.trim()}`,
+        `Email: ${fields.email.trim()}`,
         `Parent or guardian: ${fields.guardian.trim() || "—"}`,
-        `Reply to: ${fields.contact.trim()}`,
         fields.note.trim() ? `Note: ${fields.note.trim()}` : "",
         "Pledge: confirmed",
         "Artwork:",
@@ -110,7 +136,7 @@ export function CompetitionForm() {
         .join("\n");
       const result = await sendOrganiserMessage({
         subject: `Stroke awareness entry: ${fields.name.trim()}`,
-        replyto: fields.contact.trim(),
+        replyto: fields.email.trim(),
         message,
       });
       if (result.via === "email") {
@@ -133,7 +159,7 @@ export function CompetitionForm() {
         <h2 className="text-lg font-semibold text-ink">Entry received</h2>
         <p className="mt-2 text-sm leading-relaxed text-ink-soft">
           {sent === "web3forms"
-            ? "Thank you. The organisers have your entry and your artwork."
+            ? "Thank you. The organisers have your entry. It will show on their Google Sheet shortly."
             : `Thank you. If your email app did not open, send the message to ${HOSPITAL_UPDATE_EMAIL}. The artwork links are in that message.`}
         </p>
       </section>
@@ -176,6 +202,28 @@ export function CompetitionForm() {
           </div>
         </fieldset>
         <fieldset>
+          <legend className="text-xs font-semibold text-ink">Topic</legend>
+          <div className="mt-1 grid gap-2">
+            {TOPICS.map((option) => (
+              <button
+                key={option}
+                type="button"
+                aria-pressed={fields.topic === option}
+                onClick={() => set("topic", option)}
+                className={cn(
+                  "h-11 rounded-full border px-3 text-sm font-semibold",
+                  TAP,
+                  fields.topic === option
+                    ? "border-transparent bg-[#1b4fad] text-white"
+                    : "border-line bg-surface text-ink",
+                )}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+        <fieldset>
           <legend className="text-xs font-semibold text-ink">Artwork</legend>
           <div className="mt-1 grid gap-2">
             {ART_TYPES.map((option) => (
@@ -208,11 +256,23 @@ export function CompetitionForm() {
           />
         </label>
         <label className="grid gap-1 text-xs font-semibold text-ink">
-          Phone or email
+          Phone
           <input
             required
-            value={fields.contact}
-            onChange={(event) => set("contact", event.target.value)}
+            value={fields.phone}
+            onChange={(event) => set("phone", event.target.value)}
+            className="h-11 rounded-full border border-line bg-surface px-3 text-base font-medium"
+            inputMode="tel"
+            autoComplete="tel"
+          />
+        </label>
+        <label className="grid gap-1 text-xs font-semibold text-ink">
+          Email
+          <input
+            required
+            type="email"
+            value={fields.email}
+            onChange={(event) => set("email", event.target.value)}
             className="h-11 rounded-full border border-line bg-surface px-3 text-base font-medium"
             autoComplete="email"
           />
