@@ -1,5 +1,5 @@
 export const HOSPITAL_UPDATE_EMAIL = "sreenivas@arunaineurocentre.com";
-export const CLINIC_EMAIL = "arunaineurocentre@gmail.com";
+export const CLINIC_EMAIL = "arunaineurocenter@gmail.com";
 
 // Web3Forms relays straight to the inbox tied to this access key — never a
 // public page, no dashboard for anyone but the account owner. Access keys
