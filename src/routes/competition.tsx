@@ -88,6 +88,79 @@ function CompetitionPage() {
         </ul>
       </section>
 
+      <section className="mt-5">
+        <h2 className="text-sm font-semibold text-ink">Shortlist and final event</h2>
+        <p className="font-tamil text-xs text-ink-soft">தேர்வு முறை மற்றும் இறுதி நிகழ்வு</p>
+        <ul className="mt-2 grid gap-2 text-sm leading-relaxed text-ink-soft">
+          <li>
+            Art curators from Chennai will shortlist the top 20 entries in each age group and notify them by 6:00 PM on 24 October 2026.
+          </li>
+          <li>
+            Shortlisted participants and their families are invited to the World Stroke Day event on 25 October, 5:00 PM to 7:00 PM, at Avichi College of Arts and Science, Chennai.
+          </li>
+          <li>
+            An elite panel will judge the shortlisted artworks live at the event and announce the top 3 in each age group.
+          </li>
+        </ul>
+      </section>
+
+      <section className="mt-5">
+        <h2 className="text-sm font-semibold text-ink">Prizes and certificates</h2>
+        <p className="font-tamil text-xs text-ink-soft">பரிசுகள் மற்றும் சான்றிதழ்கள்</p>
+        <ul className="mt-2 grid gap-2 text-sm leading-relaxed text-ink-soft">
+          <li>Every qualified participant receives a certificate, on paper or by email.</li>
+          <li>Cash prizes in each age group: 1st ₹5,000, 2nd ₹3,000, 3rd ₹1,000.</li>
+        </ul>
+      </section>
+
+      <section className="mt-5">
+        <h2 className="text-sm font-semibold text-ink">Why this theme</h2>
+        <p className="font-tamil text-xs text-ink-soft">கருப்பொருள் பின்னணி: நேரமே உயிர்</p>
+        <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+          In a stroke, 1.9 million brain cells are lost every minute. Recognising the signs at once stops that clock. When blood stops flowing to the brain, every second counts.
+        </p>
+        <ul className="mt-2 grid gap-1 text-sm leading-relaxed text-ink-soft">
+          <li>Balance <span className="font-tamil">சமநிலை இழப்பு</span></li>
+          <li>Eyes <span className="font-tamil">பார்வை மங்குதல்</span></li>
+          <li>Face <span className="font-tamil">முகம் கோணுதல்</span></li>
+          <li>Arm <span className="font-tamil">கை தளர்ச்சி</span></li>
+          <li>Speech <span className="font-tamil">பேச்சு குழறல்</span></li>
+          <li>
+            Time <span className="font-tamil">உடனடி சிகிச்சை — நேரமே உயிர்</span>
+          </li>
+        </ul>
+      </section>
+
+      <section className="mt-5">
+        <h2 className="text-sm font-semibold text-ink">Partners</h2>
+        <p className="font-tamil text-xs text-ink-soft">அமைப்பாளர்கள்</p>
+        <ul className="mt-2 grid gap-1 text-sm leading-relaxed text-ink-soft">
+          <li>
+            <span className="font-semibold text-ink">Organised by</span> Arunai Neuro Foundation
+          </li>
+          <li>
+            <span className="font-semibold text-ink">Schools</span> AVM Rajeswari The School and Avichi Higher Secondary School
+          </li>
+          <li>
+            <span className="font-semibold text-ink">College</span> Avichi College of Arts and Science
+          </li>
+          <li>
+            <span className="font-semibold text-ink">Art juror</span> Sketchbook Designs
+          </li>
+        </ul>
+      </section>
+
+      <section className="mt-5">
+        <h2 className="text-sm font-semibold text-ink">Help with your entry</h2>
+        <p className="font-tamil text-xs text-ink-soft">உதவிக்கு</p>
+        <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+          WhatsApp{" "}
+          <a href="https://wa.me/919047452258" className="font-semibold text-[#1b4fad]">
+            90474 52258
+          </a>
+        </p>
+      </section>
+
       <section className="mt-5 rounded-card border border-line bg-paper-deep px-4 py-4">
         <h2 className="text-sm font-semibold text-ink">Pledge</h2>
         <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-ink">{STROKE_PLEDGE}</p>
