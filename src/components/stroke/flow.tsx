@@ -139,9 +139,9 @@ function Intro({ onStart, onSkip }: { onStart: (lang: Lang) => void; onSkip: () 
     <div className="rise mx-auto flex min-h-[70vh] max-w-md flex-col px-4 py-6">
       <div className="flex flex-1 flex-col justify-center">
       <h1 className="font-display text-5xl leading-none text-ink">Is this a stroke?</h1>
-      <p className="font-tamil mt-2 text-2xl text-signal">இது பக்கவாதமா?</p>
+      <p className="font-tamil mt-2 text-2xl text-[#1B7F4E]">இது பக்கவாதமா?</p>
       <p className="mt-3 text-base font-semibold text-ink">
-        Time is brain. <span className="font-tamil font-medium">நேரமே மூளை.</span>
+        Time is brain. <span className="font-tamil font-medium text-[#1B7F4E]">நேரமே மூளை.</span>
       </p>
       <div className="my-8 flex justify-center" aria-hidden="true">
         <span className="flex size-28 items-center justify-center rounded-full bg-[#1b4fad]/10 text-[#1b4fad]">
@@ -149,7 +149,7 @@ function Intro({ onStart, onSkip }: { onStart: (lang: Lang) => void; onSkip: () 
         </span>
       </div>
       <p className="text-center text-sm font-semibold text-ink">Do a self check</p>
-      <p className="font-tamil mt-0.5 text-center text-sm text-signal">சுய சோதனை செய்யுங்கள்</p>
+      <p className="font-tamil mt-0.5 text-center text-sm text-[#1B7F4E]">சுய சோதனை செய்யுங்கள்</p>
       <div className="mt-4 grid grid-cols-2 gap-2">
         <button
           type="button"
@@ -166,7 +166,7 @@ function Intro({ onStart, onSkip }: { onStart: (lang: Lang) => void; onSkip: () 
           type="button"
           onClick={() => onStart("ta")}
           className={cn(
-            "flex min-h-16 flex-col items-center justify-center rounded-full bg-signal px-2 py-2 text-white",
+            "flex min-h-16 flex-col items-center justify-center rounded-full bg-[#1B7F4E] px-2 py-2 text-white",
             TAP,
           )}
         >
@@ -177,20 +177,21 @@ function Intro({ onStart, onSkip }: { onStart: (lang: Lang) => void; onSkip: () 
       <button
         type="button"
         onClick={onSkip}
-        className={cn("mt-4 flex min-h-14 w-full flex-col items-center justify-center rounded-full bg-[#1b4fad] px-3 py-2 text-white shadow-card", TAP)}
+        className={cn("mt-4 flex min-h-14 w-full flex-col items-center justify-center rounded-full bg-signal px-3 py-2 text-white shadow-card", TAP)}
       >
         <span className="text-base font-bold">Find hospitals now</span>
         <span className="font-tamil text-sm font-medium">உடனே மருத்துவமனைகளைக் கண்டறியுங்கள்</span>
       </button>
+      <Link
+        to="/competition"
+        className={cn(
+          "mt-4 flex min-h-14 w-full items-center justify-center rounded-full bg-[#C46B16] px-4 py-2 text-center text-base font-bold leading-tight text-white shadow-card",
+          TAP,
+        )}
+      >
+        Stroke response awareness competition
+      </Link>
       </div>
-      <p className="mt-8 text-center">
-        <Link
-          to="/competition"
-          className="inline-flex rounded-full border border-line px-3 py-1.5 text-[11px] font-semibold text-ink-soft/80 hover:text-ink"
-        >
-          Stroke response awareness competition
-        </Link>
-      </p>
       <p className="mt-3 text-center">
         <Link to="/contact" className="text-[11px] text-ink-soft/80 hover:text-ink">
           Contact Us
