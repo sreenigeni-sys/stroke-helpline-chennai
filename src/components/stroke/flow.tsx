@@ -183,15 +183,6 @@ function Intro({ onStart, onSkip }: { onStart: (lang: Lang) => void; onSkip: () 
         <span className="font-tamil text-sm font-medium">உடனே மருத்துவமனைகளைக் கண்டறியுங்கள்</span>
       </button>
       </div>
-      <Link
-        to="/competition"
-        className={cn(
-          "fixed right-4 bottom-1 z-30 flex size-32 items-center justify-center rounded-full bg-[#C46B16] px-3 text-center text-xs font-bold leading-tight text-white shadow-card",
-          TAP,
-        )}
-      >
-        Stroke Day Competition
-      </Link>
       <p className="mt-3 text-center">
         <Link to="/contact" className="text-[11px] text-ink-soft/80 hover:text-ink">
           Contact Us
@@ -201,6 +192,17 @@ function Intro({ onStart, onSkip }: { onStart: (lang: Lang) => void; onSkip: () 
         This page is not intended to be diagnostic and is not a replacement for assessment by a
         healthcare professional.
       </p>
+      <div className="mt-4 flex justify-end pb-2">
+        <Link
+          to="/competition"
+          className={cn(
+            "flex size-32 items-center justify-center rounded-full bg-[#C46B16] px-3 text-center text-xs font-bold leading-tight text-white shadow-card",
+            TAP,
+          )}
+        >
+          Stroke Day Competition
+        </Link>
+      </div>
     </div>
   );
 }
