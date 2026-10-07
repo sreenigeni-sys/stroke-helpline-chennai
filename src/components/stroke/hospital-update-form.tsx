@@ -3,6 +3,7 @@ import { cn } from "@/lib/cn";
 import {
   CLINIC_EMAIL,
   HOSPITAL_UPDATE_EMAIL,
+  copyToClinic,
   hospitalUpdateText,
   submitHospitalUpdate,
   type HospitalUpdate,
@@ -45,15 +46,23 @@ export function HospitalUpdateForm() {
         mri: fields.mri as HospitalUpdate["mri"],
         cathLab: fields.cathLab as HospitalUpdate["cathLab"],
       };
-      const result = await submitHospitalUpdate({ data: payload });
-      if (result.via === "email") {
-        const text = hospitalUpdateText(payload);
-        const href = `mailto:${HOSPITAL_UPDATE_EMAIL}?cc=${encodeURIComponent(CLINIC_EMAIL)}&subject=${encodeURIComponent(`Hospital update: ${payload.name}`)}&body=${encodeURIComponent(text)}`;
-        window.location.href = href;
-        setSent("email");
+      if (payload.website) {
+        setSent("web3forms");
         return;
       }
-      setSent("web3forms");
+      const text = hospitalUpdateText(payload);
+      const [result, clinic] = await Promise.all([
+        submitHospitalUpdate({ data: payload }),
+        copyToClinic(`Hospital update: ${payload.name}`, text),
+      ]);
+      if (result.via === "ignored" || clinic.ok) {
+        setSent("web3forms");
+        return;
+      }
+      const cc = result.via === "web3forms" ? "" : `&cc=${encodeURIComponent(HOSPITAL_UPDATE_EMAIL)}`;
+      const href = `mailto:${CLINIC_EMAIL}?subject=${encodeURIComponent(`Hospital update: ${payload.name}`)}&body=${encodeURIComponent(text)}${cc}`;
+      window.location.href = href;
+      setSent("email");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Could not send that. Try again.");
     } finally {
@@ -67,8 +76,8 @@ export function HospitalUpdateForm() {
         <h2 className="text-sm font-semibold text-ink">Update received</h2>
         <p className="mt-1 text-sm text-ink-soft">
           {sent === "web3forms"
-            ? "Thank you. We will review it before the hospital list changes."
-            : `Thank you. If your email app did not open, send the details to ${HOSPITAL_UPDATE_EMAIL}.`}
+            ? "Thank you. It was sent to arunaineurocentre@gmail.com. We will review it before the hospital list changes."
+            : "Tap Send in your email app. The message is addressed to arunaineurocentre@gmail.com."}
         </p>
       </section>
     );

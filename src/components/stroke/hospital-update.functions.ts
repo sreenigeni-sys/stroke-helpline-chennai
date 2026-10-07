@@ -90,7 +90,7 @@ export async function submitHospitalUpdate({ data: raw }: { data: unknown }) {
   const data = readHospitalUpdate(raw);
   if (data.website) return { via: "ignored" as const };
   const text = hospitalUpdateText(data);
-  void copyToClinic(`Hospital update: ${data.name}`, text);
+  const replyto = data.contact.includes("@") ? data.contact : undefined;
   try {
     const response = await fetch(WEB3FORMS_ENDPOINT, {
       method: "POST",
@@ -102,7 +102,7 @@ export async function submitHospitalUpdate({ data: raw }: { data: unknown }) {
         access_key: WEB3FORMS_ACCESS_KEY,
         subject: `Hospital update: ${data.name}`,
         from_name: "Stroke Helpline Chennai",
-        replyto: data.contact,
+        replyto,
         message: text,
       }),
       // A stalled connection here must not leave "Sending…" stuck forever —
@@ -144,21 +144,21 @@ export async function sendOrganiserMessage(input: { subject: string; replyto: st
 
 export async function copyToClinic(subject: string, message: string) {
   try {
-    await fetch(`https://formsubmit.co/ajax/${CLINIC_EMAIL}`, {
+    const body = new FormData();
+    body.set("_subject", subject);
+    body.set("_template", "box");
+    body.set("_captcha", "false");
+    body.set("message", message);
+    const response = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(CLINIC_EMAIL)}`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        _subject: subject,
-        _template: "box",
-        _captcha: "false",
-        message,
-      }),
-      signal: AbortSignal.timeout(8000),
+      headers: { Accept: "application/json" },
+      body,
+      signal: AbortSignal.timeout(12000),
     });
+    const result = (await response.json().catch(() => null)) as { success?: boolean | string; message?: string } | null;
+    const ok = response.ok && (result?.success === true || result?.success === "true");
+    return { ok, message: result?.message ?? "" };
   } catch {
-    // The original inbox still receives the form.
+    return { ok: false, message: "" };
   }
 }
