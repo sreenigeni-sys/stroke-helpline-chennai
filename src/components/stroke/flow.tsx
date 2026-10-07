@@ -186,11 +186,11 @@ function Intro({ onStart, onSkip }: { onStart: (lang: Lang) => void; onSkip: () 
       <Link
         to="/competition"
         className={cn(
-          "mt-8 flex min-h-14 w-full items-center justify-center rounded-2xl bg-[#C46B16] px-4 py-3 text-center text-base font-bold leading-tight text-white shadow-card",
+          "fixed right-4 bottom-5 z-30 flex size-32 items-center justify-center rounded-full bg-[#C46B16] px-3 text-center text-xs font-bold leading-tight text-white shadow-card",
           TAP,
         )}
       >
-        Stroke response awareness competition
+        Stroke Day Competition
       </Link>
       <p className="mt-3 text-center">
         <Link to="/contact" className="text-[11px] text-ink-soft/80 hover:text-ink">
