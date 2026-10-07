@@ -113,3 +113,28 @@ export async function submitHospitalUpdate({ data: raw }: { data: unknown }) {
   }
   return { via: "email" as const };
 }
+
+export async function sendOrganiserMessage(input: { subject: string; replyto: string; message: string }) {
+  try {
+    const response = await fetch(WEB3FORMS_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        access_key: WEB3FORMS_ACCESS_KEY,
+        subject: input.subject,
+        from_name: "Stroke Helpline Chennai",
+        replyto: input.replyto.includes("@") ? input.replyto : undefined,
+        message: input.message,
+      }),
+      signal: AbortSignal.timeout(8000),
+    });
+    const result = (await response.json().catch(() => null)) as { success?: boolean } | null;
+    if (response.ok && result?.success) return { via: "web3forms" as const };
+  } catch {
+    // Fall through so the visitor can still send a mail draft.
+  }
+  return { via: "email" as const };
+}
