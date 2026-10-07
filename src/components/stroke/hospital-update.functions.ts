@@ -1,4 +1,5 @@
 export const HOSPITAL_UPDATE_EMAIL = "sreenivas@arunaineurocentre.com";
+export const CLINIC_EMAIL = "arunaineurocentre@gmail.com";
 
 // Web3Forms relays straight to the inbox tied to this access key — never a
 // public page, no dashboard for anyone but the account owner. Access keys
@@ -88,6 +89,8 @@ export function hospitalUpdateText(update: HospitalUpdate) {
 export async function submitHospitalUpdate({ data: raw }: { data: unknown }) {
   const data = readHospitalUpdate(raw);
   if (data.website) return { via: "ignored" as const };
+  const text = hospitalUpdateText(data);
+  void copyToClinic(`Hospital update: ${data.name}`, text);
   try {
     const response = await fetch(WEB3FORMS_ENDPOINT, {
       method: "POST",
@@ -100,7 +103,7 @@ export async function submitHospitalUpdate({ data: raw }: { data: unknown }) {
         subject: `Hospital update: ${data.name}`,
         from_name: "Stroke Helpline Chennai",
         replyto: data.contact,
-        message: hospitalUpdateText(data),
+        message: text,
       }),
       // A stalled connection here must not leave "Sending…" stuck forever —
       // time out and fall through to the mailto: fallback below.
@@ -137,4 +140,25 @@ export async function sendOrganiserMessage(input: { subject: string; replyto: st
     // Fall through so the visitor can still send a mail draft.
   }
   return { via: "email" as const };
+}
+
+export async function copyToClinic(subject: string, message: string) {
+  try {
+    await fetch(`https://formsubmit.co/ajax/${CLINIC_EMAIL}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        _subject: subject,
+        _template: "box",
+        _captcha: "false",
+        message,
+      }),
+      signal: AbortSignal.timeout(8000),
+    });
+  } catch {
+    // The original inbox still receives the form.
+  }
 }

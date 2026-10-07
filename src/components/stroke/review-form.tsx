@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { cn } from "@/lib/cn";
 import { submitPageReview, type ReviewKind } from "@/components/stroke/activity.functions";
+import { copyToClinic, sendOrganiserMessage } from "@/components/stroke/hospital-update.functions";
 
 const TAP = "transition-transform duration-150 ease-out active:not-disabled:scale-[0.96]";
 
@@ -20,6 +21,15 @@ export function ReviewForm() {
       await submitPageReview({
         data: { kind: kind as ReviewKind, message, website },
       });
+      if (!website && kind) {
+        const text = `${kind === "appreciate" ? "Appreciate" : "Report a problem"}\n\n${message.trim()}`;
+        void copyToClinic("Stroke Helpline review", text);
+        void sendOrganiserMessage({
+          subject: "Stroke Helpline review",
+          replyto: "",
+          message: text,
+        });
+      }
       setSent(true);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Could not send that. Try again.");

@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { cn } from "@/lib/cn";
 import {
+  CLINIC_EMAIL,
   HOSPITAL_UPDATE_EMAIL,
   hospitalUpdateText,
   submitHospitalUpdate,
@@ -47,7 +48,7 @@ export function HospitalUpdateForm() {
       const result = await submitHospitalUpdate({ data: payload });
       if (result.via === "email") {
         const text = hospitalUpdateText(payload);
-        const href = `mailto:${HOSPITAL_UPDATE_EMAIL}?subject=${encodeURIComponent(`Hospital update: ${payload.name}`)}&body=${encodeURIComponent(text)}`;
+        const href = `mailto:${HOSPITAL_UPDATE_EMAIL}?cc=${encodeURIComponent(CLINIC_EMAIL)}&subject=${encodeURIComponent(`Hospital update: ${payload.name}`)}&body=${encodeURIComponent(text)}`;
         window.location.href = href;
         setSent("email");
         return;
