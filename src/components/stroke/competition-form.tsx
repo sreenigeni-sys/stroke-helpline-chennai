@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { cn } from "@/lib/cn";
-import { HOSPITAL_UPDATE_EMAIL, copyToClinic, sendOrganiserMessage } from "@/components/stroke/hospital-update.functions";
+import { copyToClinic, sendOrganiserMessage } from "@/components/stroke/hospital-update.functions";
 
 const TAP = "transition-transform duration-150 ease-out active:not-disabled:scale-[0.96]";
 const MAX_BYTES = 3 * 1024 * 1024;
@@ -125,9 +125,6 @@ export function CompetitionForm() {
           signal: AbortSignal.timeout(25000),
         });
         const payload = (await response.json().catch(() => null)) as { url?: string; error?: string } | null;
-        if (response.status === 503) {
-          throw new Error(`Pictures cannot be uploaded right now. Email the artwork to ${HOSPITAL_UPDATE_EMAIL}.`);
-        }
         if (!response.ok || !payload?.url) {
           throw new Error(payload?.error || "The picture could not be uploaded. Try a smaller image.");
         }
