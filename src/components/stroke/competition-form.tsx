@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { cn } from "@/lib/cn";
-import { HOSPITAL_UPDATE_EMAIL, sendOrganiserMessage } from "@/components/stroke/hospital-update.functions";
+import { HOSPITAL_UPDATE_EMAIL, copyToClinic, sendOrganiserMessage } from "@/components/stroke/hospital-update.functions";
 
 const TAP = "transition-transform duration-150 ease-out active:not-disabled:scale-[0.96]";
 const MAX_BYTES = 3 * 1024 * 1024;
@@ -134,12 +134,15 @@ export function CompetitionForm() {
       ]
         .filter(Boolean)
         .join("\n");
-      const result = await sendOrganiserMessage({
-        subject: `Stroke awareness entry: ${fields.name.trim()}`,
-        replyto: fields.email.trim(),
-        message,
-      });
-      if (result.via !== "web3forms") {
+      const [result, clinic] = await Promise.all([
+        sendOrganiserMessage({
+          subject: `Stroke awareness entry: ${fields.name.trim()}`,
+          replyto: fields.email.trim(),
+          message,
+        }),
+        copyToClinic(`Stroke awareness entry: ${fields.name.trim()}`, message),
+      ]);
+      if (result.via !== "web3forms" && !clinic.ok) {
         setError("Your entry is saved, but the email could not be sent just now. Please try again in a moment.");
         return;
       }
