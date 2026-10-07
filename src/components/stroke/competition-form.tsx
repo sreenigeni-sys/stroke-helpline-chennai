@@ -5,6 +5,19 @@ import { HOSPITAL_UPDATE_EMAIL, copyToClinic, sendOrganiserMessage } from "@/com
 const TAP = "transition-transform duration-150 ease-out active:not-disabled:scale-[0.96]";
 const MAX_BYTES = 3 * 1024 * 1024;
 const THEME = "Time is Life";
+function isImageFile(file: File) {
+  if (file.type.startsWith("image/")) return true;
+  return /\.(jpe?g|png|webp|gif|heic|heif|bmp)$/i.test(file.name);
+}
+
+function readPreview(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error("Could not open that image."));
+    reader.readAsDataURL(file);
+  });
+}
 const AGE_GROUPS = [
   { value: "12–15", label: "12–15 years" },
   { value: "15–18", label: "15–18 years" },
@@ -27,6 +40,7 @@ const EMPTY = {
 export function CompetitionForm() {
   const [fields, setFields] = useState(EMPTY);
   const [files, setFiles] = useState<File[]>([]);
+  const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [askPledge, setAskPledge] = useState(false);
@@ -36,20 +50,34 @@ export function CompetitionForm() {
     setFields((current) => ({ ...current, [key]: value }));
   }
 
-  function onFiles(list: FileList | null) {
-    const file = [...(list ?? [])][0];
-    if (file && !file.type.startsWith("image/")) {
+  async function onFiles(list: FileList | null) {
+    const file = list?.[0];
+    if (!file) {
+      setFiles([]);
+      setPreview(null);
+      return;
+    }
+    if (!isImageFile(file)) {
       setError("Choose one image.");
       setFiles([]);
+      setPreview(null);
       return;
     }
-    if (file && file.size > MAX_BYTES) {
+    if (file.size > MAX_BYTES) {
       setError("The image must be under 3 MB.");
       setFiles([]);
+      setPreview(null);
       return;
     }
-    setError(null);
-    setFiles(file ? [file] : []);
+    try {
+      setPreview(await readPreview(file));
+      setFiles([file]);
+      setError(null);
+    } catch {
+      setError("This image could not be opened. Try a JPEG or PNG under 3 MB.");
+      setFiles([]);
+      setPreview(null);
+    }
   }
 
   function onSubmit(event: FormEvent) {
@@ -235,11 +263,14 @@ export function CompetitionForm() {
           Choose files
           <input
             type="file"
-            accept="image/*"
-            onChange={(event) => onFiles(event.target.files)}
+            accept="image/*,.jpg,.jpeg,.png,.webp,.heic,.heif"
+            onChange={(event) => void onFiles(event.target.files)}
             className="text-sm file:mr-3 file:rounded-full file:border-0 file:bg-[#1b4fad] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
           />
         </label>
+        {preview ? (
+          <img src={preview} alt="Selected artwork" className="max-h-56 w-full rounded-card object-contain" />
+        ) : null}
         <label className="absolute -left-[9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
           Website
           <input

@@ -30,7 +30,9 @@ export const Route = createFileRoute("/api/competition")({
         if (!(file instanceof File) || file.size < 1 || file.size > MAX_BYTES) {
           return Response.json({ error: "Use an image under 3 MB." }, { status: 400 });
         }
-        if (!file.type.startsWith("image/")) {
+        const name = file.name.toLowerCase();
+        const image = file.type.startsWith("image/") || /\.(jpe?g|png|webp|gif|heic|heif|bmp)$/.test(name);
+        if (!image) {
           return Response.json({ error: "Use one image under 3 MB." }, { status: 400 });
         }
         const safe = file.name.replace(/[^\w.-]+/g, "-").slice(0, 60) || "artwork";
@@ -38,7 +40,7 @@ export const Route = createFileRoute("/api/competition")({
         const saved = await put(`competition/${Date.now()}-${safe}`, file, {
           access: "public",
           addRandomSuffix: true,
-          contentType: file.type || "image/jpeg",
+          contentType: file.type.startsWith("image/") ? file.type : "image/jpeg",
           abortSignal: AbortSignal.timeout(20000),
         });
         return Response.json({ url: saved.url }, { headers: { "cache-control": "no-store" } });
