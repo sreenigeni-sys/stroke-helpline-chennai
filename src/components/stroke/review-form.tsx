@@ -52,7 +52,7 @@ export function ReviewForm() {
         <h2 className="text-sm font-semibold text-ink">Thank you</h2>
         <p className="mt-1 text-sm text-ink-soft">
           {sent === "sent"
-            ? "Your note was sent to arunaineurocentre@gmail.com. It does not change the hospital list."
+            ? "Thank you for your feedback. We will give it careful consideration and always try to do better."
             : "Tap Send in your email app. The note is addressed to arunaineurocentre@gmail.com."}
         </p>
       </section>
