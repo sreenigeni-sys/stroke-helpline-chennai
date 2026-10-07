@@ -14,6 +14,8 @@ export type CompetitionEntry = {
   guardian: string;
   note: string;
   pledge: string;
+  chennai?: string;
+  original?: string;
   artwork: string;
 };
 
@@ -80,6 +82,8 @@ export async function competitionCsv() {
     "Parent or guardian",
     "Note",
     "Pledge",
+    "Chennai resident",
+    "Original work",
     "Artwork",
   ];
   const rows = doc.entries.map((entry) =>
@@ -94,6 +98,8 @@ export async function competitionCsv() {
       entry.guardian,
       entry.note,
       entry.pledge,
+      entry.chennai ?? "",
+      entry.original ?? "",
       entry.artwork,
     ]
       .map((value) => cell(value ?? ""))

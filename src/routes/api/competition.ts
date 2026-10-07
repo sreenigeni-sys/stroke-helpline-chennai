@@ -30,15 +30,17 @@ export const Route = createFileRoute("/api/competition")({
         if (!(file instanceof File) || file.size < 1 || file.size > MAX_BYTES) {
           return Response.json({ error: "Use an image under 3 MB." }, { status: 400 });
         }
-        if (!file.type.startsWith("image/")) {
-          return Response.json({ error: "Use a photo or image file." }, { status: 400 });
+        const name = file instanceof File ? file.name.toLowerCase() : "";
+        const jpeg = file instanceof File && (file.type === "image/jpeg" || file.type === "image/jpg" || name.endsWith(".jpg") || name.endsWith(".jpeg"));
+        if (!jpeg) {
+          return Response.json({ error: "Use a .jpeg file under 3 MB." }, { status: 400 });
         }
         const safe = file.name.replace(/[^\w.-]+/g, "-").slice(0, 60) || "artwork";
         const { put } = await import("@vercel/blob");
         const saved = await put(`competition/${Date.now()}-${safe}`, file, {
           access: "public",
           addRandomSuffix: true,
-          contentType: file.type,
+          contentType: "image/jpeg",
           abortSignal: AbortSignal.timeout(20000),
         });
         return Response.json({ url: saved.url }, { headers: { "cache-control": "no-store" } });

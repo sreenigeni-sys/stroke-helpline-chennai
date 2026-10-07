@@ -4,9 +4,37 @@ import { HOSPITAL_UPDATE_EMAIL, copyToClinic, sendOrganiserMessage } from "@/com
 
 const TAP = "transition-transform duration-150 ease-out active:not-disabled:scale-[0.96]";
 const MAX_BYTES = 3 * 1024 * 1024;
-const AGE_GROUPS = ["12–15", "15–18", "18+ (Open to All)"] as const;
-const TOPICS = ["Time is brain", "BEFAST to save lives"] as const;
-const ART_TYPES = ["Digital art", "Traditional paper and pencil art, A4"] as const;
+
+function isJpeg(file: File) {
+  const name = file.name.toLowerCase();
+  return file.type === "image/jpeg" || file.type === "image/jpg" || name.endsWith(".jpg") || name.endsWith(".jpeg");
+}
+
+function imageSize(file: File) {
+  const url = URL.createObjectURL(file);
+  return new Promise<{ width: number; height: number } | null>((resolve) => {
+    const image = new Image();
+    image.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve({ width: image.naturalWidth, height: image.naturalHeight });
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(null);
+    };
+    image.src = url;
+  });
+}
+const THEME = "Time is Life";
+const AGE_GROUPS = [
+  { value: "12–15", label: "12–15 years" },
+  { value: "15–18", label: "15–18 years" },
+  { value: "18+ (Open to All)", label: "18+ years (open to all)" },
+] as const;
+const ART_TYPES = [
+  { value: "A4 paper, jpeg scan", label: "Paper: A4 white sheet, .jpeg scan" },
+  { value: "Digital art, 1080×1350 jpeg", label: "Digital: 1080 × 1350 .jpeg" },
+] as const;
 
 export const STROKE_PLEDGE = `I pledge to be a Stroke Champion and protect the brains of my loved ones.
 I will practice brain-healthy habits every day and remember the BE-FAST signs of stroke—Balance, Eyes, Face, Arm, and Speech.
@@ -15,8 +43,9 @@ I will practice brain-healthy habits every day and remember the BE-FAST signs of
 const EMPTY = {
   name: "",
   ageGroup: "",
-  topic: "",
   art: "",
+  chennai: false,
+  original: false,
   guardian: "",
   phone: "",
   email: "",
@@ -37,14 +66,15 @@ export function CompetitionForm() {
   }
 
   function onFiles(list: FileList | null) {
-    const next = [...(list ?? [])].slice(0, 2);
-    if (next.some((file) => !file.type.startsWith("image/"))) {
-      setError("Upload a photo or other image file.");
+    const next = [...(list ?? [])].slice(0, 1);
+    const file = next[0];
+    if (file && !isJpeg(file)) {
+      setError("Upload one .jpeg file.");
       setFiles([]);
       return;
     }
-    if (next.some((file) => file.size > MAX_BYTES)) {
-      setError("Each image must be under 3 MB.");
+    if (file && file.size > MAX_BYTES) {
+      setError("The .jpeg must be under 3 MB.");
       setFiles([]);
       return;
     }
@@ -52,11 +82,19 @@ export function CompetitionForm() {
     setFiles(next);
   }
 
-  function onSubmit(event: FormEvent) {
+  async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setError(null);
-    if (!fields.ageGroup || !fields.topic || !fields.art) {
-      setError("Choose an age group, a topic, and the kind of art.");
+    if (!fields.ageGroup || !fields.art) {
+      setError("Choose an age group and the kind of art.");
+      return;
+    }
+    if (!fields.chennai) {
+      setError("This competition is only for residents of Chennai.");
+      return;
+    }
+    if (!fields.original) {
+      setError("Confirm that the artwork is entirely your own, and not copied or made by AI.");
       return;
     }
     if (fields.ageGroup !== "18+ (Open to All)" && fields.guardian.trim().length < 2) {
@@ -72,8 +110,15 @@ export function CompetitionForm() {
       return;
     }
     if (files.length < 1) {
-      setError("Add a photo or image of the artwork.");
+      setError("Add one .jpeg of the artwork.");
       return;
+    }
+    if (fields.art.startsWith("Digital")) {
+      const size = await imageSize(files[0]);
+      if (!size || size.width !== 1080 || size.height !== 1350) {
+        setError("Digital art must be 1080 × 1350 pixels.");
+        return;
+      }
     }
     setAskPledge(true);
   }
@@ -110,6 +155,9 @@ export function CompetitionForm() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           ...fields,
+          topic: THEME,
+          chennai: "Yes",
+          original: "Yes",
           artwork: urls.join(" "),
         }),
         signal: AbortSignal.timeout(15000),
@@ -119,15 +167,17 @@ export function CompetitionForm() {
         throw new Error(payload?.error || "The entry could not be saved. Try again.");
       }
       const message = [
-        "Stroke awareness competition — 25 October 2026",
+        "Stroke awareness competition — Time is Life",
         `Name: ${fields.name.trim()}`,
         `Age group: ${fields.ageGroup}`,
-        `Topic: ${fields.topic}`,
+        "Chennai resident: Yes",
+        "Theme: Time is Life",
         `Art: ${fields.art}`,
         `Phone: ${fields.phone.trim()}`,
         `Email: ${fields.email.trim()}`,
         `Parent or guardian: ${fields.guardian.trim() || "—"}`,
         fields.note.trim() ? `Note: ${fields.note.trim()}` : "",
+        "Original work: confirmed",
         "Pledge: confirmed",
         "Artwork:",
         ...urls,
@@ -183,41 +233,19 @@ export function CompetitionForm() {
           <div className="mt-1 grid gap-2">
             {AGE_GROUPS.map((option) => (
               <button
-                key={option}
+                key={option.value}
                 type="button"
-                aria-pressed={fields.ageGroup === option}
-                onClick={() => set("ageGroup", option)}
+                aria-pressed={fields.ageGroup === option.value}
+                onClick={() => set("ageGroup", option.value)}
                 className={cn(
                   "h-11 rounded-full border px-3 text-sm font-semibold",
                   TAP,
-                  fields.ageGroup === option
+                  fields.ageGroup === option.value
                     ? "border-transparent bg-[#1b4fad] text-white"
                     : "border-line bg-surface text-ink",
                 )}
               >
-                {option}
-              </button>
-            ))}
-          </div>
-        </fieldset>
-        <fieldset>
-          <legend className="text-xs font-semibold text-ink">Topic</legend>
-          <div className="mt-1 grid gap-2">
-            {TOPICS.map((option) => (
-              <button
-                key={option}
-                type="button"
-                aria-pressed={fields.topic === option}
-                onClick={() => set("topic", option)}
-                className={cn(
-                  "h-11 rounded-full border px-3 text-sm font-semibold",
-                  TAP,
-                  fields.topic === option
-                    ? "border-transparent bg-[#1b4fad] text-white"
-                    : "border-line bg-surface text-ink",
-                )}
-              >
-                {option}
+                {option.label}
               </button>
             ))}
           </div>
@@ -227,19 +255,19 @@ export function CompetitionForm() {
           <div className="mt-1 grid gap-2">
             {ART_TYPES.map((option) => (
               <button
-                key={option}
+                key={option.value}
                 type="button"
-                aria-pressed={fields.art === option}
-                onClick={() => set("art", option)}
+                aria-pressed={fields.art === option.value}
+                onClick={() => set("art", option.value)}
                 className={cn(
-                  "min-h-11 rounded-full border px-3 py-2 text-sm font-semibold",
+                  "min-h-11 rounded-full border px-3 py-2 text-left text-sm font-semibold",
                   TAP,
-                  fields.art === option
+                  fields.art === option.value
                     ? "border-transparent bg-[#1b4fad] text-white"
                     : "border-line bg-surface text-ink",
                 )}
               >
-                {option}
+                {option.label}
               </button>
             ))}
           </div>
@@ -277,12 +305,11 @@ export function CompetitionForm() {
           />
         </label>
         <label className="grid gap-1 text-xs font-semibold text-ink">
-          Photo or image of the artwork
-          <span className="font-medium text-ink-soft">Up to 2 images, 3 MB each. A photo of A4 paper art is fine.</span>
+          Photo of the artwork, .jpeg
+          <span className="font-medium text-ink-soft">One file, 3 MB maximum. Digital art must be 1080 × 1350.</span>
           <input
             type="file"
-            accept="image/*"
-            multiple
+            accept="image/jpeg,.jpg,.jpeg"
             onChange={(event) => onFiles(event.target.files)}
             className="text-sm file:mr-3 file:rounded-full file:border-0 file:bg-[#1b4fad] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
           />
@@ -297,6 +324,24 @@ export function CompetitionForm() {
             onChange={(event) => set("note", event.target.value)}
             className="h-11 rounded-full border border-line bg-surface px-3 text-base font-medium"
           />
+        </label>
+        <label className="flex items-start gap-2 text-sm leading-relaxed text-ink">
+          <input
+            type="checkbox"
+            checked={fields.chennai}
+            onChange={(event) => set("chennai", event.target.checked)}
+            className="mt-1"
+          />
+          I live in Chennai.
+        </label>
+        <label className="flex items-start gap-2 text-sm leading-relaxed text-ink">
+          <input
+            type="checkbox"
+            checked={fields.original}
+            onChange={(event) => set("original", event.target.checked)}
+            className="mt-1"
+          />
+          This artwork is entirely my own. It is not copied and not made by AI.
         </label>
         <label className="absolute -left-[9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
           Website
