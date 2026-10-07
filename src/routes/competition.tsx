@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CompetitionForm, STROKE_PLEDGE } from "@/components/stroke/competition-form";
 import { seoHead } from "@/lib/seo";
@@ -5,9 +6,8 @@ import { seoHead } from "@/lib/seo";
 export const Route = createFileRoute("/competition")({
   head: () =>
     seoHead({
-      title: "Stroke awareness competition",
-      description:
-        "Time is Life art competition for Chennai residents. Submit a .jpeg by 10:00 AM on 23 October 2026.",
+      title: "Stroke response awareness competition",
+      description: "Submit artwork for the stroke response awareness competition.",
       path: "/competition",
       noindex: true,
     }),
@@ -15,6 +15,7 @@ export const Route = createFileRoute("/competition")({
 });
 
 function CompetitionPage() {
+  const [rules, setRules] = useState(false);
   return (
     <main className="mx-auto min-h-screen max-w-md px-4 py-6">
       <header className="flex items-center justify-between gap-3">
@@ -23,13 +24,35 @@ function CompetitionPage() {
           Back
         </Link>
       </header>
-      <h1 className="font-display mt-6 text-3xl leading-tight">Stroke awareness competition</h1>
-      <p className="font-tamil mt-1 text-base text-ink-soft">பக்கவாத விழிப்புணர்வு போட்டி</p>
-      <p className="mt-3 text-sm font-semibold text-ink">
-        Theme: Time is Life <span className="font-tamil font-medium">நேரமே உயிர்</span>
-      </p>
+      <h1 className="font-display mt-6 text-3xl leading-tight">Stroke response awareness competition</h1>
+      <p className="font-tamil mt-1 text-base text-ink-soft">பக்கவாத எதிர்வினை விழிப்புணர்வு போட்டி</p>
+      <button
+        type="button"
+        aria-expanded={rules}
+        onClick={() => setRules((open) => !open)}
+        className="mt-4 text-left text-sm font-semibold text-[#1b4fad] underline"
+      >
+        For information, rules and regulations click here
+      </button>
+      {rules ? <CompetitionRules /> : null}
+      <section className="mt-5 rounded-card border border-line bg-paper-deep px-4 py-4">
+        <h2 className="text-sm font-semibold text-ink">Pledge</h2>
+        <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-ink">{STROKE_PLEDGE}</p>
+      </section>
+      <section className="mt-6">
+        <h2 className="text-lg font-semibold">Submission</h2>
+        <div className="mt-3">
+          <CompetitionForm />
+        </div>
+      </section>
+    </main>
+  );
+}
 
-      <section className="mt-5">
+function CompetitionRules() {
+  return (
+    <div className="mt-4">
+      <section>
         <h2 className="text-sm font-semibold text-ink">Rules</h2>
         <p className="font-tamil text-xs text-ink-soft">விதிகள் மற்றும் நிபந்தனைகள்</p>
         <h3 className="mt-3 text-sm font-semibold text-ink">Who can enter</h3>
@@ -120,11 +143,21 @@ function CompetitionPage() {
           In a stroke, 1.9 million brain cells are lost every minute. Recognising the signs at once stops that clock. When blood stops flowing to the brain, every second counts.
         </p>
         <ul className="mt-2 grid gap-1 text-sm leading-relaxed text-ink-soft">
-          <li>Balance <span className="font-tamil">சமநிலை இழப்பு</span></li>
-          <li>Eyes <span className="font-tamil">பார்வை மங்குதல்</span></li>
-          <li>Face <span className="font-tamil">முகம் கோணுதல்</span></li>
-          <li>Arm <span className="font-tamil">கை தளர்ச்சி</span></li>
-          <li>Speech <span className="font-tamil">பேச்சு குழறல்</span></li>
+          <li>
+            Balance <span className="font-tamil">சமநிலை இழப்பு</span>
+          </li>
+          <li>
+            Eyes <span className="font-tamil">பார்வை மங்குதல்</span>
+          </li>
+          <li>
+            Face <span className="font-tamil">முகம் கோணுதல்</span>
+          </li>
+          <li>
+            Arm <span className="font-tamil">கை தளர்ச்சி</span>
+          </li>
+          <li>
+            Speech <span className="font-tamil">பேச்சு குழறல்</span>
+          </li>
           <li>
             Time <span className="font-tamil">உடனடி சிகிச்சை — நேரமே உயிர்</span>
           </li>
@@ -160,18 +193,6 @@ function CompetitionPage() {
           </a>
         </p>
       </section>
-
-      <section className="mt-5 rounded-card border border-line bg-paper-deep px-4 py-4">
-        <h2 className="text-sm font-semibold text-ink">Pledge</h2>
-        <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-ink">{STROKE_PLEDGE}</p>
-      </section>
-      <section className="mt-6">
-        <h2 className="text-lg font-semibold">Submission</h2>
-        <p className="font-tamil text-xs text-ink-soft">சமர்ப்பிப்பது எப்படி: இங்கே பதிவேற்றவும்.</p>
-        <div className="mt-3">
-          <CompetitionForm />
-        </div>
-      </section>
-    </main>
+    </div>
   );
 }

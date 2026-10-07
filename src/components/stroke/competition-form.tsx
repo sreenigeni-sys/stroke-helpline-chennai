@@ -4,36 +4,11 @@ import { HOSPITAL_UPDATE_EMAIL, copyToClinic, sendOrganiserMessage } from "@/com
 
 const TAP = "transition-transform duration-150 ease-out active:not-disabled:scale-[0.96]";
 const MAX_BYTES = 3 * 1024 * 1024;
-
-function isJpeg(file: File) {
-  const name = file.name.toLowerCase();
-  return file.type === "image/jpeg" || file.type === "image/jpg" || name.endsWith(".jpg") || name.endsWith(".jpeg");
-}
-
-function imageSize(file: File) {
-  const url = URL.createObjectURL(file);
-  return new Promise<{ width: number; height: number } | null>((resolve) => {
-    const image = new Image();
-    image.onload = () => {
-      URL.revokeObjectURL(url);
-      resolve({ width: image.naturalWidth, height: image.naturalHeight });
-    };
-    image.onerror = () => {
-      URL.revokeObjectURL(url);
-      resolve(null);
-    };
-    image.src = url;
-  });
-}
 const THEME = "Time is Life";
 const AGE_GROUPS = [
   { value: "12–15", label: "12–15 years" },
   { value: "15–18", label: "15–18 years" },
   { value: "18+ (Open to All)", label: "18+ years (open to all)" },
-] as const;
-const ART_TYPES = [
-  { value: "A4 paper, jpeg scan", label: "Paper: A4 white sheet, .jpeg scan" },
-  { value: "Digital art, 1080×1350 jpeg", label: "Digital: 1080 × 1350 .jpeg" },
 ] as const;
 
 export const STROKE_PLEDGE = `I pledge to be a Stroke Champion and protect the brains of my loved ones.
@@ -43,13 +18,9 @@ I will practice brain-healthy habits every day and remember the BE-FAST signs of
 const EMPTY = {
   name: "",
   ageGroup: "",
-  art: "",
-  chennai: false,
-  original: false,
   guardian: "",
   phone: "",
   email: "",
-  note: "",
   website: "",
 };
 
@@ -66,39 +37,30 @@ export function CompetitionForm() {
   }
 
   function onFiles(list: FileList | null) {
-    const next = [...(list ?? [])].slice(0, 1);
-    const file = next[0];
-    if (file && !isJpeg(file)) {
-      setError("Upload one .jpeg file.");
+    const file = [...(list ?? [])][0];
+    if (file && !file.type.startsWith("image/")) {
+      setError("Choose one image.");
       setFiles([]);
       return;
     }
     if (file && file.size > MAX_BYTES) {
-      setError("The .jpeg must be under 3 MB.");
+      setError("The image must be under 3 MB.");
       setFiles([]);
       return;
     }
     setError(null);
-    setFiles(next);
+    setFiles(file ? [file] : []);
   }
 
-  async function onSubmit(event: FormEvent) {
+  function onSubmit(event: FormEvent) {
     event.preventDefault();
     setError(null);
-    if (!fields.ageGroup || !fields.art) {
-      setError("Choose an age group and the kind of art.");
-      return;
-    }
-    if (!fields.chennai) {
-      setError("This competition is only for residents of Chennai.");
-      return;
-    }
-    if (!fields.original) {
-      setError("Confirm that the artwork is entirely your own, and not copied or made by AI.");
+    if (!fields.ageGroup) {
+      setError("Choose an age group.");
       return;
     }
     if (fields.ageGroup !== "18+ (Open to All)" && fields.guardian.trim().length < 2) {
-      setError("Add a parent or guardian name for this age group.");
+      setError("Add a parent or guardian name for participants below 18.");
       return;
     }
     if (fields.phone.replace(/\D/g, "").length < 8) {
@@ -110,15 +72,8 @@ export function CompetitionForm() {
       return;
     }
     if (files.length < 1) {
-      setError("Add one .jpeg of the artwork.");
+      setError("Choose one image.");
       return;
-    }
-    if (fields.art.startsWith("Digital")) {
-      const size = await imageSize(files[0]);
-      if (!size || size.width !== 1080 || size.height !== 1350) {
-        setError("Digital art must be 1080 × 1350 pixels.");
-        return;
-      }
     }
     setAskPledge(true);
   }
@@ -156,8 +111,8 @@ export function CompetitionForm() {
         body: JSON.stringify({
           ...fields,
           topic: THEME,
-          chennai: "Yes",
-          original: "Yes",
+          art: "",
+          note: "",
           artwork: urls.join(" "),
         }),
         signal: AbortSignal.timeout(15000),
@@ -167,17 +122,12 @@ export function CompetitionForm() {
         throw new Error(payload?.error || "The entry could not be saved. Try again.");
       }
       const message = [
-        "Stroke awareness competition — Time is Life",
+        "Stroke response awareness competition",
         `Name: ${fields.name.trim()}`,
         `Age group: ${fields.ageGroup}`,
-        "Chennai resident: Yes",
-        "Theme: Time is Life",
-        `Art: ${fields.art}`,
         `Phone: ${fields.phone.trim()}`,
         `Email: ${fields.email.trim()}`,
         `Parent or guardian: ${fields.guardian.trim() || "—"}`,
-        fields.note.trim() ? `Note: ${fields.note.trim()}` : "",
-        "Original work: confirmed",
         "Pledge: confirmed",
         "Artwork:",
         ...urls,
@@ -186,11 +136,11 @@ export function CompetitionForm() {
         .join("\n");
       const [result, clinic] = await Promise.all([
         sendOrganiserMessage({
-          subject: `Stroke awareness entry: ${fields.name.trim()}`,
+          subject: `Stroke response awareness entry: ${fields.name.trim()}`,
           replyto: fields.email.trim(),
           message,
         }),
-        copyToClinic(`Stroke awareness entry: ${fields.name.trim()}`, message),
+        copyToClinic(`Stroke response awareness entry: ${fields.name.trim()}`, message),
       ]);
       if (result.via !== "web3forms" && !clinic.ok) {
         setError("Your entry is saved, but the email could not be sent just now. Please try again in a moment.");
@@ -219,7 +169,7 @@ export function CompetitionForm() {
     <>
       <form className="grid gap-3" onSubmit={onSubmit}>
         <label className="grid gap-1 text-xs font-semibold text-ink">
-          Your name
+          Participant name
           <input
             required
             value={fields.name}
@@ -250,31 +200,8 @@ export function CompetitionForm() {
             ))}
           </div>
         </fieldset>
-        <fieldset>
-          <legend className="text-xs font-semibold text-ink">Artwork</legend>
-          <div className="mt-1 grid gap-2">
-            {ART_TYPES.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                aria-pressed={fields.art === option.value}
-                onClick={() => set("art", option.value)}
-                className={cn(
-                  "min-h-11 rounded-full border px-3 py-2 text-left text-sm font-semibold",
-                  TAP,
-                  fields.art === option.value
-                    ? "border-transparent bg-[#1b4fad] text-white"
-                    : "border-line bg-surface text-ink",
-                )}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </fieldset>
         <label className="grid gap-1 text-xs font-semibold text-ink">
-          Parent or guardian name
-          <span className="font-medium text-ink-soft">Needed for ages 12–15 and 15–18</span>
+          Parent or guardian name (for below 18 years old)
           <input
             value={fields.guardian}
             onChange={(event) => set("guardian", event.target.value)}
@@ -305,43 +232,13 @@ export function CompetitionForm() {
           />
         </label>
         <label className="grid gap-1 text-xs font-semibold text-ink">
-          Photo of the artwork, .jpeg
-          <span className="font-medium text-ink-soft">One file, 3 MB maximum. Digital art must be 1080 × 1350.</span>
+          Choose files
           <input
             type="file"
-            accept="image/jpeg,.jpg,.jpeg"
+            accept="image/*"
             onChange={(event) => onFiles(event.target.files)}
             className="text-sm file:mr-3 file:rounded-full file:border-0 file:bg-[#1b4fad] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
           />
-        </label>
-        {files.length > 0 ? (
-          <p className="text-xs font-semibold text-ink-soft">{files.map((file) => file.name).join(", ")}</p>
-        ) : null}
-        <label className="grid gap-1 text-xs font-semibold text-ink">
-          Title or note
-          <input
-            value={fields.note}
-            onChange={(event) => set("note", event.target.value)}
-            className="h-11 rounded-full border border-line bg-surface px-3 text-base font-medium"
-          />
-        </label>
-        <label className="flex items-start gap-2 text-sm leading-relaxed text-ink">
-          <input
-            type="checkbox"
-            checked={fields.chennai}
-            onChange={(event) => set("chennai", event.target.checked)}
-            className="mt-1"
-          />
-          I live in Chennai.
-        </label>
-        <label className="flex items-start gap-2 text-sm leading-relaxed text-ink">
-          <input
-            type="checkbox"
-            checked={fields.original}
-            onChange={(event) => set("original", event.target.checked)}
-            className="mt-1"
-          />
-          This artwork is entirely my own. It is not copied and not made by AI.
         </label>
         <label className="absolute -left-[9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
           Website

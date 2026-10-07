@@ -2,8 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { assertSameSiteRequest } from "@/lib/auth/isolation.server";
 
 const AGES = ["12–15", "15–18", "18+ (Open to All)"];
-const TOPICS = ["Time is Life"];
-const ARTS = ["A4 paper, jpeg scan", "Digital art, 1080×1350 jpeg"];
 
 function clip(value: unknown, max: number) {
   return typeof value === "string" ? value.trim().slice(0, max) : "";
@@ -15,21 +13,17 @@ function readEntry(data: unknown) {
   if (clip(raw.website, 200)) throw new Error("Ignored.");
   const name = clip(raw.name, 160);
   const ageGroup = clip(raw.ageGroup, 40);
-  const topic = clip(raw.topic, 80);
-  const art = clip(raw.art, 80);
+  const topic = "Time is Life";
+  const art = "";
   const phone = clip(raw.phone, 30);
   const email = clip(raw.email, 160);
   const guardian = clip(raw.guardian, 160);
   if (name.length < 2) throw new Error("Enter your name.");
-  if (!AGES.includes(ageGroup) || !TOPICS.includes(topic) || !ARTS.includes(art)) {
-    throw new Error("Choose an age group, topic, and kind of art.");
-  }
+  if (!AGES.includes(ageGroup)) throw new Error("Choose an age group.");
   if (phone.replace(/\D/g, "").length < 8) throw new Error("Enter a phone number.");
   if (!email.includes("@") || email.length < 6) throw new Error("Enter an email address.");
-  if (clip(raw.chennai, 10) !== "Yes") throw new Error("This competition is only for residents of Chennai.");
-  if (clip(raw.original, 10) !== "Yes") throw new Error("Confirm that the artwork is entirely your own.");
   if (ageGroup !== "18+ (Open to All)" && guardian.length < 2) {
-    throw new Error("Add a parent or guardian name for this age group.");
+    throw new Error("Add a parent or guardian name for participants below 18.");
   }
   const artwork = clip(raw.artwork, 1000);
   if (!artwork.startsWith("https://")) throw new Error("Add a photo or image of the artwork.");
@@ -44,8 +38,6 @@ function readEntry(data: unknown) {
     guardian,
     note: clip(raw.note, 500),
     pledge: "Confirmed",
-    chennai: "Yes",
-    original: "Yes",
     artwork,
   };
 }

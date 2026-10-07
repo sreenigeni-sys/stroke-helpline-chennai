@@ -188,7 +188,7 @@ function Intro({ onStart, onSkip }: { onStart: (lang: Lang) => void; onSkip: () 
           to="/competition"
           className="inline-flex rounded-full border border-line px-3 py-1.5 text-[11px] font-semibold text-ink-soft/80 hover:text-ink"
         >
-          submission for stroke awareness competition
+          Stroke response awareness competition
         </Link>
       </p>
       <p className="mt-3 text-center">
