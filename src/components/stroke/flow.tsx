@@ -182,16 +182,16 @@ function Intro({ onStart, onSkip }: { onStart: (lang: Lang) => void; onSkip: () 
         <span className="text-base font-bold">Find hospitals now</span>
         <span className="font-tamil text-sm font-medium">உடனே மருத்துவமனைகளைக் கண்டறியுங்கள்</span>
       </button>
+      </div>
       <Link
         to="/competition"
         className={cn(
-          "mt-4 flex min-h-14 w-full items-center justify-center rounded-full bg-[#C46B16] px-4 py-2 text-center text-base font-bold leading-tight text-white shadow-card",
+          "mt-8 flex min-h-14 w-full items-center justify-center rounded-2xl bg-[#C46B16] px-4 py-3 text-center text-base font-bold leading-tight text-white shadow-card",
           TAP,
         )}
       >
         Stroke response awareness competition
       </Link>
-      </div>
       <p className="mt-3 text-center">
         <Link to="/contact" className="text-[11px] text-ink-soft/80 hover:text-ink">
           Contact Us
