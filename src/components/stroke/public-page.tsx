@@ -29,7 +29,7 @@ export function PublicPage({
 
         <nav aria-label="Immediate action" className="mt-5">
           <Link
-            to="/"
+            to="/stroke-hospitals-chennai"
             className={cn("flex min-h-14 items-center justify-center rounded-full bg-[#1b4fad] px-4 text-center text-sm font-bold text-white")}
           >
             Find stroke-care hospitals
