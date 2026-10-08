@@ -1,7 +1,16 @@
+import { createHash, timingSafeEqual } from "node:crypto";
+
 const DOC = "competition-entries.json";
 const BLOB_TIMEOUT_MS = 8000;
 
-export const COMPETITION_EXPORT_KEY = "b7e4c1a9f3d26e80c5a14f7b2d9e6c31";
+// The export key lives only in the COMPETITION_EXPORT_KEY env var — this repo is
+// public. With no env var set, the export stays switched off.
+export function exportKeyMatches(key: string | null) {
+  const expected = process.env.COMPETITION_EXPORT_KEY?.trim();
+  if (!expected || expected.length < 24 || !key) return false;
+  const digest = (value: string) => createHash("sha256").update(value).digest();
+  return timingSafeEqual(digest(key), digest(expected));
+}
 
 export type CompetitionEntry = {
   submittedAt: string;
@@ -66,7 +75,10 @@ export async function saveCompetitionEntry(entry: CompetitionEntry) {
 }
 
 function cell(value: string) {
-  return `"${value.replace(/"/g, '""')}"`;
+  // Spreadsheets run cells starting with these as formulas; a leading ' keeps
+  // entrant-typed text as plain text.
+  const safe = /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
+  return `"${safe.replace(/"/g, '""')}"`;
 }
 
 export async function competitionCsv() {

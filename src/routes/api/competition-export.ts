@@ -4,11 +4,10 @@ export const Route = createFileRoute("/api/competition-export")({
   server: {
     handlers: {
       GET: async ({ request }) => {
-        const { COMPETITION_EXPORT_KEY, competitionCsv } = await import(
+        const { exportKeyMatches, competitionCsv } = await import(
           "@/components/stroke/competition-store.server"
         );
-        const key = new URL(request.url).searchParams.get("key");
-        if (key !== COMPETITION_EXPORT_KEY) {
+        if (!exportKeyMatches(new URL(request.url).searchParams.get("key"))) {
           return new Response("Not found", { status: 404, headers: { "cache-control": "no-store" } });
         }
         const csv = await competitionCsv();
