@@ -62,6 +62,7 @@ export function Locator({
   onRecheck,
   onReset,
   onUser,
+  headingLevel = "h1",
 }: {
   answers: Session["answers"];
   onsetIso: string | null;
@@ -72,6 +73,7 @@ export function Locator({
   onRecheck: () => void;
   onReset: () => void;
   onUser: (user: Session["user"]) => void;
+  headingLevel?: "h1" | "h2";
 }) {
   const [tier, setTier] = useState<TierFilter>("all");
   const [ownership, setOwnership] = useState<OwnFilter>("all");
@@ -85,6 +87,7 @@ export function Locator({
   const [placesOpen, setPlacesOpen] = useState(false);
   const matches = useMemo(() => matchPlaces(query), [query]);
   const copy = locatorCopy(lang);
+  const Heading = headingLevel;
   const onUserRef = useRef(onUser);
   onUserRef.current = onUser;
   const copyRef = useRef(copy);
@@ -319,9 +322,9 @@ export function Locator({
       ) : null}
 
       <div className="mt-5 flex flex-wrap items-end justify-between gap-3">
-        <h1 className={cn("text-3xl leading-tight", copy.ta ? "font-tamil font-semibold" : "font-display")}>
+        <Heading className={cn("text-3xl leading-tight", copy.ta ? "font-tamil font-semibold" : "font-display")}>
           {copy.nearest}
-        </h1>
+        </Heading>
         <div className="mb-1 flex flex-wrap items-center gap-2">
           <div className="flex rounded-full border border-line p-0.5">
             <button

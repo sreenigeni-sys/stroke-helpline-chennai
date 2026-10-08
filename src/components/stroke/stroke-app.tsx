@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { SIGNS, type SignId } from "@/components/stroke/signs";
 import {
   concernOf,
@@ -14,7 +15,7 @@ import { Locator } from "@/components/stroke/locator";
 import { beginGps } from "@/components/stroke/gps";
 import { cn } from "@/lib/cn";
 
-export function StrokeApp() {
+export function StrokeApp({ headingLevel = "h1" }: { headingLevel?: "h1" | "h2" } = {}) {
   const [session, setSession] = useState<Session>(freshSession);
   const skipSave = useRef(true);
 
@@ -58,7 +59,7 @@ export function StrokeApp() {
   return (
     <main className="min-h-screen">
       <header className="mx-auto flex max-w-5xl items-start justify-between gap-3 px-4 pt-4">
-        <div className="flex min-w-0 items-center gap-2.5">
+        <Link to="/" aria-label="Stroke Helpline Chennai home — start the stroke screening tool" className="flex min-w-0 items-center gap-2.5">
           <img
             src="/brand/arunai.png"
             alt="Arunai Neuro Foundation"
@@ -77,7 +78,7 @@ export function StrokeApp() {
               </p>
             ) : null}
           </div>
-        </div>
+        </Link>
         {home ? (
           <button
             type="button"
@@ -99,6 +100,7 @@ export function StrokeApp() {
       </header>
       {session.phase === "locator" ? (
         <Locator
+          headingLevel={headingLevel}
           answers={session.answers}
           onsetIso={session.onsetIso}
           user={session.user}
@@ -129,6 +131,7 @@ export function StrokeApp() {
           onsetIso={session.onsetIso}
           timeReturn={session.timeReturn}
           lang={session.lang}
+          headingLevel={headingLevel}
           onStart={(lang: Lang) =>
             patch((current) => ({ ...current, phase: "signs", signIndex: 0, lang }))
           }

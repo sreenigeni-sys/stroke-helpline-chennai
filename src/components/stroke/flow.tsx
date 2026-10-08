@@ -82,6 +82,7 @@ export function Flow({
   onsetIso,
   timeReturn,
   lang,
+  headingLevel = "h1",
   onStart,
   onSkip,
   onAnswer,
@@ -95,6 +96,7 @@ export function Flow({
   onsetIso: string | null;
   timeReturn: Session["timeReturn"];
   lang: Lang | null;
+  headingLevel?: "h1" | "h2";
   onStart: (lang: Lang) => void;
   onSkip: () => void;
   onAnswer: (id: SignId, answer: Answer) => void;
@@ -104,7 +106,7 @@ export function Flow({
 }) {
   if (phase === "intro") {
     return (
-      <Intro onStart={onStart} onSkip={onSkip} />
+      <Intro onStart={onStart} onSkip={onSkip} headingLevel={headingLevel} />
     );
   }
   if (phase === "time") {
@@ -114,6 +116,7 @@ export function Flow({
         timeReturn={timeReturn}
         answers={answers}
         lang={lang}
+        headingLevel={headingLevel}
         onBack={onBack}
         onSetOnset={onSetOnset}
         onContinue={onContinue}
@@ -127,6 +130,7 @@ export function Flow({
       index={signIndex}
       answers={answers}
       lang={lang}
+      headingLevel={headingLevel}
       onAnswer={onAnswer}
       onBack={onBack}
       onSkip={onSkip}
@@ -134,11 +138,12 @@ export function Flow({
   );
 }
 
-function Intro({ onStart, onSkip }: { onStart: (lang: Lang) => void; onSkip: () => void }) {
+function Intro({ onStart, onSkip, headingLevel }: { onStart: (lang: Lang) => void; onSkip: () => void; headingLevel: "h1" | "h2" }) {
+  const Heading = headingLevel;
   return (
     <div className="rise mx-auto flex min-h-[70vh] max-w-md flex-col px-4 py-6">
       <div className="flex flex-1 flex-col justify-center">
-      <h1 className="font-display text-5xl leading-none text-ink">Is this a stroke?</h1>
+      <Heading className="font-display text-5xl leading-none text-ink">Is this a stroke?</Heading>
       <p className="font-tamil mt-2 text-2xl text-[#1B7F4E]">இது பக்கவாதமா?</p>
       <p className="mt-3 text-base font-semibold text-ink">
         Time is brain. <span className="font-tamil font-medium text-[#1B7F4E]">நேரமே மூளை.</span>
@@ -174,14 +179,19 @@ function Intro({ onStart, onSkip }: { onStart: (lang: Lang) => void; onSkip: () 
           <span className="font-tamil text-xs font-medium">சோதனையைத் தொடங்கு</span>
         </button>
       </div>
-      <button
-        type="button"
-        onClick={onSkip}
+      <Link
+        to="/stroke-hospitals-chennai"
+        onClick={(event) => {
+          if (event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
+            event.preventDefault();
+            onSkip();
+          }
+        }}
         className={cn("mt-4 flex min-h-14 w-full flex-col items-center justify-center rounded-full bg-signal px-3 py-2 text-white shadow-card", TAP)}
       >
         <span className="text-base font-bold">Find hospitals now</span>
         <span className="font-tamil text-sm font-medium">உடனே மருத்துவமனைகளைக் கண்டறியுங்கள்</span>
-      </button>
+      </Link>
       </div>
       <p className="mt-3 text-center">
         <Link to="/contact" className="text-[11px] text-ink-soft/80 hover:text-ink">
@@ -212,6 +222,7 @@ function SignStep({
   index,
   answers,
   lang,
+  headingLevel,
   onAnswer,
   onBack,
   onSkip,
@@ -220,6 +231,7 @@ function SignStep({
   index: number;
   answers: Session["answers"];
   lang: Lang | null;
+  headingLevel: "h1" | "h2";
   onAnswer: (id: SignId, answer: Answer) => void;
   onBack: () => void;
   onSkip: () => void;
@@ -229,6 +241,7 @@ function SignStep({
     headingRef.current?.focus();
   }, [sign.id]);
   const tamil = lang === "ta";
+  const Heading = headingLevel;
 
   return (
     <div key={sign.id} className="rise mx-auto max-w-md px-4 py-4">
@@ -265,7 +278,7 @@ function SignStep({
       <div className="mt-4">
         <SignVisual sign={sign} lang={lang} />
       </div>
-      <h1
+      <Heading
         ref={headingRef}
         tabIndex={-1}
         className={cn(
@@ -274,7 +287,7 @@ function SignStep({
         )}
       >
         {tamil ? sign.askTa : sign.ask}
-      </h1>
+      </Heading>
       {lang == null ? <p className="font-tamil mt-2 text-xl leading-snug text-ink">{sign.askTa}</p> : null}
       {tamil ? (
         <p className="font-tamil mt-2 text-base leading-snug text-ink-soft">{sign.helpTa}</p>
@@ -359,6 +372,7 @@ function TimeStep({
   timeReturn,
   answers,
   lang,
+  headingLevel,
   onBack,
   onSetOnset,
   onContinue,
@@ -367,6 +381,7 @@ function TimeStep({
   timeReturn: Session["timeReturn"];
   answers: Session["answers"];
   lang: Lang | null;
+  headingLevel: "h1" | "h2";
   onBack: () => void;
   onSetOnset: (iso: string | null) => void;
   onContinue: () => void;
@@ -376,6 +391,7 @@ function TimeStep({
   const [preset, setPreset] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const tamil = lang === "ta";
+  const Heading = headingLevel;
 
   useEffect(() => {
     headingRef.current?.focus();
@@ -415,7 +431,7 @@ function TimeStep({
         </p>
       </div>
       <Rail answers={answers} current={5} onTime lang={lang} />
-      <h1
+      <Heading
         ref={headingRef}
         tabIndex={-1}
         className={cn(
@@ -426,7 +442,7 @@ function TimeStep({
         {tamil
           ? "இது எப்போது தொடங்கியது? அல்லது கடைசியாக எப்போது நன்றாக இருந்தார்கள்?"
           : "When did this start — or when were they last seen well?"}
-      </h1>
+      </Heading>
       {lang == null ? (
         <p className="font-tamil mt-2 text-xl leading-snug text-ink">
           இது எப்போது தொடங்கியது? அல்லது கடைசியாக எப்போது நன்றாக இருந்தார்கள்?

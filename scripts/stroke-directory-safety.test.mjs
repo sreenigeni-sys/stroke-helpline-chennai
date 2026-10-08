@@ -103,3 +103,29 @@ test("the hospital map stays on the page, with a privacy notice", async () => {
   assert.match(locator, /<HospitalMap[\s\S]*tall=\{view === "map"\}/);
   assert.match(locator, /copy\.mapPrivacy/);
 });
+
+
+test("crawlable links connect the screening app and public pages to the hospital directory", async () => {
+  const [app, flow, directory, publicPage] = await Promise.all([
+    read("src/components/stroke/stroke-app.tsx"),
+    read("src/components/stroke/flow.tsx"),
+    read("src/routes/stroke-hospitals-chennai.tsx"),
+    read("src/components/stroke/public-page.tsx"),
+  ]);
+  assert.match(app, /<Link to="\/" aria-label="Stroke Helpline Chennai home/);
+  assert.match(app, /headingLevel = "h1"/);
+  assert.match(app, /<Locator\s+headingLevel=\{headingLevel\}/);
+  assert.match(flow, /to="\/stroke-hospitals-chennai"/);
+  assert.match(flow, /event\.preventDefault\(\);\s*onSkip\(\)/);
+  assert.match(flow, /<TimeStep[\s\S]*?headingLevel=\{headingLevel\}/);
+  assert.match(flow, /<SignStep[\s\S]*?headingLevel=\{headingLevel\}/);
+  assert.match(flow, /function SignStep[\s\S]*?const Heading = headingLevel/);
+  assert.match(flow, /function TimeStep[\s\S]*?const Heading = headingLevel/);
+  assert.match(flow, /const Heading = headingLevel[\s\S]*?<Heading/);
+  const locator = await read("src/components/stroke/locator.tsx");
+  assert.match(locator, /headingLevel = "h1"/);
+  assert.match(locator, /<Heading className=\{cn\("text-3xl leading-tight"/);
+  assert.match(directory, /<StrokeApp headingLevel="h2" \/>/);
+  assert.match(directory, /<h1 className="font-display text-2xl">Stroke-care hospitals in Chennai<\/h1>/);
+  assert.match(publicPage, /to="\/stroke-hospitals-chennai"/);
+});
