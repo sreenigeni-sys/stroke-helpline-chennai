@@ -1,7 +1,11 @@
-import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { Circle, LayerGroup, Map as LeafletMap, Marker, TileLayer } from "leaflet";
+import "leaflet/dist/leaflet.css";
+import { LocateFixed, Minus, Plus } from "lucide-react";
 import type { Level, Ownership, Source } from "@/data/hospitals";
 import { pinStyle } from "@/components/stroke/pin-style";
 import type { Lang } from "@/components/stroke/session";
+import { useReduceMotion } from "@/lib/reduce-motion";
 
 export type MapPin = {
   id: string;
@@ -16,7 +20,24 @@ export type MapPin = {
   lng: number;
 };
 
-type Box = { north: number; south: number; east: number; west: number };
+type LeafletNs = typeof import("leaflet");
+type Here = { lat: number; lng: number; label?: string; accuracy?: number };
+
+// Esri first; OpenStreetMap only if Esri tiles never load.
+const ESRI_STREETS =
+  "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}";
+const OSM_STREETS = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+const GOOGLE_BLUE = "#1a73e8";
+
+async function loadLeaflet(): Promise<LeafletNs> {
+  const mod = await import("leaflet");
+  if (typeof mod.map === "function") return mod;
+  return mod.default as unknown as LeafletNs;
+}
+
+function esc(value: string) {
+  return value.replace(/[&<>"']/g, (char) => `&#${char.charCodeAt(0)};`);
+}
 
 function spread(pins: MapPin[]) {
   const seen = new Map<string, number>();
@@ -27,66 +48,22 @@ function spread(pins: MapPin[]) {
     if (n === 0) return pin;
     const angle = n * 0.85;
     const delta = 0.0011 * n;
-    return {
-      ...pin,
-      lat: pin.lat + Math.sin(angle) * delta,
-      lng: pin.lng + Math.cos(angle) * delta,
-    };
+    return { ...pin, lat: pin.lat + Math.sin(angle) * delta, lng: pin.lng + Math.cos(angle) * delta };
   });
 }
 
-function frame(pins: MapPin[], here: { lat: number; lng: number }): Box {
-  let north = here.lat;
-  let south = here.lat;
-  let east = here.lng;
-  let west = here.lng;
-  for (const pin of pins) {
-    north = Math.max(north, pin.lat);
-    south = Math.min(south, pin.lat);
-    east = Math.max(east, pin.lng);
-    west = Math.min(west, pin.lng);
-  }
-  const latPad = Math.max(0.012, (north - south) * 0.16);
-  const lngPad = Math.max(0.012, (east - west) * 0.16);
-  return { north: north + latPad, south: south - latPad, east: east + lngPad, west: west - lngPad };
+/** Google-style teardrop. The white glyph keeps the legend's square = government, circle = private. */
+function pinHtml(color: string, round: boolean, width: number, height: number) {
+  const glyph = round
+    ? `<circle cx="12" cy="11.5" r="4" fill="#fff"/>`
+    : `<rect x="8" y="7.5" width="8" height="8" rx="1.5" fill="#fff"/>`;
+  return `<svg class="gpin" width="${width}" height="${height}" viewBox="0 0 24 32" aria-hidden="true"><path d="M12 1C6.2 1 1.5 5.6 1.5 11.5 1.5 19.6 12 31 12 31s10.5-11.4 10.5-19.5C22.5 5.6 17.8 1 12 1z" fill="${color}" stroke="#fff" stroke-width="1.5"/>${glyph}</svg>`;
 }
 
-function matchAspect(box: Box, aspect: number): Box {
-  const latC = (box.north + box.south) / 2;
-  const lngC = (box.east + box.west) / 2;
-  let latSpan = Math.min(1.4, Math.max(0.012, box.north - box.south));
-  let lngSpan = Math.max(0.012, box.east - box.west);
-  if (lngSpan / latSpan < aspect) lngSpan = latSpan * aspect;
-  else latSpan = Math.min(1.4, lngSpan / aspect);
-  lngSpan = latSpan * aspect;
-  return {
-    north: latC + latSpan / 2,
-    south: latC - latSpan / 2,
-    east: lngC + lngSpan / 2,
-    west: lngC - lngSpan / 2,
-  };
-}
-
-function shiftBox(box: Box, dx: number, dy: number, scale: number, width: number, height: number, aspect: number): Box {
-  const latSpan = box.north - box.south;
-  const lngSpan = box.east - box.west;
-  const latC = (box.north + box.south) / 2 + (dy / height) * latSpan;
-  const lngC = (box.east + box.west) / 2 - (dx / width) * lngSpan;
-  const nextLat = latSpan / scale;
-  return matchAspect(
-    {
-      north: latC + nextLat / 2,
-      south: latC - nextLat / 2,
-      east: lngC + lngSpan / 2,
-      west: lngC - lngSpan / 2,
-    },
-    aspect,
-  );
-}
-
-function streetImage(box: Box) {
-  const bbox = `${box.west.toFixed(5)},${box.south.toFixed(5)},${box.east.toFixed(5)},${box.north.toFixed(5)}`;
-  return `https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/export?bbox=${bbox}&bboxSR=4326&size=1000,800&format=png&f=image`;
+function hereHtml(gps: boolean) {
+  return gps
+    ? `<span class="ghere"></span>`
+    : `<span class="ghere ghere-centre"></span>`;
 }
 
 export function HospitalMap({
@@ -95,231 +72,361 @@ export function HospitalMap({
   center,
   onPick,
   onPlace,
+  onLocate,
+  activeId = null,
   lang = null,
   tall = false,
 }: {
   pins: MapPin[];
-  user: { lat: number; lng: number; label?: string } | null;
+  user: Here | null;
   center: { lat: number; lng: number };
   onPick: (id: string) => void;
   onPlace: (lat: number, lng: number) => void;
+  onLocate?: () => void;
+  activeId?: string | null;
   lang?: Lang | null;
   tall?: boolean;
 }) {
-  const hostRef = useRef<HTMLDivElement | null>(null);
-  const pointers = useRef(new Map<number, { x: number; y: number }>());
-  const gesture = useRef<{ box: Box; x: number; y: number; dist: number } | null>(null);
+  const ta = lang === "ta";
+  const reduce = useReduceMotion();
+  const elRef = useRef<HTMLDivElement | null>(null);
+  const leafletRef = useRef<LeafletNs | null>(null);
+  const mapRef = useRef<LeafletMap | null>(null);
+  const pinLayerRef = useRef<LayerGroup | null>(null);
+  const hereLayerRef = useRef<LayerGroup | null>(null);
+  const markersRef = useRef(new Map<string, Marker>());
+  const latest = useRef({ onPick, onPlace, reduce, ta });
+  latest.current = { onPick, onPlace, reduce, ta };
+  const [ready, setReady] = useState(false);
   const [wide, setWide] = useState(false);
-  const [broken, setBroken] = useState(false);
-  const [aspect, setAspect] = useState(1.25);
-  const [manual, setManual] = useState<Box | null>(null);
-  const [offset, setOffset] = useState({ x: 0, y: 0, scale: 1 });
-  const offsetRef = useRef(offset);
-  const placedPins = useMemo(() => spread(pins), [pins]);
-  const focus = wide ? placedPins : placedPins.slice(0, 12);
-  const here = user ?? center;
-  const fitted = useMemo(() => matchAspect(frame(focus, here), aspect), [focus, here, aspect]);
-  const box = manual ?? fitted;
-  const image = streetImage(box);
-  const [live, setLive] = useState(image);
-  const [settled, setSettled] = useState<Box | null>(null);
-  const pinBox = settled ?? box;
+  const [tilesFailed, setTilesFailed] = useState(false);
+  const [hint, setHint] = useState<string | null>(null);
+  const hintTimer = useRef<number | undefined>(undefined);
 
-  useEffect(() => {
-    const host = hostRef.current;
-    if (!host) return;
-    const read = () => setAspect(host.clientWidth / Math.max(1, host.clientHeight));
-    read();
-    const observer = new ResizeObserver(read);
-    observer.observe(host);
-    return () => observer.disconnect();
-  }, []);
+  const shown = spread(pins);
+  const pinKey = pins.map((pin) => pin.id).join("|");
+  const here: Here = user ?? center;
+  const userKey = user ? `${user.lat.toFixed(5)},${user.lng.toFixed(5)},${user.label ?? ""},${user.accuracy ?? ""}` : "city";
 
+  function flashHint(text: string) {
+    setHint(text);
+    window.clearTimeout(hintTimer.current);
+    hintTimer.current = window.setTimeout(() => setHint(null), 1400);
+  }
+
+  // Create the map once.
   useEffect(() => {
-    if (image === live) return;
     let cancelled = false;
-    const requested = box;
-    const pic = new Image();
-    pic.onload = () => {
-      if (cancelled) return;
-      setLive(image);
-      setSettled(requested);
-      const still = { x: 0, y: 0, scale: 1 };
-      offsetRef.current = still;
-      setOffset(still);
-    };
-    pic.onerror = () => {
-      if (!cancelled) setBroken(true);
-    };
-    pic.src = image;
+    let map: LeafletMap | null = null;
+    let observer: ResizeObserver | null = null;
+    let wheelTimer: number | undefined;
+    let clickTimer: number | undefined;
+    const host = elRef.current;
+    const markers = markersRef.current;
+    const cleanups: Array<() => void> = [];
+
+    void (async () => {
+      const L = await loadLeaflet();
+      if (cancelled || !elRef.current) return;
+      leafletRef.current = L;
+      const mobile = L.Browser.mobile;
+      map = L.map(elRef.current, {
+        center: [center.lat, center.lng],
+        zoom: 12,
+        zoomControl: false,
+        // Google-style cooperative gestures: on phones one finger scrolls the
+        // page and two fingers move/zoom the map; on desktop, ctrl/⌘ + scroll.
+        dragging: !mobile,
+        touchZoom: true,
+        scrollWheelZoom: false,
+        doubleClickZoom: true,
+        zoomSnap: 1,
+        minZoom: 9,
+        maxZoom: 19,
+        worldCopyJump: false,
+      });
+      map.attributionControl.setPrefix(false);
+
+      let layer: TileLayer | null = null;
+      let loaded = 0;
+      let errors = 0;
+      let backup = false;
+      const addTiles = (url: string, attribution: string) => {
+        const next = L.tileLayer(url, { attribution, maxZoom: 19, maxNativeZoom: 19 });
+        next.on("tileload", () => {
+          loaded += 1;
+          setTilesFailed(false);
+        });
+        next.on("tileerror", () => {
+          errors += 1;
+          if (loaded > 0 || errors < 4 || !map) return;
+          if (!backup) {
+            backup = true;
+            errors = 0;
+            map.removeLayer(next);
+            layer = addTiles(OSM_STREETS, "&copy; OpenStreetMap contributors");
+          } else {
+            setTilesFailed(true);
+          }
+        });
+        return next.addTo(map!);
+      };
+      layer = addTiles(ESRI_STREETS, "Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors");
+      void layer;
+
+      pinLayerRef.current = L.layerGroup().addTo(map);
+      hereLayerRef.current = L.layerGroup().addTo(map);
+
+      // Single tap drops a pin; a double tap only zooms (Google behaviour).
+      map.on("click", (event) => {
+        window.clearTimeout(clickTimer);
+        clickTimer = window.setTimeout(() => latest.current.onPlace(event.latlng.lat, event.latlng.lng), 260);
+      });
+      map.on("dblclick", () => window.clearTimeout(clickTimer));
+
+      const container = map.getContainer();
+      const isMac = /Mac|iPhone|iPad/.test(navigator.userAgent);
+      let wheelDelta = 0;
+      let wheelPoint = map.getSize().divideBy(2);
+      const onWheel = (event: WheelEvent) => {
+        if (!map) return;
+        if (!(event.ctrlKey || event.metaKey)) {
+          flashHint(
+            latest.current.ta
+              ? `வரைபடத்தைப் பெரிதாக்க ${isMac ? "⌘" : "ctrl"} + scroll பயன்படுத்துங்கள்`
+              : `Use ${isMac ? "⌘" : "ctrl"} + scroll to zoom the map`,
+          );
+          return;
+        }
+        event.preventDefault();
+        wheelDelta += event.deltaMode === 1 ? event.deltaY * 33 : event.deltaY;
+        wheelPoint = map.mouseEventToContainerPoint(event);
+        window.clearTimeout(wheelTimer);
+        wheelTimer = window.setTimeout(() => {
+          if (!map) return;
+          const raw = -wheelDelta / 60;
+          wheelDelta = 0;
+          const steps = Math.max(-3, Math.min(3, Math.trunc(raw) || Math.sign(raw)));
+          if (steps) map.setZoomAround(wheelPoint, map.getZoom() + steps, { animate: !latest.current.reduce });
+        }, 40);
+      };
+      const onTouchMove = (event: TouchEvent) => {
+        if (mobile && event.touches.length === 1) {
+          flashHint(
+            latest.current.ta
+              ? "வரைபடத்தை நகர்த்த இரண்டு விரல்களைப் பயன்படுத்துங்கள்"
+              : "Use two fingers to move the map",
+          );
+        }
+      };
+      container.addEventListener("wheel", onWheel, { passive: false });
+      container.addEventListener("touchmove", onTouchMove, { passive: true });
+      cleanups.push(() => {
+        container.removeEventListener("wheel", onWheel);
+        container.removeEventListener("touchmove", onTouchMove);
+      });
+
+      mapRef.current = map;
+      setReady(true);
+      requestAnimationFrame(() => map?.invalidateSize());
+      observer = new ResizeObserver(() => map?.invalidateSize());
+      if (host) observer.observe(host);
+    })();
+
     return () => {
       cancelled = true;
+      window.clearTimeout(wheelTimer);
+      window.clearTimeout(clickTimer);
+      window.clearTimeout(hintTimer.current);
+      for (const cleanup of cleanups) cleanup();
+      observer?.disconnect();
+      map?.remove();
+      mapRef.current = null;
+      pinLayerRef.current = null;
+      hereLayerRef.current = null;
+      markers.clear();
+      setReady(false);
     };
-  }, [image, live, box]);
+    // The map is created once; later prop changes are applied by the effects below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  function zoomBy(scale: number) {
-    const host = hostRef.current;
-    if (!host) return;
-    setManual(shiftBox(pinBox, 0, 0, scale, host.clientWidth, host.clientHeight, aspect));
+  // Hospital pins: all of them, so panning reveals the rest like Google Maps.
+  useEffect(() => {
+    const L = leafletRef.current;
+    const layer = pinLayerRef.current;
+    if (!ready || !L || !layer) return;
+    layer.clearLayers();
+    markersRef.current.clear();
+    for (const hospital of shown) {
+      const style = pinStyle(hospital.level, hospital.ownership);
+      const selected = hospital.id === activeId;
+      const big = hospital.level === "comprehensive";
+      const width = Math.round((big ? 30 : 24) * (selected ? 1.3 : 1));
+      const height = Math.round(width * (32 / 24));
+      const marker = L.marker([hospital.lat, hospital.lng], {
+        icon: L.divIcon({
+          className: selected ? "stroke-pin stroke-pin-active" : "stroke-pin",
+          html: pinHtml(style.color, style.round, width, height),
+          iconSize: [width, height],
+          iconAnchor: [width / 2, height],
+          tooltipAnchor: [0, -height],
+        }),
+        title: hospital.name,
+        keyboard: true,
+        riseOnHover: true,
+        zIndexOffset: selected ? 2000 : big ? 400 : 0,
+      });
+      marker.bindTooltip(esc(hospital.name), { direction: "top", opacity: 0.96, className: "gpin-label" });
+      marker.on("click", (event) => {
+        if (event.originalEvent) L.DomEvent.stopPropagation(event.originalEvent);
+        latest.current.onPick(hospital.id);
+      });
+      marker.addTo(layer);
+      markersRef.current.set(hospital.id, marker);
+    }
+    // `shown` is derived from `pins`; pinKey captures its identity.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, pinKey, activeId]);
+
+  // "You are here" (or Chennai centre) dot, with a GPS accuracy halo.
+  useEffect(() => {
+    const L = leafletRef.current;
+    const layer = hereLayerRef.current;
+    if (!ready || !L || !layer) return;
+    layer.clearLayers();
+    const gps = Boolean(user) && !user?.label;
+    if (gps && user?.accuracy && user.accuracy > 15) {
+      const halo: Circle = L.circle([here.lat, here.lng], {
+        radius: user.accuracy,
+        color: GOOGLE_BLUE,
+        weight: 1,
+        opacity: 0.4,
+        fillColor: GOOGLE_BLUE,
+        fillOpacity: 0.12,
+        interactive: false,
+      });
+      halo.addTo(layer);
+    }
+    const label = user?.label ?? (user ? (ta ? "நீங்கள் இங்கே" : "You are here") : ta ? "சென்னை மையம்" : "Chennai centre");
+    L.marker([here.lat, here.lng], {
+      icon: L.divIcon({ className: "stroke-pin", html: hereHtml(Boolean(user)), iconSize: [22, 22], iconAnchor: [11, 11] }),
+      zIndexOffset: 3000,
+      keyboard: false,
+      interactive: true,
+    })
+      .bindTooltip(esc(label), { direction: "top", offset: [0, -10], className: "gpin-label" })
+      .addTo(layer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, userKey, ta]);
+
+  // Frame the nearest hospitals (or all) whenever the list or origin changes.
+  useEffect(() => {
+    const L = leafletRef.current;
+    const map = mapRef.current;
+    if (!ready || !L || !map) return;
+    const focus = wide ? shown : shown.slice(0, 8);
+    const points = focus.map((pin) => L.latLng(pin.lat, pin.lng));
+    points.push(L.latLng(here.lat, here.lng));
+    map.invalidateSize();
+    map.fitBounds(L.latLngBounds(points), {
+      padding: [40, 40],
+      maxZoom: 15,
+      animate: !reduce,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, pinKey, userKey, wide, tall]);
+
+  // Keep the selected hospital in view, like Google pans to a tapped place.
+  useEffect(() => {
+    const map = mapRef.current;
+    const marker = activeId ? markersRef.current.get(activeId) : undefined;
+    if (!ready || !map || !marker) return;
+    map.panInside(marker.getLatLng(), { padding: [60, 60], animate: !reduce });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, activeId]);
+
+  function zoom(by: number) {
+    mapRef.current?.setZoom((mapRef.current?.getZoom() ?? 12) + by, { animate: !reduce });
   }
 
-  function onPointerDown(event: PointerEvent<HTMLDivElement>) {
-    if (broken) return;
-    event.currentTarget.setPointerCapture(event.pointerId);
-    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
-    const pts = [...pointers.current.values()];
-    const midX = pts.reduce((sum, point) => sum + point.x, 0) / pts.length;
-    const midY = pts.reduce((sum, point) => sum + point.y, 0) / pts.length;
-    const dist = pts.length > 1 ? Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) : 0;
-    gesture.current = { box: pinBox, x: midX, y: midY, dist };
-  }
-
-  function onPointerMove(event: PointerEvent<HTMLDivElement>) {
-    if (!pointers.current.has(event.pointerId) || !gesture.current) return;
-    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
-    const pts = [...pointers.current.values()];
-    const midX = pts.reduce((sum, point) => sum + point.x, 0) / pts.length;
-    const midY = pts.reduce((sum, point) => sum + point.y, 0) / pts.length;
-    const dist = pts.length > 1 ? Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) : gesture.current.dist;
-    const scale = gesture.current.dist > 0 && dist > 0 ? dist / gesture.current.dist : 1;
-    const next = { x: midX - gesture.current.x, y: midY - gesture.current.y, scale };
-    offsetRef.current = next;
-    setOffset(next);
-  }
-
-  function onPointerUp(event: PointerEvent<HTMLDivElement>) {
-    const host = hostRef.current;
-    const active = gesture.current;
-    pointers.current.delete(event.pointerId);
-    if (pointers.current.size > 0 || !active || !host) return;
-    const shift = offsetRef.current;
-    const moved = Math.hypot(shift.x, shift.y) > 6 || Math.abs(shift.scale - 1) > 0.04;
-    gesture.current = null;
-    if (!moved) {
-      const rect = host.getBoundingClientRect();
-      const x = (event.clientX - rect.left) / rect.width;
-      const y = (event.clientY - rect.top) / rect.height;
-      onPlace(pinBox.north - y * (pinBox.north - pinBox.south), pinBox.west + x * (pinBox.east - pinBox.west));
-      offsetRef.current = { x: 0, y: 0, scale: 1 };
-      setOffset({ x: 0, y: 0, scale: 1 });
+  function showMe() {
+    const map = mapRef.current;
+    if (user && map) {
+      map.setView([user.lat, user.lng], Math.max(map.getZoom(), 14), { animate: !reduce });
       return;
     }
-    setManual(shiftBox(active.box, shift.x, shift.y, shift.scale, host.clientWidth, host.clientHeight, aspect));
+    onLocate?.();
   }
 
-  function spot(lat: number, lng: number) {
-    return {
-      left: `${((lng - pinBox.west) / (pinBox.east - pinBox.west)) * 100}%`,
-      top: `${((pinBox.north - lat) / (pinBox.north - pinBox.south)) * 100}%`,
-    };
-  }
+  const control =
+    "flex size-10 items-center justify-center bg-white text-[#5f6368] hover:bg-[#f1f3f4] active:bg-[#e8eaed] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#1a73e8]";
 
   return (
     <div className="relative overflow-hidden rounded-card border border-line">
-      <div
-        ref={hostRef}
-        className={`relative touch-none ${tall ? "map-frame map-frame-tall" : "map-frame"}`}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-      >
-        {broken ? (
-          <iframe
-            title={lang === "ta" ? "சென்னை சாலைகள்" : "Chennai streets"}
-            className="absolute inset-0 h-full w-full border-0"
-            src={`https://maps.google.com/maps?q=${here.lat},${here.lng}&z=12&output=embed`}
-          />
-        ) : (
-          <div
-            className="absolute inset-0"
-            style={{ transform: `translate(${offset.x}px, ${offset.y}px) scale(${offset.scale})` }}
-          >
-            <img
-              src={live}
-              alt={lang === "ta" ? "சென்னை சாலை வரைபடம்" : "Chennai street map"}
-              className="absolute inset-0 h-full w-full"
-              referrerPolicy="no-referrer"
-              draggable={false}
-            />
-            {placedPins.map((hospital) => {
-              const pin = pinStyle(hospital.level, hospital.ownership);
-              const size = hospital.level === "comprehensive" ? 22 : 16;
-              return (
-                <button
-                  key={hospital.id}
-                  type="button"
-                  title={hospital.name}
-                  aria-label={hospital.name}
-                  onPointerDown={(event) => event.stopPropagation()}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onPick(hospital.id);
-                  }}
-                  className="absolute z-10 -translate-x-1/2 -translate-y-1/2 border-2 border-white"
-                  style={{
-                    ...spot(hospital.lat, hospital.lng),
-                    width: size,
-                    height: size,
-                    borderRadius: pin.round ? 999 : 4,
-                    background: pin.color,
-                    boxShadow: "0 0 0 2px #0b1220",
-                  }}
-                />
-              );
-            })}
-            <span
-              className="pointer-events-none absolute z-20 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-white"
-              style={{
-                ...spot(here.lat, here.lng),
-                width: 16,
-                height: 16,
-                background: user ? "var(--color-signal)" : "#ffffff",
-                boxShadow: user
-                  ? "0 0 0 6px color-mix(in srgb, var(--color-signal) 28%, transparent)"
-                  : "0 0 0 2px #14325f",
-              }}
-            />
-          </div>
-        )}
+      {/* Leaflet adds its own classes to the map div, so React must never
+          re-render that div's className — it lives inside a sized frame. */}
+      <div className={tall ? "map-frame map-frame-tall relative" : "map-frame relative"}>
+        <div ref={elRef} className="absolute inset-0" />
       </div>
-      {broken ? null : (
-        <p className="pointer-events-none absolute bottom-2 left-1/2 z-30 -translate-x-1/2 rounded-full bg-surface/95 px-3 py-1 text-[11px] font-semibold text-ink">
-          {lang === "ta" ? "இழுத்து நகர்த்துங்கள்" : "Drag to move"}
-        </p>
-      )}
+
       <button
         type="button"
-        onClick={() => {
-          setWide((value) => !value);
-          setManual(null);
-          offsetRef.current = { x: 0, y: 0, scale: 1 };
-          setOffset({ x: 0, y: 0, scale: 1 });
-        }}
-        className="absolute top-3 left-3 z-30 rounded-full bg-surface px-3 py-2 text-xs font-semibold text-ink shadow-card"
+        onClick={() => setWide((value) => !value)}
+        className="absolute top-3 left-3 z-10 rounded-full bg-white px-3.5 py-2 text-xs font-semibold text-[#3c4043] shadow-[0_1px_4px_rgba(0,0,0,0.3)] hover:bg-[#f1f3f4]"
       >
-        {wide ? "Zoom to nearest" : "Show all"}
+        {wide ? (ta ? "அருகிலுள்ளவை" : "Zoom to nearest") : ta ? "அனைத்தும்" : "Show all"}
       </button>
-      {broken ? null : (
-        <div className="absolute top-3 right-3 z-30 flex flex-col gap-2">
+
+      <div className="absolute right-2.5 bottom-7 z-10 flex flex-col items-end gap-2.5">
+        <button
+          type="button"
+          onClick={showMe}
+          aria-label={ta ? "என் இடத்தைக் காட்டு" : "Show my location"}
+          title={ta ? "என் இடத்தைக் காட்டு" : "Show my location"}
+          className={`${control} rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.3)]`}
+        >
+          <LocateFixed className={user && !user.label ? "size-5 text-[#1a73e8]" : "size-5"} aria-hidden="true" />
+        </button>
+        <div className="flex flex-col overflow-hidden rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.3)]">
           <button
             type="button"
-            aria-label={lang === "ta" ? "பெரிதாக்கு" : "Zoom in"}
-            onClick={() => zoomBy(1.6)}
-            className="flex size-11 items-center justify-center rounded-full bg-surface text-xl font-semibold text-ink shadow-card"
+            onClick={() => zoom(1)}
+            aria-label={ta ? "பெரிதாக்கு" : "Zoom in"}
+            title={ta ? "பெரிதாக்கு" : "Zoom in"}
+            className={control}
           >
-            +
+            <Plus className="size-5" aria-hidden="true" />
           </button>
+          <span className="mx-2 h-px bg-[#e6e6e6]" aria-hidden="true" />
           <button
             type="button"
-            aria-label={lang === "ta" ? "சிறிதாக்கு" : "Zoom out"}
-            onClick={() => zoomBy(0.65)}
-            className="flex size-11 items-center justify-center rounded-full bg-surface text-xl font-semibold text-ink shadow-card"
+            onClick={() => zoom(-1)}
+            aria-label={ta ? "சிறிதாக்கு" : "Zoom out"}
+            title={ta ? "சிறிதாக்கு" : "Zoom out"}
+            className={control}
           >
-            −
+            <Minus className="size-5" aria-hidden="true" />
           </button>
         </div>
-      )}
+      </div>
+
+      {hint ? (
+        <div
+          className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-black/45 px-6 text-center text-base font-medium text-white"
+          role="status"
+        >
+          {hint}
+        </div>
+      ) : null}
+
+      {tilesFailed ? (
+        <p className="absolute inset-x-3 top-14 z-10 rounded-lg bg-white/95 px-3 py-2 text-xs font-semibold text-ink shadow-card" role="status">
+          {ta
+            ? "சாலை வரைபடம் ஏற்றப்படவில்லை. மருத்துவமனைகளின் இடங்களை முள்கள் இன்னும் காட்டுகின்றன."
+            : "Street map didn't load. The pins still show where each hospital is."}
+        </p>
+      ) : null}
     </div>
   );
 }

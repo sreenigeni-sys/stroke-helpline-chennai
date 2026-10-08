@@ -398,6 +398,8 @@ export function Locator({
             center={CHENNAI_CENTER}
             lang={lang}
             tall={view === "map"}
+            activeId={view === "map" ? (activeId ?? rows[0]?.id ?? null) : activeId}
+            onLocate={locate}
             onPick={(id) => {
               setActiveId(id);
               document.getElementById(`hospital-${id}`)?.scrollIntoView({

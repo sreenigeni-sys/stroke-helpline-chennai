@@ -86,11 +86,12 @@
 .leaflet-container {
   z-index: 0;
   font-family: var(--font-sans);
-  background: #d5e3f0;
+  background: #e5e3df;
   height: 100%;
   width: 100%;
 }
 
+/* Leaflet 1.9 blends tiles with plus-lighter, which washes them out here. */
 .leaflet-container img.leaflet-tile {
   mix-blend-mode: normal !important;
 }
@@ -100,25 +101,63 @@
   border: none;
 }
 
-.leaflet-popup-content-wrapper,
-.leaflet-popup-tip {
-  background: var(--color-surface);
-  color: var(--color-ink);
+.stroke-pin .gpin {
+  display: block;
+  overflow: visible;
+  filter: drop-shadow(0 2px 2px rgb(0 0 0 / 0.35));
+  transform-origin: 50% 100%;
 }
 
-.leaflet-popup-content-wrapper {
-  border-radius: 0.85rem;
-  box-shadow: 0 12px 30px -18px color-mix(in srgb, var(--color-ink) 70%, transparent);
+.stroke-pin-active .gpin {
+  filter: drop-shadow(0 4px 5px rgb(0 0 0 / 0.4));
 }
 
-.leaflet-popup-content {
-  margin: 0.7rem 0.85rem;
-  line-height: 1.4;
+@media (prefers-reduced-motion: no-preference) {
+  .stroke-pin-active .gpin {
+    animation: gpin-drop 260ms ease-out;
+  }
+}
+
+@keyframes gpin-drop {
+  from {
+    transform: translateY(-10px) scale(0.85);
+  }
+  to {
+    transform: none;
+  }
+}
+
+.ghere {
+  display: block;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: #1a73e8;
+  border: 3px solid #fff;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.4);
+}
+
+.ghere-centre {
+  width: 16px;
+  height: 16px;
+  margin: 3px;
+  background: #fff;
+  border: 2px solid #5f6368;
+}
+
+.leaflet-tooltip.gpin-label {
+  border: none;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #202124;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.3);
 }
 
 .leaflet-control-attribution {
   font-size: 10px;
-  background: color-mix(in srgb, var(--color-paper) 88%, transparent);
+  background: rgb(255 255 255 / 0.8);
 }
 
 @keyframes rise {
