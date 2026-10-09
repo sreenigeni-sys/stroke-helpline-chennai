@@ -141,7 +141,18 @@ export function Flow({
 function Intro({ onStart, onSkip, headingLevel }: { onStart: (lang: Lang) => void; onSkip: () => void; headingLevel: "h1" | "h2" }) {
   const Heading = headingLevel;
   return (
-    <div className="rise mx-auto flex min-h-[70vh] max-w-md flex-col px-4 py-6">
+    <div className="rise mx-auto flex min-h-[70vh] max-w-md flex-col px-4 py-4">
+      <div className="flex justify-end">
+        <Link
+          to="/competition"
+          className={cn(
+            "flex size-28 items-center justify-center rounded-full bg-[#C46B16] px-3 text-center text-xs font-bold leading-tight text-white shadow-card",
+            TAP,
+          )}
+        >
+          Stroke Day Competition
+        </Link>
+      </div>
       <div className="flex flex-1 flex-col justify-center">
       <Heading className="font-display text-5xl leading-none text-ink">Is this a stroke?</Heading>
       <p className="font-tamil mt-2 text-2xl text-[#1B7F4E]">இது பக்கவாதமா?</p>
@@ -202,17 +213,6 @@ function Intro({ onStart, onSkip, headingLevel }: { onStart: (lang: Lang) => voi
         This page is not intended to be diagnostic and is not a replacement for assessment by a
         healthcare professional.
       </p>
-      <div className="mt-4 flex justify-end pb-2">
-        <Link
-          to="/competition"
-          className={cn(
-            "flex size-32 items-center justify-center rounded-full bg-[#C46B16] px-3 text-center text-xs font-bold leading-tight text-white shadow-card",
-            TAP,
-          )}
-        >
-          Stroke Day Competition
-        </Link>
-      </div>
     </div>
   );
 }
