@@ -12,10 +12,14 @@ import {
 } from "@/components/stroke/session";
 import { Flow } from "@/components/stroke/flow";
 import { Locator } from "@/components/stroke/locator";
+import { ClinicalReviewNote } from "@/components/stroke/clinical-review-note";
 import { beginGps } from "@/components/stroke/gps";
 import { cn } from "@/lib/cn";
 
-export function StrokeApp({ headingLevel = "h1" }: { headingLevel?: "h1" | "h2" } = {}) {
+export function StrokeApp({
+  headingLevel = "h1",
+  showClinicalReview = false,
+}: { headingLevel?: "h1" | "h2"; showClinicalReview?: boolean } = {}) {
   const [session, setSession] = useState<Session>(freshSession);
   const skipSave = useRef(true);
 
@@ -170,6 +174,11 @@ export function StrokeApp({ headingLevel = "h1" }: { headingLevel?: "h1" | "h2" 
           onContinue={() => openHospitals((current) => ({ ...current, phase: "locator" }))}
         />
       )}
+      {showClinicalReview ? (
+        <div className="mx-auto max-w-md px-4 pb-6">
+          <ClinicalReviewNote scope="This review covers the screening guidance, not hospital-specific service or readiness claims." />
+        </div>
+      ) : null}
     </main>
   );
 }

@@ -17,6 +17,7 @@ export const Route = createFileRoute("/stroke-hospital-apollo-greams-road")({
       title: PILOT_BRANCH_TITLE,
       description: PAGE_DESCRIPTION,
       path: PILOT_BRANCH_PATH,
+      clinicallyReviewed: true,
       schema: pilotBranchPageSchema(),
     }),
   component: ApolloGreamsRoadPage,
@@ -27,6 +28,7 @@ function ApolloGreamsRoadPage() {
     <PublicPage
       title={PILOT_BRANCH.name}
       intro="This is a branch-level directory entry for a Chennai hospital location. It is a navigation aid, not a hospital-operated page or a live service-status feed."
+      clinicalReviewScope="This review covers explanatory guidance only. Stroke-readiness claims are based on hospital-published information and are not independently verified here; other branch data retains its listed public or clinician-reviewed source. Current services, capacity and acceptance are not confirmed."
     >
       <section>
         <h2 className="font-display text-2xl">Branch address</h2>

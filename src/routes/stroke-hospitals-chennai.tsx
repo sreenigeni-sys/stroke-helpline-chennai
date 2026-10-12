@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { StrokeApp } from "@/components/stroke/stroke-app";
+import { ClinicalReviewNote } from "@/components/stroke/clinical-review-note";
 import { hospitalListSchema } from "@/lib/stroke-schema";
 import { seoHead, SITE_ORIGIN } from "@/lib/seo";
 
@@ -10,6 +11,7 @@ export const Route = createFileRoute("/stroke-hospitals-chennai")({
       description:
         "Find Chennai hospital branches with stroke-care information. Compare listed capabilities, distance, phone and directions.",
       path: "/stroke-hospitals-chennai",
+      clinicallyReviewed: true,
       schema: {
         "@context": "https://schema.org",
         "@type": "CollectionPage",
@@ -53,6 +55,7 @@ function HospitalFinderPage() {
             Source: <a className="underline" href="https://nabh.co/programmes/advanced-stroke-centres-certification-programme-copy/" target="_blank" rel="noreferrer">NABH–WSO programme</a> · <a className="underline" href="https://nabh-portal-live.s3.ap-south-1.amazonaws.com/wp-content/uploads/2025/07/24064253/Stroke-Centre-Standard-1st-Edition-Septeber-2023.pdf" target="_blank" rel="noreferrer">NABH stroke-centre standard</a>.
           </p>
         </section>
+        <ClinicalReviewNote scope="The clinical explanations and listing guidance were reviewed. Stroke-readiness claims are based on hospital-published information and are not independently verified by this review." />
       </article>
     </>
   );

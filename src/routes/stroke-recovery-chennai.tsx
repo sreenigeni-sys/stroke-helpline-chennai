@@ -1,14 +1,29 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PublicPage } from "@/components/stroke/public-page";
-import { seoHead } from "@/lib/seo";
+import { seoHead, SITE_ORIGIN } from "@/lib/seo";
+
+const PAGE_PATH = "/stroke-recovery-chennai";
+const PAGE_TITLE = "Stroke Recovery and Rehabilitation in Chennai";
+const PAGE_DESCRIPTION =
+  "Explore questions to ask about stroke rehabilitation in Chennai, including movement, speech, daily activities and caregiver support.";
 
 export const Route = createFileRoute("/stroke-recovery-chennai")({
   head: () =>
     seoHead({
-      title: "Stroke Recovery and Rehabilitation in Chennai",
-      description:
-        "Explore questions to ask about stroke rehabilitation in Chennai, including movement, speech, daily activities and caregiver support.",
-      path: "/stroke-recovery-chennai",
+      title: PAGE_TITLE,
+      description: PAGE_DESCRIPTION,
+      path: PAGE_PATH,
+      clinicallyReviewed: true,
+      schema: {
+        "@context": "https://schema.org",
+        "@type": "MedicalWebPage",
+        "@id": `${SITE_ORIGIN}${PAGE_PATH}#webpage`,
+        url: `${SITE_ORIGIN}${PAGE_PATH}`,
+        name: PAGE_TITLE,
+        description: PAGE_DESCRIPTION,
+        about: { "@type": "MedicalCondition", name: "Stroke" },
+        inLanguage: ["en-IN", "ta-IN"],
+      },
     }),
   component: RecoveryPage,
 });
@@ -19,6 +34,7 @@ function RecoveryPage() {
       title="Planning recovery after a stroke"
       tamilTitle="பக்கவாதத்திற்குப் பிறகு மீட்புத் திட்டம்"
       intro="After emergency treatment, ask the treating team which rehabilitation and follow-up services are appropriate for the person. Needs differ from one survivor to another."
+      clinicalReviewScope="This review covers general information only; rehabilitation needs should be discussed with the treating team."
     >
       <section>
         <h2 className="font-display text-2xl">Questions for the treating team</h2>

@@ -1,3 +1,5 @@
+import { ANONYMOUS_CLINICIAN_REVIEWER, CLINICAL_REVIEW_DATE } from "@/lib/medical-review";
+
 type PageSchema = Record<string, unknown>;
 
 export type BreadcrumbItem = {
@@ -12,6 +14,7 @@ type SeoPage = {
   schema?: PageSchema;
   breadcrumbs?: BreadcrumbItem[];
   noindex?: boolean;
+  clinicallyReviewed?: boolean;
 };
 
 export const SITE_ORIGIN = "https://strokechennai.org";
@@ -47,6 +50,7 @@ function addSiteEntities(
   url: string,
   title: string,
   breadcrumbs?: BreadcrumbItem[],
+  clinicallyReviewed = false,
 ): PageSchema {
   const sourceGraph = Array.isArray(schema["@graph"])
     ? (schema["@graph"] as PageSchema[])
@@ -72,6 +76,12 @@ function addSiteEntities(
       ...page,
       isPartOf: page.isPartOf ?? { "@id": WEBSITE_ID },
       publisher: page.publisher ?? { "@id": ORGANIZATION_ID },
+      ...(clinicallyReviewed
+        ? {
+            lastReviewed: CLINICAL_REVIEW_DATE,
+            reviewedBy: ANONYMOUS_CLINICIAN_REVIEWER,
+          }
+        : {}),
       ...(breadcrumbId ? { breadcrumb: { "@id": breadcrumbId } } : {}),
     };
   }
@@ -107,6 +117,7 @@ export function seoHead({
   schema,
   breadcrumbs,
   noindex = false,
+  clinicallyReviewed = false,
 }: SeoPage) {
   const url = new URL(path, SITE_ORIGIN).toString();
   const pageSchema =
@@ -122,7 +133,9 @@ export function seoHead({
           inLanguage: ["en-IN", "ta-IN"],
         }
       : undefined);
-  const structuredData = pageSchema && !noindex ? addSiteEntities(pageSchema, url, title, breadcrumbs) : undefined;
+  const structuredData = pageSchema && !noindex
+    ? addSiteEntities(pageSchema, url, title, breadcrumbs, clinicallyReviewed)
+    : undefined;
 
   return {
     meta: [
@@ -162,7 +175,7 @@ export const SITE_SCHEMA: PageSchema = {
     SITE_ORGANIZATION_SCHEMA,
     SITE_WEBSITE_SCHEMA,
     {
-      "@type": "WebPage",
+      "@type": "MedicalWebPage",
       "@id": `${SITE_ORIGIN}/#webpage`,
       url: `${SITE_ORIGIN}/`,
       name: "Stroke symptoms and hospitals in Chennai",
@@ -170,7 +183,9 @@ export const SITE_SCHEMA: PageSchema = {
         "Start a quick warning-sign check or find Chennai hospital branches. Listings do not confirm current acceptance.",
       isPartOf: { "@id": WEBSITE_ID },
       publisher: { "@id": ORGANIZATION_ID },
-      about: { "@type": "Thing", name: "Stroke warning signs and hospital navigation in Chennai" },
+      lastReviewed: CLINICAL_REVIEW_DATE,
+      reviewedBy: ANONYMOUS_CLINICIAN_REVIEWER,
+      about: { "@type": "MedicalCondition", name: "Stroke" },
       inLanguage: ["en-IN", "ta-IN"],
     },
   ],
