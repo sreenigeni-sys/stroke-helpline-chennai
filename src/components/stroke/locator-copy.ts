@@ -88,7 +88,7 @@ export function locatorCopy(lang: Lang | null) {
     ct: ta ? "24/7 சிடி" : "24/7 CT",
     mri: ta ? "24/7 எம்ஆர்ஐ" : "24/7 MRI",
     thrombectomy: ta ? "24/7 த்ராம்பெக்டமி" : "24/7 thrombectomy",
-    reviewed: ta ? "மருத்துவர் சரிபார்த்தது" : "Clinician-reviewed",
+    reviewed: ta ? "மருத்துவர் உறுதிசெய்தது" : "Clinician verified",
     publicInfo: ta ? "பொதுத் தகவல்" : "Public information",
     call(phone: string) {
       if (phone === "108") return ta ? "108 ஆம்புலன்ஸை அழைக்கவும்" : "Call 108 ambulance";

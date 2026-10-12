@@ -588,6 +588,17 @@ function HospitalCard({
       </div>
       <div className="p-4">
       <h2 className="text-lg leading-snug font-semibold">{hospital.name}</h2>
+      <p className="mt-2">
+        <span
+          className={cn(
+            "inline-flex rounded-full px-2.5 py-1 text-xs font-semibold",
+            copy.ta && "font-tamil",
+            hospital.source === "clinician_verified" ? "bg-[#1B7F4E]/15 text-[#0d5a36]" : "bg-[#C46B16]/15 text-[#8a4a0c]",
+          )}
+        >
+          {hospital.source === "clinician_verified" ? copy.reviewed : copy.publicInfo}
+        </span>
+      </p>
       <p className="mt-1 text-sm text-ink-soft">
         {hospital.address}
         {hospital.area ? ` · ${hospital.area}` : ""}
@@ -613,9 +624,6 @@ function HospitalCard({
       {pathway ? (
         <p className={cn("mt-3 text-sm font-semibold text-ink", copy.ta && "font-tamil")}>{pathway}</p>
       ) : null}
-      <p className={cn("text-xs font-semibold text-ink-soft", copy.ta && "font-tamil", pathway ? "mt-1" : "mt-3")}>
-        {hospital.source === "clinician_verified" ? copy.reviewed : copy.publicInfo}
-      </p>
       <div className="mt-3 grid grid-cols-2 gap-2">
         {callable ? (
           <a
