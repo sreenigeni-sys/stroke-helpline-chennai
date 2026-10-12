@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CompetitionForm, STROKE_PLEDGE } from "@/components/stroke/competition-form";
+import { ClinicalReviewNote } from "@/components/stroke/clinical-review-note";
 import { cn } from "@/lib/cn";
 import { seoHead } from "@/lib/seo";
 
@@ -71,6 +72,7 @@ function CompetitionPage() {
         <h2 className="text-sm font-semibold text-ink">{ta ? "உறுதிமொழி" : "Pledge"}</h2>
         <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-ink">{STROKE_PLEDGE}</p>
       </section>
+      <ClinicalReviewNote scope="This review covers the stroke-awareness content, not competition rules or dates." />
       <section className="mt-6">
         <h2 className={cn("text-lg font-semibold", ta && "font-tamil")}>{ta ? "சமர்ப்பிப்பு" : "Submission"}</h2>
         <div className="mt-3">

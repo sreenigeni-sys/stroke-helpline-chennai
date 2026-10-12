@@ -13,6 +13,7 @@ export const Route = createFileRoute("/stroke-emergency-chennai")({
       title: PAGE_TITLE,
       description: PAGE_DESCRIPTION,
       path: PAGE_PATH,
+      clinicallyReviewed: true,
       schema: {
         "@context": "https://schema.org",
         "@type": "MedicalWebPage",
@@ -35,6 +36,7 @@ function EmergencyPage() {
       title="Suspected stroke in Chennai? Find a hospital branch."
       tamilTitle="பக்கவாதம் இருக்கலாம் என சந்தேகமா? மருத்துவமனை கிளையைக் கண்டறியுங்கள்."
       intro="If someone may be having a stroke, seek emergency medical care immediately. If another caregiver is present, they can check the hospital finder while you focus on the person. Follow emergency-response guidance about transport and destination."
+      clinicalReviewScope="This review covers the emergency guidance, not current hospital service, capacity or acceptance."
     >
       <section>
         <h2 className="font-display text-2xl">Do this now</h2>

@@ -1,17 +1,20 @@
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/cn";
+import { ClinicalReviewNote } from "@/components/stroke/clinical-review-note";
 
 export function PublicPage({
   title,
   tamilTitle,
   intro,
   children,
+  clinicalReviewScope,
 }: {
   title: string;
   tamilTitle?: string;
   intro: string;
   children: ReactNode;
+  clinicalReviewScope?: string;
 }) {
   return (
     <main className="min-h-screen bg-paper px-4 pb-10 pt-4 text-ink">
@@ -37,6 +40,8 @@ export function PublicPage({
         </nav>
 
         <div className="mt-8 space-y-6">{children}</div>
+
+        {clinicalReviewScope ? <ClinicalReviewNote scope={clinicalReviewScope} /> : null}
 
         <p className="mt-8 border-t border-line pt-4 text-sm leading-relaxed text-ink-soft">
           Stroke Helpline Chennai is a navigation aid, not a diagnosis or treatment recommendation. Hospital capability information is not a live acceptance or bed-availability check. Follow emergency-response guidance.

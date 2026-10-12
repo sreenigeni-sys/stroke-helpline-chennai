@@ -1,14 +1,29 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PublicPage } from "@/components/stroke/public-page";
-import { seoHead } from "@/lib/seo";
+import { seoHead, SITE_ORIGIN } from "@/lib/seo";
+
+const PAGE_PATH = "/stroke-treatment-chennai";
+const PAGE_TITLE = "Stroke Treatment in Chennai: Reach Emergency Care";
+const PAGE_DESCRIPTION =
+  "Learn how hospital stroke-capability listings work in Chennai and use the finder to check a branch and route.";
 
 export const Route = createFileRoute("/stroke-treatment-chennai")({
   head: () =>
     seoHead({
-      title: "Stroke Treatment in Chennai: Reach Emergency Care",
-      description:
-        "Learn how hospital stroke-capability listings work in Chennai and use the finder to check a branch and route.",
-      path: "/stroke-treatment-chennai",
+      title: PAGE_TITLE,
+      description: PAGE_DESCRIPTION,
+      path: PAGE_PATH,
+      clinicallyReviewed: true,
+      schema: {
+        "@context": "https://schema.org",
+        "@type": "MedicalWebPage",
+        "@id": `${SITE_ORIGIN}${PAGE_PATH}#webpage`,
+        url: `${SITE_ORIGIN}${PAGE_PATH}`,
+        name: PAGE_TITLE,
+        description: PAGE_DESCRIPTION,
+        about: { "@type": "MedicalCondition", name: "Stroke" },
+        inLanguage: ["en-IN", "ta-IN"],
+      },
     }),
   component: TreatmentPage,
 });
@@ -19,6 +34,7 @@ function TreatmentPage() {
       title="Stroke treatment starts with emergency assessment."
       tamilTitle="பக்கவாத சிகிச்சை அவசர மருத்துவ மதிப்பீட்டுடன் தொடங்குகிறது."
       intro="A stroke team assesses the person’s symptoms, history and brain imaging to determine the cause and appropriate care. Do not try to determine the stroke type or choose a treatment at home."
+      clinicalReviewScope="This review covers general information only; care and treatment decisions belong to the treating team."
     >
       <section>
         <h2 className="font-display text-2xl">What a hospital listing can—and cannot—tell you</h2>

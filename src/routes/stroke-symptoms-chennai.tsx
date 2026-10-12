@@ -1,14 +1,29 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PublicPage } from "@/components/stroke/public-page";
-import { seoHead } from "@/lib/seo";
+import { seoHead, SITE_ORIGIN } from "@/lib/seo";
+
+const PAGE_PATH = "/stroke-symptoms-chennai";
+const PAGE_TITLE = "Stroke Symptoms in Chennai: Find Emergency Care";
+const PAGE_DESCRIPTION =
+  "Recognize sudden stroke warning signs and find Chennai hospitals. Do not wait for an online self-test.";
 
 export const Route = createFileRoute("/stroke-symptoms-chennai")({
   head: () =>
     seoHead({
-      title: "Stroke Symptoms in Chennai: Find Emergency Care",
-      description:
-        "Recognize sudden stroke warning signs and find Chennai hospitals. Do not wait for an online self-test.",
-      path: "/stroke-symptoms-chennai",
+      title: PAGE_TITLE,
+      description: PAGE_DESCRIPTION,
+      path: PAGE_PATH,
+      clinicallyReviewed: true,
+      schema: {
+        "@context": "https://schema.org",
+        "@type": "MedicalWebPage",
+        "@id": `${SITE_ORIGIN}${PAGE_PATH}#webpage`,
+        url: `${SITE_ORIGIN}${PAGE_PATH}`,
+        name: PAGE_TITLE,
+        description: PAGE_DESCRIPTION,
+        about: { "@type": "MedicalCondition", name: "Stroke" },
+        inLanguage: ["en-IN", "ta-IN"],
+      },
     }),
   component: SymptomsPage,
 });
@@ -19,6 +34,7 @@ function SymptomsPage() {
       title="Sudden stroke warning signs? Find care and call for help."
       tamilTitle="பக்கவாதத்தின் திடீர் அறிகுறிகளா? உதவியை அழைத்து சிகிச்சையைத் தேடுங்கள்."
       intro="Stroke warning signs can begin suddenly. If someone has a sudden change in balance, vision, face movement, arm or leg strength, speech, or understanding, call emergency help. This page is not a diagnostic test."
+      clinicalReviewScope="This review covers warning-sign and action guidance; this page is not a diagnostic test."
     >
       <section>
         <h2 className="font-display text-2xl">Remember B.E.F.A.S.T.</h2>

@@ -26,5 +26,5 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  return <StrokeApp />;
+  return <StrokeApp showClinicalReview />;
 }
