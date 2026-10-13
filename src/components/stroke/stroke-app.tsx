@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { SIGNS, type SignId } from "@/components/stroke/signs";
 import {
   concernOf,
@@ -19,13 +19,23 @@ import { cn } from "@/lib/cn";
 export function StrokeApp({
   headingLevel = "h1",
   showClinicalReview = false,
-}: { headingLevel?: "h1" | "h2"; showClinicalReview?: boolean } = {}) {
-  const [session, setSession] = useState<Session>(freshSession);
+  initialPhase,
+}: {
+  headingLevel?: "h1" | "h2";
+  showClinicalReview?: boolean;
+  initialPhase?: Session["phase"];
+} = {}) {
+  const navigate = useNavigate();
+  const [session, setSession] = useState<Session>(() => ({
+    ...freshSession(),
+    phase: initialPhase ?? "intro",
+  }));
   const skipSave = useRef(true);
 
   useEffect(() => {
-    setSession(loadSession());
-  }, []);
+    const savedSession = loadSession();
+    setSession(initialPhase ? { ...savedSession, phase: initialPhase } : savedSession);
+  }, [initialPhase]);
 
   useEffect(() => {
     if (skipSave.current) {
@@ -53,6 +63,20 @@ export function StrokeApp({
   const tamil = session.lang === "ta";
 
   function goHome() {
+    if (initialPhase === "locator") {
+      const homeSession = {
+        ...freshSession(),
+        onsetIso: session.onsetIso,
+        user: session.user,
+      };
+      try {
+        saveSession(homeSession);
+      } catch {
+        // The home route also starts in the intro phase if session storage is unavailable.
+      }
+      void navigate({ to: "/" });
+      return;
+    }
     patch((current) => ({
       ...freshSession(),
       onsetIso: current.onsetIso,
