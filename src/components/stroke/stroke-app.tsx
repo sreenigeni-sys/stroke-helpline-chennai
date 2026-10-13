@@ -68,31 +68,28 @@ export function StrokeApp({
   const tamil = session.lang === "ta";
 
   function goHome() {
+    const next = { ...freshSession(), user: session.user };
+    try {
+      saveSession(next);
+    } catch {
+      // The home route also starts in the intro phase if session storage is unavailable.
+    }
     if (initialPhase === "locator") {
-      const homeSession = {
-        ...freshSession(),
-        onsetIso: session.onsetIso,
-        user: session.user,
-      };
-      try {
-        saveSession(homeSession);
-      } catch {
-        // The home route also starts in the intro phase if session storage is unavailable.
-      }
       void navigate({ to: "/" });
       return;
     }
-    patch((current) => ({
-      ...freshSession(),
-      onsetIso: current.onsetIso,
-      user: current.user,
-    }));
+    setSession(next);
   }
 
   return (
     <main className="min-h-screen">
       <header className="mx-auto flex max-w-5xl items-start justify-between gap-3 px-4 pt-4">
-        <Link to="/" aria-label="Stroke Helpline Chennai home — start the stroke screening tool" className="flex min-w-0 items-center gap-2.5">
+        <Link
+          to="/"
+          onClick={() => goHome()}
+          aria-label="Stroke Helpline Chennai home — start the stroke screening tool"
+          className="flex min-w-0 items-center gap-2.5"
+        >
           <img
             src="/brand/arunai.png"
             alt="Arunai Neuro Foundation"
@@ -194,7 +191,7 @@ export function StrokeApp({
             }
             patch((current) => {
               if (current.phase === "signs") {
-                if (current.signIndex <= 0) return { ...current, phase: "intro" };
+                if (current.signIndex <= 0) return { ...current, phase: "intro", onsetIso: null };
                 return { ...current, signIndex: current.signIndex - 1 };
               }
               if (current.phase === "time") {
