@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CompetitionForm, STROKE_PLEDGE } from "@/components/stroke/competition-form";
 import { ClinicalReviewNote } from "@/components/stroke/clinical-review-note";
+import { PublisherContactCue } from "@/components/stroke/publisher-contact-cue";
 import { cn } from "@/lib/cn";
 import { seoHead } from "@/lib/seo";
 
@@ -57,6 +58,9 @@ function CompetitionPage() {
       <h1 className={cn("font-display mt-6 text-3xl leading-tight", ta && "font-tamil text-2xl")}>
         {ta ? "பக்கவாத எதிர்வினை விழிப்புணர்வு போட்டி" : "Stroke response awareness competition"}
       </h1>
+      <p role="note" className={cn("mt-3 text-sm leading-relaxed text-ink-soft", ta && "font-tamil")}>
+        This page shares stroke-awareness information; it is not a diagnostic test or treatment advice. If someone may be having a stroke, seek emergency medical care now. Do not wait to submit an artwork entry or for a competition reply. Clinician review covers stroke-awareness content only, not competition rules or dates.
+      </p>
       <button
         type="button"
         aria-expanded={rules}
@@ -71,6 +75,9 @@ function CompetitionPage() {
       <section className="mt-5 rounded-card border border-line bg-paper-deep px-4 py-4">
         <h2 className="text-sm font-semibold text-ink">{ta ? "உறுதிமொழி" : "Pledge"}</h2>
         <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-ink">{STROKE_PLEDGE}</p>
+        <p className="mt-2 text-xs leading-relaxed text-ink-soft">
+          Source for stroke warning signs: <a className="font-semibold text-[#1b4fad] underline" href="https://www.cdc.gov/stroke/signs-symptoms/index.html" target="_blank" rel="noreferrer">CDC: Signs and Symptoms of Stroke</a>.
+        </p>
       </section>
       <ClinicalReviewNote scope="This review covers the stroke-awareness content, not competition rules or dates." />
       <section className="mt-6">
@@ -79,6 +86,7 @@ function CompetitionPage() {
           <CompetitionForm />
         </div>
       </section>
+      <PublisherContactCue />
     </main>
   );
 }

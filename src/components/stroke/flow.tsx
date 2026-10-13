@@ -159,6 +159,9 @@ function Intro({ onStart, onSkip, headingLevel }: { onStart: (lang: Lang) => voi
       <p className="mt-3 text-base font-semibold text-ink">
         Time is brain. <span className="font-tamil font-medium text-[#1B7F4E]">நேரமே மூளை.</span>
       </p>
+      <p role="note" className="mt-3 text-sm font-semibold leading-relaxed text-ink">
+        Possible stroke? Seek emergency medical care now. Do not wait to finish this check.
+      </p>
       <div className="my-8 flex justify-center" aria-hidden="true">
         <span className="flex size-28 items-center justify-center rounded-full bg-[#1b4fad]/10 text-[#1b4fad]">
           <Brain className="size-16" strokeWidth={1.5} />
@@ -210,8 +213,7 @@ function Intro({ onStart, onSkip, headingLevel }: { onStart: (lang: Lang) => voi
         </Link>
       </p>
       <p className="mt-6 text-center text-[11px] leading-relaxed text-ink-soft/80">
-        This page is not intended to be diagnostic and is not a replacement for assessment by a
-        healthcare professional.
+        This short check is for stroke-warning awareness only. It cannot diagnose or rule out stroke and does not replace emergency assessment by a healthcare professional.
       </p>
     </div>
   );

@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/cn";
 import { ClinicalReviewNote } from "@/components/stroke/clinical-review-note";
+import { PublisherContactCue } from "@/components/stroke/publisher-contact-cue";
 
 export function PublicPage({
   title,
@@ -9,12 +10,14 @@ export function PublicPage({
   intro,
   children,
   clinicalReviewScope,
+  urgentNotice,
 }: {
   title: string;
   tamilTitle?: string;
   intro: string;
   children: ReactNode;
   clinicalReviewScope?: string;
+  urgentNotice?: string;
 }) {
   return (
     <main className="min-h-screen bg-paper px-4 pb-10 pt-4 text-ink">
@@ -29,6 +32,11 @@ export function PublicPage({
         <h1 className="font-display text-4xl leading-tight sm:text-5xl">{title}</h1>
         {tamilTitle ? <p lang="ta" className="font-tamil mt-2 text-xl leading-snug text-[#1b4fad]">{tamilTitle}</p> : null}
         <p className="mt-4 text-base leading-relaxed text-ink-soft sm:text-lg">{intro}</p>
+        {urgentNotice ? (
+          <p role="note" className="mt-3 text-sm font-semibold leading-relaxed text-ink">
+            {urgentNotice}
+          </p>
+        ) : null}
 
         <nav aria-label="Immediate action" className="mt-5">
           <Link
@@ -43,9 +51,7 @@ export function PublicPage({
 
         {clinicalReviewScope ? <ClinicalReviewNote scope={clinicalReviewScope} /> : null}
 
-        <p className="mt-8 border-t border-line pt-4 text-sm leading-relaxed text-ink-soft">
-          Stroke Helpline Chennai is a navigation aid, not a diagnosis or treatment recommendation. Hospital capability information is not a live acceptance or bed-availability check. Follow emergency-response guidance.
-        </p>
+        <PublisherContactCue />
       </article>
     </main>
   );

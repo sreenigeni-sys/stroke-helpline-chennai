@@ -27,7 +27,8 @@ function ApolloGreamsRoadPage() {
   return (
     <PublicPage
       title={PILOT_BRANCH.name}
-      intro="This is a branch-level directory entry for a Chennai hospital location. It is a navigation aid, not a hospital-operated page or a live service-status feed."
+      intro="This independent branch-level entry provides navigation information for a Chennai hospital location. It is not a hospital-operated page or a live service-status feed."
+      urgentNotice="If someone may be having a stroke, seek emergency medical care immediately; do not delay for this listing."
       clinicalReviewScope="This review covers explanatory guidance only. Stroke-readiness claims are based on hospital-published information and are not independently verified here; other branch data retains its listed public or clinician-reviewed source. Current services, capacity and acceptance are not confirmed."
     >
       <section>

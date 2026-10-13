@@ -13,16 +13,21 @@ import {
 import { Flow } from "@/components/stroke/flow";
 import { Locator } from "@/components/stroke/locator";
 import { ClinicalReviewNote } from "@/components/stroke/clinical-review-note";
+import { PublisherContactCue } from "@/components/stroke/publisher-contact-cue";
 import { beginGps } from "@/components/stroke/gps";
 import { cn } from "@/lib/cn";
 
 export function StrokeApp({
   headingLevel = "h1",
   showClinicalReview = false,
+  showPublisherContact = false,
+  urgentNotice,
   initialPhase,
 }: {
   headingLevel?: "h1" | "h2";
   showClinicalReview?: boolean;
+  showPublisherContact?: boolean;
+  urgentNotice?: string;
   initialPhase?: Session["phase"];
 } = {}) {
   const navigate = useNavigate();
@@ -126,6 +131,11 @@ export function StrokeApp({
           </button>
         ) : null}
       </header>
+      {urgentNotice ? (
+        <p role="note" className="mx-auto max-w-5xl px-4 pt-2 text-sm font-semibold leading-relaxed text-ink">
+          {urgentNotice}
+        </p>
+      ) : null}
       {session.phase === "locator" ? (
         <Locator
           headingLevel={headingLevel}
@@ -198,9 +208,17 @@ export function StrokeApp({
           onContinue={() => openHospitals((current) => ({ ...current, phase: "locator" }))}
         />
       )}
-      {showClinicalReview ? (
+      {showClinicalReview || showPublisherContact ? (
         <div className="mx-auto max-w-md px-4 pb-6">
-          <ClinicalReviewNote scope="This review covers the screening guidance, not hospital-specific service or readiness claims." />
+          {showClinicalReview ? (
+            <>
+              <p className="text-sm leading-relaxed text-ink-soft">
+                This short check is for stroke-warning awareness only. It cannot diagnose or rule out stroke and does not replace emergency assessment by a healthcare professional.
+              </p>
+              <ClinicalReviewNote scope="This review covers the screening guidance, not hospital-specific service or readiness claims." />
+            </>
+          ) : null}
+          {showPublisherContact ? <PublisherContactCue /> : null}
         </div>
       ) : null}
     </main>

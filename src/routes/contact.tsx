@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { HospitalUpdateForm } from "@/components/stroke/hospital-update-form";
 import { ReviewForm } from "@/components/stroke/review-form";
+import { PublisherContactCue } from "@/components/stroke/publisher-contact-cue";
 import { seoHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/contact")({
@@ -25,6 +26,9 @@ function ContactPage() {
       </header>
       <h1 className="font-display mt-6 text-3xl leading-tight">Contact us</h1>
       <p className="font-tamil mt-1 text-base text-ink-soft">தொடர்பு கொள்ள</p>
+      <p role="note" className="mt-4 text-sm leading-relaxed text-ink-soft">
+        <strong className="text-ink">These forms are for non-urgent questions and corrections, not emergency response.</strong> If someone may be having a stroke, seek emergency medical care now; do not wait for a reply. Please do not include a patient’s name or other identifying health information. Hospital updates are reviewed before the directory is changed; a submission does not confirm current service or availability.
+      </p>
 
       <section className="mt-6">
         <h2 className="text-lg font-semibold">Update a hospital</h2>
@@ -41,6 +45,7 @@ function ContactPage() {
           <ReviewForm />
         </div>
       </section>
+      <PublisherContactCue showContactLink={false} />
     </main>
   );
 }

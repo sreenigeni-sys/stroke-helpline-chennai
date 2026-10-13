@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { StrokeApp } from "@/components/stroke/stroke-app";
 import { ClinicalReviewNote } from "@/components/stroke/clinical-review-note";
+import { PublisherContactCue } from "@/components/stroke/publisher-contact-cue";
 import { hospitalListSchema } from "@/lib/stroke-schema";
 import { seoHead, SITE_ORIGIN } from "@/lib/seo";
 
@@ -31,7 +32,11 @@ export const Route = createFileRoute("/stroke-hospitals-chennai")({
 function HospitalFinderPage() {
   return (
     <>
-      <StrokeApp headingLevel="h2" initialPhase="locator" />
+      <StrokeApp
+        headingLevel="h2"
+        initialPhase="locator"
+        urgentNotice="For suspected stroke, seek emergency medical care now; do not wait to browse this directory."
+      />
       <article className="mx-auto max-w-3xl space-y-5 px-4 pb-10 text-ink">
         <h1 className="font-display text-2xl">Stroke-care hospitals in Chennai</h1>
         <section>
@@ -56,6 +61,7 @@ function HospitalFinderPage() {
           </p>
         </section>
         <ClinicalReviewNote scope="The clinical explanations and listing guidance were reviewed. Stroke-readiness claims are based on hospital-published information and are not independently verified by this review." />
+        <PublisherContactCue />
       </article>
     </>
   );
