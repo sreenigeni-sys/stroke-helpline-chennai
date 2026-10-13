@@ -146,11 +146,11 @@ function Intro({ onStart, onSkip, headingLevel }: { onStart: (lang: Lang) => voi
         <Link
           to="/competition"
           className={cn(
-            "flex size-28 items-center justify-center rounded-full bg-[#C46B16] px-3 text-center text-xs font-bold leading-tight text-white shadow-card",
+            "flex size-36 items-center justify-center rounded-full bg-[#C46B16] px-4 text-center text-sm font-bold leading-tight text-white shadow-card",
             TAP,
           )}
         >
-          Stroke Day Competition
+          Click here for stroke day art submission
         </Link>
       </div>
       <div className="flex flex-1 flex-col justify-center">
