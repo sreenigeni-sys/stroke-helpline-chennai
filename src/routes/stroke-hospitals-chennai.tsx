@@ -31,7 +31,7 @@ export const Route = createFileRoute("/stroke-hospitals-chennai")({
 function HospitalFinderPage() {
   return (
     <>
-      <StrokeApp headingLevel="h2" />
+      <StrokeApp headingLevel="h2" initialPhase="locator" />
       <article className="mx-auto max-w-3xl space-y-5 px-4 pb-10 text-ink">
         <h1 className="font-display text-2xl">Stroke-care hospitals in Chennai</h1>
         <section>
