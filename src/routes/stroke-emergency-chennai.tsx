@@ -35,7 +35,8 @@ function EmergencyPage() {
     <PublicPage
       title="Suspected stroke in Chennai? Find a hospital branch."
       tamilTitle="பக்கவாதம் இருக்கலாம் என சந்தேகமா? மருத்துவமனை கிளையைக் கண்டறியுங்கள்."
-      intro="If someone may be having a stroke, seek emergency medical care immediately. If another caregiver is present, they can check the hospital finder while you focus on the person. Follow emergency-response guidance about transport and destination."
+      intro="If someone may be having a stroke, seek emergency medical care now. If another caregiver is present, they can check the hospital finder while you focus on the person. Follow emergency-response guidance about transport and destination."
+      urgentNotice="Do not wait for a checklist, this page, or the hospital directory. A directory entry cannot confirm live service, capacity, a bed, or acceptance."
       clinicalReviewScope="This review covers the emergency guidance, not current hospital service, capacity or acceptance."
     >
       <section>

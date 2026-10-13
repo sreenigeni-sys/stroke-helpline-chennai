@@ -33,7 +33,8 @@ function SymptomsPage() {
     <PublicPage
       title="Sudden stroke warning signs? Find care and call for help."
       tamilTitle="பக்கவாதத்தின் திடீர் அறிகுறிகளா? உதவியை அழைத்து சிகிச்சையைத் தேடுங்கள்."
-      intro="Stroke warning signs can begin suddenly. If someone has a sudden change in balance, vision, face movement, arm or leg strength, speech, or understanding, call emergency help. This page is not a diagnostic test."
+      intro="Stroke warning signs can begin suddenly. This page explains common warning signs and what to do; it is not a diagnosis."
+      urgentNotice="Sudden face, arm, speech, balance, vision, or other stroke-like changes need urgent medical assessment. Seek emergency medical help now, even if symptoms improve. This page cannot diagnose or rule out stroke."
       clinicalReviewScope="This review covers warning-sign and action guidance; this page is not a diagnostic test."
     >
       <section>

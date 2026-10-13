@@ -125,7 +125,7 @@ test("crawlable links connect the screening app and public pages to the hospital
   const locator = await read("src/components/stroke/locator.tsx");
   assert.match(locator, /headingLevel = "h1"/);
   assert.match(locator, /<Heading className=\{cn\("text-3xl leading-tight"/);
-  assert.match(directory, /<StrokeApp headingLevel="h2" initialPhase="locator" \/>/);
+  assert.match(directory, /<StrokeApp(?=[^>]*headingLevel="h2")(?=[^>]*initialPhase="locator")[^>]*\/>/s);
   assert.match(directory, /<h1 className="font-display text-2xl">Stroke-care hospitals in Chennai<\/h1>/);
   assert.match(publicPage, /to="\/stroke-hospitals-chennai"/);
 });
@@ -136,7 +136,7 @@ test("the directory opens the existing locator directly while the homepage remai
     read("src/routes/stroke-hospitals-chennai.tsx"),
     read("src/components/stroke/session.ts"),
   ]);
-  assert.match(directory, /<StrokeApp headingLevel="h2" initialPhase="locator" \/>/);
+  assert.match(directory, /<StrokeApp(?=[^>]*headingLevel="h2")(?=[^>]*initialPhase="locator")[^>]*\/>/s);
   assert.match(app, /initialPhase\?: Session\["phase"\]/);
   assert.match(app, /phase: initialPhase \?\? "intro"/);
   assert.match(app, /setSession\(initialPhase \? \{ \.\.\.savedSession, phase: initialPhase \} : savedSession\)/);

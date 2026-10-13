@@ -33,7 +33,8 @@ function TreatmentPage() {
     <PublicPage
       title="Stroke treatment starts with emergency assessment."
       tamilTitle="பக்கவாத சிகிச்சை அவசர மருத்துவ மதிப்பீட்டுடன் தொடங்குகிறது."
-      intro="A stroke team assesses the person’s symptoms, history and brain imaging to determine the cause and appropriate care. Do not try to determine the stroke type or choose a treatment at home."
+      intro="This page provides general information about emergency assessment. It cannot identify a stroke type, determine treatment eligibility, or choose treatment for an individual; those decisions belong to the treating team."
+      urgentNotice="If stroke symptoms are happening now or worsening, seek emergency medical care immediately; do not delay to browse this directory."
       clinicalReviewScope="This review covers general information only; care and treatment decisions belong to the treating team."
     >
       <section>

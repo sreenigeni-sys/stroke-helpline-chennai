@@ -33,7 +33,8 @@ function RecoveryPage() {
     <PublicPage
       title="Planning recovery after a stroke"
       tamilTitle="பக்கவாதத்திற்குப் பிறகு மீட்புத் திட்டம்"
-      intro="After emergency treatment, ask the treating team which rehabilitation and follow-up services are appropriate for the person. Needs differ from one survivor to another."
+      intro="This page offers general recovery discussion prompts, not an individual rehabilitation plan. Discuss needs and services with the treating team."
+      urgentNotice="New or worsening stroke-like symptoms require immediate emergency assessment. Do not use this recovery page or directory instead of urgent care."
       clinicalReviewScope="This review covers general information only; rehabilitation needs should be discussed with the treating team."
     >
       <section>
