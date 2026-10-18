@@ -50,6 +50,17 @@ export function StrokeApp({
     saveSession(session);
   }, [session]);
 
+  useEffect(() => {
+    const toTop = () => {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    };
+    toTop();
+    const frame = requestAnimationFrame(toTop);
+    return () => cancelAnimationFrame(frame);
+  }, [session.phase]);
+
   function patch(update: (current: Session) => Session) {
     setSession((current) => update(current));
   }
