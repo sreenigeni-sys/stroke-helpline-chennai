@@ -215,7 +215,7 @@ function Intro({ onStart, onSkip, headingLevel }: { onStart: (lang: Lang) => voi
           Contact Us
         </Link>
       </p>
-      <p className="mt-6 text-center text-[11px] leading-relaxed text-ink-soft/80">
+      <p className="mt-3 text-center text-[10px] leading-relaxed text-ink-soft/80">
         This short check is for stroke-warning awareness only. It cannot diagnose or rule out stroke and does not replace emergency assessment by a healthcare professional.
       </p>
     </div>

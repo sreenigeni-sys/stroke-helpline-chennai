@@ -208,14 +208,12 @@ export function StrokeApp({
       {showClinicalReview || showPublisherContact ? (
         <div className="mx-auto max-w-md px-4 pb-6">
           {showClinicalReview ? (
-            <>
-              <p className="text-sm leading-relaxed text-ink-soft">
-                This short check is for stroke-warning awareness only. It cannot diagnose or rule out stroke and does not replace emergency assessment by a healthcare professional.
-              </p>
-              <ClinicalReviewNote scope="This review covers the screening guidance, not hospital-specific service or readiness claims." />
-            </>
+            <ClinicalReviewNote
+              compact
+              scope="This review covers the screening guidance, not hospital-specific service or readiness claims."
+            />
           ) : null}
-          {showPublisherContact ? <PublisherContactCue /> : null}
+          {showPublisherContact ? <PublisherContactCue compact showContactLink={false} /> : null}
         </div>
       ) : null}
     </main>

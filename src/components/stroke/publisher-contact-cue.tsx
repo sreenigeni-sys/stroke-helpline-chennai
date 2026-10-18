@@ -1,8 +1,14 @@
 import { Link } from "@tanstack/react-router";
 
-export function PublisherContactCue({ showContactLink = true }: { showContactLink?: boolean } = {}) {
+export function PublisherContactCue({
+  showContactLink = true,
+  compact = false,
+}: { showContactLink?: boolean; compact?: boolean } = {}) {
   return (
-    <section aria-label="About this service" className="mt-8 border-t border-line pt-4 text-sm leading-relaxed text-ink-soft">
+    <section
+      aria-label="About this service"
+      className={compact ? "mt-4 border-t border-line pt-3 text-[11px] leading-relaxed text-ink-soft" : "mt-8 border-t border-line pt-4 text-sm leading-relaxed text-ink-soft"}
+    >
       <p>
         <strong className="text-ink">About this service.</strong> Stroke Helpline Chennai is an initiative of Arunai Neuro Foundation. It provides general stroke-warning and hospital-navigation information for Chennai.
       </p>
