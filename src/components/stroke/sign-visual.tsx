@@ -60,7 +60,7 @@ export function SignVisual({ sign, lang = null }: { sign: Sign; lang?: Lang | nu
           muted
           playsInline
           autoPlay
-          preload="auto"
+          preload="metadata"
           aria-label={lang === "ta" ? `${sign.wordTa} விளக்கம்` : `${sign.word} demonstration`}
           onPlaying={() => setVideoOn(true)}
           onCanPlay={() => setVideoOn(true)}

@@ -8,7 +8,7 @@ A bilingual emergency-navigation app focused on helping Chennai families reach h
 - The app does not have live hospital acceptance/bed status. Every result says current acceptance is not confirmed.
 - No 108/112 call bar appears on the landing or general content pages. Government hospital cards show a separate 108 ambulance action; each branch’s existing direct contact remains separate. Private cards do not offer 108, and 112 is not offered by this app.
 - The original browser session restore remains enabled for screening answers, last-known-well time, language, and selected location. Hospital call-button taps are stored in the private database or private Blob for administrative review; `/activity` remains hidden from the public and redirects home, and no public activity-read endpoint is exposed. Events record only the selected hospital/108 target and time-window category, not patient identity. Historical events have not been purged.
-- The third-party map loads only after a visitor opens Map. A notice explains that CARTO tile requests can reveal the visible area and ordinary connection data; device location is requested only after a tap.
+- The third-party map loads only after a visitor opens Map. Street tiles come from Esri, with OpenStreetMap as a backup. A notice explains that those tile requests can reveal the visible area and ordinary connection data; device location is requested only after a tap.
 
 ## Run locally
 

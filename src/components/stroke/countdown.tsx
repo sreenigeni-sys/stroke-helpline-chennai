@@ -127,11 +127,12 @@ export function Countdown({
               />
             ) : null}
           </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center">
+          <div className="absolute inset-0 flex flex-col items-center justify-center px-10 text-center">
             <p
               id="clock-label"
               className={cn(
-                "font-sans text-3xl font-semibold tabular-nums tracking-tight",
+                "max-w-full font-sans font-semibold tabular-nums tracking-tight",
+                compact ? "text-xl" : "text-2xl",
                 clock.phase === "green" && "text-ok",
                 clock.phase === "orange" && "text-late-ink",
                 clock.phase === "past" && "text-signal",

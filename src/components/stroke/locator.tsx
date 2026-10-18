@@ -178,8 +178,28 @@ export function Locator({
     setLocError(null);
   }
 
+  function recordFinderCall() {
+    const payload = { window: readClock(onsetIso, Date.now()).phase, target: "108" };
+    const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+    const queued = typeof navigator.sendBeacon === "function" && navigator.sendBeacon("/api/stroke-call", blob);
+    if (!queued) void recordStrokeCall({ data: payload }).catch(() => undefined);
+  }
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-4">
+      {concern === "yes" || concern === "unsure" || concern === "skipped" ? (
+        <a
+          href="tel:108"
+          onClick={() => recordFinderCall()}
+          className={cn(
+            "mb-4 flex min-h-16 w-full items-center justify-center rounded-full bg-signal px-4 text-center text-lg font-bold text-white shadow-card",
+            copy.ta && "font-tamil",
+            TAP,
+          )}
+        >
+          {copy.call("108")}
+        </a>
+      ) : null}
       {concern === "yes" ? (
         <div className={cn("mb-4 rounded-card bg-signal px-4 py-3 text-white", copy.ta && "font-tamil")}>
           <p className="font-semibold">{copy.possible(yes.join(", "))}</p>
@@ -206,7 +226,7 @@ export function Locator({
           onClick={locate}
           disabled={locating !== null}
           className={cn(
-            "h-14 flex-1 rounded-full bg-signal text-base font-semibold text-white disabled:opacity-60",
+            "min-h-14 shrink-0 flex-1 rounded-full bg-signal px-4 text-base font-semibold text-white disabled:opacity-60",
             copy.ta && "font-tamil",
             TAP,
           )}
@@ -364,6 +384,7 @@ export function Locator({
         </div>
       </div>
       <p className={cn("mt-3 text-sm text-ink-soft", copy.ta && "font-tamil")}>{copy.explain}</p>
+      <p className={cn("mt-2 text-sm font-semibold leading-relaxed text-ink", copy.ta && "font-tamil")}>{copy.tierNote}</p>
       {view === "map" ? (
         <div className="mt-4">
           <PinLegend copy={copy} />

@@ -56,6 +56,9 @@ export function locatorCopy(lang: Lang | null) {
     allTiers: ta ? "அனைத்தும்" : "All tiers",
     comprehensive: ta ? "பக்கவாத தயார்" : "Stroke-ready",
     strokeReady: ta ? "பக்கவாத வரம்பு சிகிச்சை" : "Stroke-limited care",
+    tierNote: ta
+      ? "பக்கவாத தயார்: கடுமையான மற்றும் சிக்கலான பக்கவாதத்தையும் கையாளும். வரம்பு சிகிச்சை: பெரும்பாலான பக்கவாதங்களுக்கு சிகிச்சை அளிக்கும்."
+      : "Stroke-ready can manage complicated and severe strokes. Stroke-limited care can treat most strokes.",
     bothTypes: ta ? "அரசு + தனியார்" : "Gov + private",
     government: ta ? "அரசு" : "Government",
     private: ta ? "தனியார்" : "Private",

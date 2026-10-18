@@ -142,7 +142,7 @@ function Intro({ onStart, onSkip, headingLevel }: { onStart: (lang: Lang) => voi
   const Heading = headingLevel;
   return (
     <div className="rise mx-auto flex min-h-[70vh] max-w-md flex-col px-4 py-4">
-      <div className="flex justify-end">
+      <div className="flex flex-col items-end">
         <Link
           to="/competition"
           className={cn(
@@ -152,6 +152,9 @@ function Intro({ onStart, onSkip, headingLevel }: { onStart: (lang: Lang) => voi
         >
           Click here for stroke day art submission
         </Link>
+        <p className="mt-2 max-w-36 text-right text-[11px] font-semibold leading-snug text-ink">
+          25 Oct, 5–7 pm, Avichi College
+        </p>
       </div>
       <div className="flex flex-1 flex-col justify-center">
       <Heading className="font-display text-5xl leading-none text-ink">Is this a stroke?</Heading>

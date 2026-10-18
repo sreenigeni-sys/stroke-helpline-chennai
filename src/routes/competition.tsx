@@ -58,6 +58,11 @@ function CompetitionPage() {
       <h1 className={cn("font-display mt-6 text-3xl leading-tight", ta && "font-tamil text-2xl")}>
         {ta ? "பக்கவாத எதிர்வினை விழிப்புணர்வு போட்டி" : "Stroke response awareness competition"}
       </h1>
+      <p className={cn("mt-3 text-sm font-semibold leading-relaxed text-ink", ta && "font-tamil")}>
+        {ta
+          ? "சமர்ப்பிப்பு: 23 அக்டோபர் 2026, காலை 10:00. இறுதி விழா: 25 அக்டோபர் 2026, மாலை 5:00–7:00, அவிச்சி கலை அறிவியல் கல்லூரி, சென்னை."
+          : "Submit by 23 October 2026, 10:00 AM. Final event: 25 October 2026, 5:00–7:00 PM, Avichi College of Arts and Science, Chennai."}
+      </p>
       <p role="note" className={cn("mt-3 text-sm leading-relaxed text-ink-soft", ta && "font-tamil")}>
         This page shares stroke-awareness information; it is not a diagnostic test or treatment advice. If someone may be having a stroke, seek emergency medical care now. Do not wait to submit an artwork entry or for a competition reply. Clinician review covers stroke-awareness content only, not competition rules or dates.
       </p>
