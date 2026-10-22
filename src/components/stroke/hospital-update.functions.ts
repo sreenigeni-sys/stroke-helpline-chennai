@@ -138,17 +138,25 @@ export async function sendOrganiserMessage(input: { subject: string; replyto: st
   return { via: "email" as const };
 }
 
-export async function copyToClinic(subject: string, message: string) {
+export async function copyToClinic(subject: string, message: string, fields: Record<string, string> = {}) {
   try {
-    const body = new FormData();
-    body.set("_subject", subject);
-    body.set("_template", "box");
-    body.set("_captcha", "false");
-    body.set("message", message);
+    const payload: Record<string, string> = {
+      _subject: subject,
+      _template: "table",
+      _captcha: "false",
+      Details: message,
+    };
+    for (const [key, value] of Object.entries(fields)) {
+      const clean = value.trim();
+      if (clean) payload[key] = clean;
+    }
     const response = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(CLINIC_EMAIL)}`, {
       method: "POST",
-      headers: { Accept: "application/json" },
-      body,
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(payload),
       signal: AbortSignal.timeout(12000),
     });
     const result = (await response.json().catch(() => null)) as { success?: boolean | string; message?: string } | null;

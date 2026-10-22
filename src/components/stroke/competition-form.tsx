@@ -165,7 +165,14 @@ export function CompetitionForm() {
           replyto: fields.email.trim(),
           message,
         }),
-        copyToClinic(`Stroke response awareness entry: ${fields.name.trim()}`, message),
+        copyToClinic(`Stroke response awareness entry: ${fields.name.trim()}`, message, {
+          Name: fields.name.trim(),
+          Email: fields.email.trim(),
+          Phone: fields.phone.trim(),
+          Age_group: fields.ageGroup,
+          Guardian: fields.guardian.trim(),
+          Artwork: urls.join(" "),
+        }),
       ]);
       if (result.via !== "web3forms" && !clinic.ok) {
         setError("Your entry is saved, but the email could not be sent just now. Please try again in a moment.");
