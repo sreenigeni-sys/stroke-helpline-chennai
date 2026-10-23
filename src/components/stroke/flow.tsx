@@ -156,17 +156,22 @@ function Intro({ onStart, onSkip, headingLevel }: { onStart: (lang: Lang) => voi
         </button>
       </div>
       {closed ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0E1C2F]/70 px-6" role="presentation" onClick={() => setClosed(false)}>
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#0E1C2F]/70 px-3 py-3 sm:items-center" role="presentation" onClick={() => setClosed(false)}>
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="competition-closed"
-            className="w-full max-w-sm rounded-card bg-paper px-5 py-5 text-center shadow-card"
+            className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-card bg-paper px-4 py-4 text-center shadow-card"
             onClick={(event) => event.stopPropagation()}
           >
             <p id="competition-closed" className="text-base font-semibold leading-relaxed text-ink">
               Entries for the competition are now closed
             </p>
+            <img
+              src="/media/stroke-response-event.jpg"
+              alt="Stroke Response Awareness Event, 25 October 2026, 5–7 PM, Avichi College of Arts and Science, Saligramam, Chennai"
+              className="mt-3 w-full rounded-lg"
+            />
             <button
               type="button"
               onClick={() => setClosed(false)}
