@@ -1,46 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { assertSameSiteRequest } from "@/lib/auth/isolation.server";
-
-const AGES = ["12–15", "15–18", "18+ (Open to All)"];
-
-function clip(value: unknown, max: number) {
-  return typeof value === "string" ? value.trim().slice(0, max) : "";
-}
-
-function readEntry(data: unknown) {
-  if (typeof data !== "object" || data === null) throw new Error("Missing entry.");
-  const raw = data as Record<string, unknown>;
-  if (clip(raw.website, 200)) throw new Error("Ignored.");
-  const name = clip(raw.name, 160);
-  const ageGroup = clip(raw.ageGroup, 40);
-  const topic = "Time is Life";
-  const art = "";
-  const phone = clip(raw.phone, 30);
-  const email = clip(raw.email, 160);
-  const guardian = clip(raw.guardian, 160);
-  if (name.length < 2) throw new Error("Enter your name.");
-  if (!AGES.includes(ageGroup)) throw new Error("Choose an age group.");
-  if (phone.replace(/\D/g, "").length < 8) throw new Error("Enter a phone number.");
-  if (!email.includes("@") || email.length < 6) throw new Error("Enter an email address.");
-  if (ageGroup !== "18+ (Open to All)" && guardian.length < 2) {
-    throw new Error("Add a parent or guardian name for participants below 18.");
-  }
-  const artwork = clip(raw.artwork, 1000);
-  if (!artwork.startsWith("https://")) throw new Error("Add a photo or image of the artwork.");
-  return {
-    submittedAt: new Date().toISOString(),
-    name,
-    ageGroup,
-    topic,
-    art,
-    phone,
-    email,
-    guardian,
-    note: clip(raw.note, 500),
-    pledge: "Confirmed",
-    artwork,
-  };
-}
 
 export const Route = createFileRoute("/api/competition-entry")({
   server: {
@@ -50,30 +8,11 @@ export const Route = createFileRoute("/api/competition-entry")({
           status: 405,
           headers: { allow: "POST", "cache-control": "no-store" },
         }),
-      POST: async ({ request }) => {
-        try {
-          assertSameSiteRequest();
-        } catch {
-          return new Response("Forbidden", { status: 403, headers: { "cache-control": "no-store" } });
-        }
-        let entry: ReturnType<typeof readEntry>;
-        try {
-          entry = readEntry(await request.json());
-        } catch (caught) {
-          const message = caught instanceof Error ? caught.message : "Bad entry";
-          return Response.json({ error: message }, { status: 400, headers: { "cache-control": "no-store" } });
-        }
-        try {
-          const { saveCompetitionEntry } = await import("@/components/stroke/competition-store.server");
-          await saveCompetitionEntry(entry);
-        } catch {
-          return Response.json(
-            { error: "The entry could not be saved. Try again." },
-            { status: 503, headers: { "cache-control": "no-store" } },
-          );
-        }
-        return Response.json({ ok: true }, { headers: { "cache-control": "no-store" } });
-      },
+      POST: async () =>
+        Response.json(
+          { error: "Entries for the competition are now closed." },
+          { status: 403, headers: { "cache-control": "no-store" } },
+        ),
     },
   },
 });
