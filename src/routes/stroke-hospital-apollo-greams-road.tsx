@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PublicPage } from "@/components/stroke/public-page";
+import { trackClick } from "@/components/stroke/track";
 import { seoHead } from "@/lib/seo";
 import {
   PILOT_BRANCH,
@@ -44,6 +45,7 @@ function ApolloGreamsRoadPage() {
             href={`https://www.google.com/maps/dir/?api=1&destination=${PILOT_BRANCH.lat},${PILOT_BRANCH.lng}`}
             target="_blank"
             rel="noreferrer"
+            onClick={() => trackClick({ kind: "directions", hospital: PILOT_BRANCH.id })}
           >
             Directions to this branch
           </a>

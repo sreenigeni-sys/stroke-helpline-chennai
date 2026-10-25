@@ -13,6 +13,7 @@ import { markedWords, type Lang, type Session } from "@/components/stroke/sessio
 import { hospitalFacts, pathwayLine, serviceWord } from "@/data/hospital-facts";
 import { locatorCopy } from "@/components/stroke/locator-copy";
 import { beginGps, cancelGps, followGps, type GpsFix } from "@/components/stroke/gps";
+import { trackClick } from "@/components/stroke/track";
 
 const TAP = "transition-transform duration-150 ease-out active:not-disabled:scale-[0.96]";
 
@@ -562,6 +563,7 @@ function HospitalCard({
 
   function recordCallTap(target: string) {
     const payload = { window: readClock(onsetIso, Date.now()).phase, target };
+    trackClick({ kind: "call", hospital: hospital.id, window: payload.window, to108: target === "108" });
     const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
     const queued = typeof navigator.sendBeacon === "function" && navigator.sendBeacon("/api/stroke-call", blob);
     if (!queued) void recordStrokeCall({ data: payload }).catch(() => undefined);
@@ -662,6 +664,7 @@ function HospitalCard({
           href={`https://www.google.com/maps/dir/?api=1&destination=${hospital.lat},${hospital.lng}`}
           target="_blank"
           rel="noreferrer"
+          onClick={() => trackClick({ kind: "directions", hospital: hospital.id })}
           className={cn(
             "flex h-11 items-center justify-center gap-2 rounded-full bg-[#1b4fad] text-sm font-semibold text-white",
             copy.ta && "font-tamil",

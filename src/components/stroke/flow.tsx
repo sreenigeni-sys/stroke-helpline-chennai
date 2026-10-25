@@ -6,6 +6,7 @@ import { SIGNS, type SignId } from "@/components/stroke/signs";
 import { SignVisual } from "@/components/stroke/sign-visual";
 import { Countdown } from "@/components/stroke/countdown";
 import type { Answer, Lang, Phase, Session } from "@/components/stroke/session";
+import { useVisitCount } from "@/components/stroke/track";
 
 const TAP = "transition-transform duration-150 ease-out active:not-disabled:scale-[0.96]";
 
@@ -201,10 +202,21 @@ function Intro({ onStart, onSkip, headingLevel }: { onStart: (lang: Lang) => voi
           Contact Us
         </Link>
       </p>
+      <VisitCount />
       <p className="mt-3 text-center text-[10px] leading-relaxed text-ink-soft/80">
         This short check is for stroke-warning awareness only. It cannot diagnose or rule out stroke and does not replace emergency assessment by a healthcare professional.
       </p>
     </div>
+  );
+}
+
+function VisitCount() {
+  const total = useVisitCount();
+  if (total === null || total < 1) return null;
+  return (
+    <p className="mt-1 text-center text-[11px] text-ink-soft/80">
+      {total.toLocaleString("en-IN")} {total === 1 ? "visit" : "visits"}
+    </p>
   );
 }
 

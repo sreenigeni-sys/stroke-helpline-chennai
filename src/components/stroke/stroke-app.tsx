@@ -15,6 +15,7 @@ import { Locator } from "@/components/stroke/locator";
 import { ClinicalReviewNote } from "@/components/stroke/clinical-review-note";
 import { PublisherContactCue } from "@/components/stroke/publisher-contact-cue";
 import { beginGps } from "@/components/stroke/gps";
+import { countVisitOnce } from "@/components/stroke/track";
 import { cn } from "@/lib/cn";
 
 export function StrokeApp({
@@ -59,6 +60,11 @@ export function StrokeApp({
     toTop();
     const frame = requestAnimationFrame(toTop);
     return () => cancelAnimationFrame(frame);
+  }, [session.phase]);
+
+  // Moving past the home screen (check or hospital finder) is what counts as a visit.
+  useEffect(() => {
+    if (session.phase !== "intro") countVisitOnce();
   }, [session.phase]);
 
   function patch(update: (current: Session) => Session) {
