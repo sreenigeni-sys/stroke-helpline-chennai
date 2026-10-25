@@ -35,9 +35,10 @@ test("artwork paths cannot escape the competition folder", async () => {
   }
 });
 
-test("uploads are sniffed raster images and served with no-script headers", async () => {
+test("past artwork is served read-only, as raster images with no-script headers", async () => {
   const route = await read("src/routes/api/competition.ts");
-  assert.match(route, /sniffImageType\(bytes\)/);
+  assert.match(route, /status: 405/);
+  assert.doesNotMatch(route, /formData|put\(/);
   const allowed = route.match(/IMAGE_TYPES = new Set\(\[([\s\S]*?)\]\)/)?.[1];
   assert.ok(allowed, "an explicit image-type allowlist exists");
   assert.doesNotMatch(allowed, /svg/i);

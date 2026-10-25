@@ -140,48 +140,8 @@ export function Flow({
 
 function Intro({ onStart, onSkip, headingLevel }: { onStart: (lang: Lang) => void; onSkip: () => void; headingLevel: "h1" | "h2" }) {
   const Heading = headingLevel;
-  const [closed, setClosed] = useState(false);
   return (
     <div className="rise mx-auto flex min-h-[70vh] max-w-md flex-col px-4 py-4">
-      <div className="flex flex-col items-end">
-        <button
-          type="button"
-          onClick={() => setClosed(true)}
-          className={cn(
-            "flex size-36 items-center justify-center rounded-full bg-[#C46B16] px-4 text-center text-sm font-bold leading-tight text-white shadow-card",
-            TAP,
-          )}
-        >
-          Click here for stroke day art submission
-        </button>
-      </div>
-      {closed ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#0E1C2F]/70 px-3 py-3 sm:items-center" role="presentation" onClick={() => setClosed(false)}>
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="competition-closed"
-            className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-card bg-paper px-4 py-4 text-center shadow-card"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <p id="competition-closed" className="text-base font-semibold leading-relaxed text-ink">
-              Entries for the competition are now closed
-            </p>
-            <img
-              src="/media/stroke-response-event.jpg"
-              alt="Stroke Response Awareness Event, 25 October 2026, 5–7 PM, Avichi College of Arts and Science, Saligramam, Chennai"
-              className="mt-3 w-full rounded-lg"
-            />
-            <button
-              type="button"
-              onClick={() => setClosed(false)}
-              className={cn("mt-4 h-11 rounded-full bg-[#1b4fad] px-5 text-sm font-semibold text-white", TAP)}
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      ) : null}
       <div className="flex flex-1 flex-col justify-center">
       <Heading className="font-display text-5xl leading-none text-ink">Is this a stroke?</Heading>
       <p className="font-tamil mt-2 text-2xl text-[#1B7F4E]">இது பக்கவாதமா?</p>

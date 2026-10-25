@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ActivityRouteImport } from './routes/activity'
-import { Route as CompetitionRouteImport } from './routes/competition'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as StrokeEmergencyChennaiRouteImport } from './routes/stroke-emergency-chennai'
 import { Route as StrokeHospitalApolloGreamsRoadRouteImport } from './routes/stroke-hospital-apollo-greams-road'
@@ -20,7 +19,6 @@ import { Route as StrokeRecoveryChennaiRouteImport } from './routes/stroke-recov
 import { Route as StrokeSymptomsChennaiRouteImport } from './routes/stroke-symptoms-chennai'
 import { Route as StrokeTreatmentChennaiRouteImport } from './routes/stroke-treatment-chennai'
 import { Route as ApiCompetitionRouteImport } from './routes/api/competition'
-import { Route as ApiCompetitionEntryRouteImport } from './routes/api/competition-entry'
 import { Route as ApiCompetitionExportRouteImport } from './routes/api/competition-export'
 import { Route as ApiStrokeCallRouteImport } from './routes/api/stroke-call'
 
@@ -32,11 +30,6 @@ const IndexRoute = IndexRouteImport.update({
 const ActivityRoute = ActivityRouteImport.update({
   id: '/activity',
   path: '/activity',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CompetitionRoute = CompetitionRouteImport.update({
-  id: '/competition',
-  path: '/competition',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -80,11 +73,6 @@ const ApiCompetitionRoute = ApiCompetitionRouteImport.update({
   path: '/api/competition',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiCompetitionEntryRoute = ApiCompetitionEntryRouteImport.update({
-  id: '/api/competition-entry',
-  path: '/api/competition-entry',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiCompetitionExportRoute = ApiCompetitionExportRouteImport.update({
   id: '/api/competition-export',
   path: '/api/competition-export',
@@ -99,7 +87,6 @@ const ApiStrokeCallRoute = ApiStrokeCallRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
-  '/competition': typeof CompetitionRoute
   '/contact': typeof ContactRoute
   '/stroke-emergency-chennai': typeof StrokeEmergencyChennaiRoute
   '/stroke-hospital-apollo-greams-road': typeof StrokeHospitalApolloGreamsRoadRoute
@@ -108,14 +95,12 @@ export interface FileRoutesByFullPath {
   '/stroke-symptoms-chennai': typeof StrokeSymptomsChennaiRoute
   '/stroke-treatment-chennai': typeof StrokeTreatmentChennaiRoute
   '/api/competition': typeof ApiCompetitionRoute
-  '/api/competition-entry': typeof ApiCompetitionEntryRoute
   '/api/competition-export': typeof ApiCompetitionExportRoute
   '/api/stroke-call': typeof ApiStrokeCallRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
-  '/competition': typeof CompetitionRoute
   '/contact': typeof ContactRoute
   '/stroke-emergency-chennai': typeof StrokeEmergencyChennaiRoute
   '/stroke-hospital-apollo-greams-road': typeof StrokeHospitalApolloGreamsRoadRoute
@@ -124,7 +109,6 @@ export interface FileRoutesByTo {
   '/stroke-symptoms-chennai': typeof StrokeSymptomsChennaiRoute
   '/stroke-treatment-chennai': typeof StrokeTreatmentChennaiRoute
   '/api/competition': typeof ApiCompetitionRoute
-  '/api/competition-entry': typeof ApiCompetitionEntryRoute
   '/api/competition-export': typeof ApiCompetitionExportRoute
   '/api/stroke-call': typeof ApiStrokeCallRoute
 }
@@ -132,7 +116,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
-  '/competition': typeof CompetitionRoute
   '/contact': typeof ContactRoute
   '/stroke-emergency-chennai': typeof StrokeEmergencyChennaiRoute
   '/stroke-hospital-apollo-greams-road': typeof StrokeHospitalApolloGreamsRoadRoute
@@ -141,7 +124,6 @@ export interface FileRoutesById {
   '/stroke-symptoms-chennai': typeof StrokeSymptomsChennaiRoute
   '/stroke-treatment-chennai': typeof StrokeTreatmentChennaiRoute
   '/api/competition': typeof ApiCompetitionRoute
-  '/api/competition-entry': typeof ApiCompetitionEntryRoute
   '/api/competition-export': typeof ApiCompetitionExportRoute
   '/api/stroke-call': typeof ApiStrokeCallRoute
 }
@@ -150,7 +132,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/activity'
-    | '/competition'
     | '/contact'
     | '/stroke-emergency-chennai'
     | '/stroke-hospital-apollo-greams-road'
@@ -159,14 +140,12 @@ export interface FileRouteTypes {
     | '/stroke-symptoms-chennai'
     | '/stroke-treatment-chennai'
     | '/api/competition'
-    | '/api/competition-entry'
     | '/api/competition-export'
     | '/api/stroke-call'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/activity'
-    | '/competition'
     | '/contact'
     | '/stroke-emergency-chennai'
     | '/stroke-hospital-apollo-greams-road'
@@ -175,14 +154,12 @@ export interface FileRouteTypes {
     | '/stroke-symptoms-chennai'
     | '/stroke-treatment-chennai'
     | '/api/competition'
-    | '/api/competition-entry'
     | '/api/competition-export'
     | '/api/stroke-call'
   id:
     | '__root__'
     | '/'
     | '/activity'
-    | '/competition'
     | '/contact'
     | '/stroke-emergency-chennai'
     | '/stroke-hospital-apollo-greams-road'
@@ -191,7 +168,6 @@ export interface FileRouteTypes {
     | '/stroke-symptoms-chennai'
     | '/stroke-treatment-chennai'
     | '/api/competition'
-    | '/api/competition-entry'
     | '/api/competition-export'
     | '/api/stroke-call'
   fileRoutesById: FileRoutesById
@@ -199,7 +175,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ActivityRoute: typeof ActivityRoute
-  CompetitionRoute: typeof CompetitionRoute
   ContactRoute: typeof ContactRoute
   StrokeEmergencyChennaiRoute: typeof StrokeEmergencyChennaiRoute
   StrokeHospitalApolloGreamsRoadRoute: typeof StrokeHospitalApolloGreamsRoadRoute
@@ -208,7 +183,6 @@ export interface RootRouteChildren {
   StrokeSymptomsChennaiRoute: typeof StrokeSymptomsChennaiRoute
   StrokeTreatmentChennaiRoute: typeof StrokeTreatmentChennaiRoute
   ApiCompetitionRoute: typeof ApiCompetitionRoute
-  ApiCompetitionEntryRoute: typeof ApiCompetitionEntryRoute
   ApiCompetitionExportRoute: typeof ApiCompetitionExportRoute
   ApiStrokeCallRoute: typeof ApiStrokeCallRoute
 }
@@ -227,13 +201,6 @@ declare module '@tanstack/react-router' {
       path: '/activity'
       fullPath: '/activity'
       preLoaderRoute: typeof ActivityRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/competition': {
-      id: '/competition'
-      path: '/competition'
-      fullPath: '/competition'
-      preLoaderRoute: typeof CompetitionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -292,13 +259,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCompetitionRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/competition-entry': {
-      id: '/api/competition-entry'
-      path: '/api/competition-entry'
-      fullPath: '/api/competition-entry'
-      preLoaderRoute: typeof ApiCompetitionEntryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/competition-export': {
       id: '/api/competition-export'
       path: '/api/competition-export'
@@ -319,7 +279,6 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ActivityRoute: ActivityRoute,
-  CompetitionRoute: CompetitionRoute,
   ContactRoute: ContactRoute,
   StrokeEmergencyChennaiRoute: StrokeEmergencyChennaiRoute,
   StrokeHospitalApolloGreamsRoadRoute: StrokeHospitalApolloGreamsRoadRoute,
@@ -328,7 +287,6 @@ const rootRouteChildren: RootRouteChildren = {
   StrokeSymptomsChennaiRoute: StrokeSymptomsChennaiRoute,
   StrokeTreatmentChennaiRoute: StrokeTreatmentChennaiRoute,
   ApiCompetitionRoute: ApiCompetitionRoute,
-  ApiCompetitionEntryRoute: ApiCompetitionEntryRoute,
   ApiCompetitionExportRoute: ApiCompetitionExportRoute,
   ApiStrokeCallRoute: ApiStrokeCallRoute,
 }

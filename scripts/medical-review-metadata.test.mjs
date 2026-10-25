@@ -22,7 +22,7 @@ test("the public review date is centralized and does not identify the clinician"
 });
 
 test("all reviewed public medical pages declare review metadata and visible scope", async () => {
-  const [home, directory, branch, symptoms, emergency, treatment, recovery, competition, publicPage, app] = await Promise.all([
+  const [home, directory, branch, symptoms, emergency, treatment, recovery, publicPage, app] = await Promise.all([
     read("src/routes/index.tsx"),
     read("src/routes/stroke-hospitals-chennai.tsx"),
     read("src/routes/stroke-hospital-apollo-greams-road.tsx"),
@@ -30,7 +30,6 @@ test("all reviewed public medical pages declare review metadata and visible scop
     read("src/routes/stroke-emergency-chennai.tsx"),
     read("src/routes/stroke-treatment-chennai.tsx"),
     read("src/routes/stroke-recovery-chennai.tsx"),
-    read("src/routes/competition.tsx"),
     read("src/components/stroke/public-page.tsx"),
     read("src/components/stroke/stroke-app.tsx"),
   ]);
@@ -48,8 +47,6 @@ test("all reviewed public medical pages declare review metadata and visible scop
   assert.match(directory, /ClinicalReviewNote/);
   assert.match(directory, /Stroke-readiness claims are based on hospital-published information/);
   assert.match(branch, /Stroke-readiness claims are based on hospital-published information/);
-  assert.match(competition, /ClinicalReviewNote/);
-  assert.match(competition, /not competition rules or dates/);
   assert.match(publicPage, /ClinicalReviewNote scope=\{clinicalReviewScope\}/);
   assert.match(app, /showClinicalReview/);
 });
@@ -66,7 +63,7 @@ test("medical review dates do not imply modified dates or verified live branch a
 });
 
 test("urgent disclaimers and organization/contact cues cover the public site pages", async () => {
-  const [publisher, publicPage, app, flow, home, directory, emergency, symptoms, treatment, recovery, branch, contact, competition] = await Promise.all([
+  const [publisher, publicPage, app, flow, home, directory, emergency, symptoms, treatment, recovery, branch, contact] = await Promise.all([
     read("src/components/stroke/publisher-contact-cue.tsx"),
     read("src/components/stroke/public-page.tsx"),
     read("src/components/stroke/stroke-app.tsx"),
@@ -79,7 +76,6 @@ test("urgent disclaimers and organization/contact cues cover the public site pag
     read("src/routes/stroke-recovery-chennai.tsx"),
     read("src/routes/stroke-hospital-apollo-greams-road.tsx"),
     read("src/routes/contact.tsx"),
-    read("src/routes/competition.tsx"),
   ]);
   assert.match(publisher, /Arunai Neuro Foundation/);
   assert.match(publisher, /hospital-published or other public sources/);
@@ -108,8 +104,4 @@ test("urgent disclaimers and organization/contact cues cover the public site pag
   assert.match(contact, /do not wait for a reply/);
   assert.match(contact, /do not include a patient’s name or other identifying health information/);
   assert.match(contact, /<PublisherContactCue showContactLink=\{false\} \/>/);
-  assert.match(competition, /Do not wait to submit an artwork entry or for a competition reply/);
-  assert.match(competition, /CDC: Signs and Symptoms of Stroke/);
-  assert.match(competition, /<PublisherContactCue \/>/);
-  assert.match(competition, /noindex: true/);
 });

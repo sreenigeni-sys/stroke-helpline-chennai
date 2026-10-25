@@ -19,7 +19,8 @@ const IMAGE_HEADERS = {
   "cache-control": "public, max-age=31536000, immutable",
 };
 
-// Upload pathnames are `competition/<digits>-<safe name>-<random>.<ext>`. A strict
+// Read-only: serves past competition artwork (links in organiser emails point
+// here). Artwork pathnames are `competition/<digits>-<safe name>-<random>.<ext>`. A strict
 // allowlist (no `%`, no `/` after the folder, no dot segments) stops encoded
 // `..` from escaping the folder once fetch normalises the Blob URL.
 function safePath(value: string) {
@@ -43,11 +44,12 @@ export const Route = createFileRoute("/api/competition")({
         }
         return new Response(result.stream, { headers: { ...IMAGE_HEADERS, "content-type": type } });
       },
+      // Entries are closed: no uploads. Without this, a POST falls through to the page shell.
       POST: async () =>
-        Response.json(
-          { error: "Entries for the competition are now closed." },
-          { status: 403, headers: { "cache-control": "no-store" } },
-        ),
+        new Response("Method Not Allowed", {
+          status: 405,
+          headers: { allow: "GET", "cache-control": "no-store" },
+        }),
     },
   },
 });

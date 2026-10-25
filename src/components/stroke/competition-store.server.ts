@@ -1,5 +1,6 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 
+// The competition has closed; entries are read-only now, for the organisers' export.
 const DOC = "competition-entries.json";
 const BLOB_TIMEOUT_MS = 8000;
 
@@ -48,30 +49,6 @@ async function readDoc(): Promise<CompetitionDoc> {
   } catch {
     return { entries: [] };
   }
-}
-
-let writeChain: Promise<void> = Promise.resolve();
-
-export async function saveCompetitionEntry(entry: CompetitionEntry) {
-  if (!usesBlob()) throw new Error("Entries cannot be saved right now.");
-  const run = writeChain.then(async () => {
-    const doc = await readDoc();
-    doc.entries.push(entry);
-    const { put } = await import("@vercel/blob");
-    await put(DOC, JSON.stringify(doc), {
-      access: "private",
-      addRandomSuffix: false,
-      allowOverwrite: true,
-      contentType: "application/json",
-      cacheControlMaxAge: 0,
-      abortSignal: AbortSignal.timeout(BLOB_TIMEOUT_MS),
-    });
-  });
-  writeChain = run.then(
-    () => undefined,
-    () => undefined,
-  );
-  await run;
 }
 
 function cell(value: string) {
